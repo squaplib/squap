@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "squap"
+version = "0.0.1"
+authors = [
+  { name="Rik Mulder", email="rikmulder7@proton.me" },
+]
+description = "Package for animated plots, focussed on simplicity and speed."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+homepage = "https://numpy.org"
+documentation = "https://numpy.org/doc/"
+source = "https://github.com/numpy/numpy"

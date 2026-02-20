@@ -457,4 +457,3 @@ def on_next_refresh(func: Callable):          # todo: only works in eventloop, n
 #         window.plot_widget.setCameraPosition(
 #             QtGui.QVector3D(x, y, z)
 #         )
-
