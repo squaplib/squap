@@ -1,12 +1,11 @@
 import numpy as np
-import typing
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Iterable
 from time import time as current_time
 import os.path
 
 from pyqtgraph import ColorButton
 
-from .helper_funcs import textify, get_type_func
+from .helper_funcs import textify, get_type_func, ColorType
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem,
     QLabel, QSlider, QCheckBox, QPushButton, QComboBox
@@ -18,14 +17,14 @@ class Box:              # I am not sure if this is required, but I feel like it 
     """General class for each squap box.
 
     Args:
-        parent: The parent InputTable
+        parent (InputTable): The parent InputTable
 
     Attributes:
-        change_funcs: All functions bound to this box. Is used for reordering functions, e.g. when `print_value` is set
-            to `True` during runtime, it should still be the first function that is called, so the printing function is
-            bound, and then all other functions are rebound.
-        row: Row of the box. Is used when removing it after it has been created.
-        textbox: The QLabel object corresponding to this box.
+        change_funcs (list[Callable]): All functions bound to this box. Is used for reordering functions, e.g. when
+            `print_value` is set to `True` during runtime, it should still be the first function that is called, so
+            the printing function is bound, and then all other functions are rebound.
+        row (int): Row of the box. Is used when removing it after it has been created.
+        textbox (QLabel): The QLabel object corresponding to this box.
     """
 
     def __init__(self, parent: 'InputTable'):    # parent will be the InputWidget
@@ -44,12 +43,18 @@ class Box:              # I am not sure if this is required, but I feel like it 
     def bind(self, func: Callable):
         """
         Bind function `func` to this box, meaning that when the value of the box is changed, the function is called.
+
+        Args:
+            func (Callable): function to bind to this box.
         """
         raise NotImplementedError("Subclasses should implement this! Users should not see this.")
 
     def unbind(self, func: Callable):
         """
         Unbind function. Is used internally when removing a box.
+
+        Args:
+            func (Callable): function to unbind from this box.
         """
         raise NotImplementedError("Subclasses should implement this! Users should not see this.")
 
@@ -89,7 +94,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
 
 class InputTable(QTableWidget):    # table for all inputs
-    def __init__(self, width, height, name, window):    # takes window as an argument so that it can inherit
+    def __init__(self, width: int, height: int, name: str, window):    # takes window as an argument so that it can inherit
         # update_funcs and variables easily
         super().__init__()
 
@@ -134,7 +139,7 @@ class InputTable(QTableWidget):    # table for all inputs
         self.setColumnWidth(1, int(self.rate_slider_space))
         self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space)
 
-    def rename(self, name):
+    def rename(self, name: str):
         self.window.rename_tab(name, old_name=self.name)
 
     def set_partition(self, fraction=1/3):
@@ -148,13 +153,27 @@ class InputTable(QTableWidget):    # table for all inputs
         self.col_partition = fraction
         self.resizeEvent()
 
-    def get_boxes(self):        # assumes actual widget is the leftmost widget
+    def get_boxes(self) -> list[Box]:        # assumes actual widget is the leftmost widget
         """
         Returns a list containing all boxes that exist at this point.
+
+        Returns:
+            list[Box]: list of all boxes added in order.
         """
         return [box_row[-1] for box_row in self.boxes]
 
-    def add_widget(self, row, box_row):     # if row is specified and row is in empty_rows it is added there
+    def add_widget(self, row: None | int, box_row: tuple[Box]) -> int:     # if row is specified and row is in empty_rows it is added there
+        """
+        Handles all internal stuff that is required when a box is added to a specified row.
+        The row can be the next row or
+        Args:
+            row (None | int): Row in which to add the box. Pass `None` to add it to a next row, or choose a row that has
+                no boxes in it yet.
+            box_row (tuple[Box]): tuple containing all boxes in the row (so usually textbox and box widget)
+
+        Returns:
+            int: Row in which the box has been added.
+        """
         if row is None or row == self.current_row+1:
             if not self.empty_rows:
                 self.current_row += 1
@@ -192,7 +211,14 @@ class InputTable(QTableWidget):    # table for all inputs
         else:
             raise ValueError(f"row {row} is not empty")
 
-    def remove_row(self, remove_row, remove_box):
+    def remove_row(self, remove_row: int, remove_box: Box):
+        """
+        Remove box `remove_box` from row `remove_row`.
+
+        Args:
+            remove_row (int): row from which to remove the box.
+            remove_box (Box): Box to remove.
+        """
         if remove_row in self.empty_rows or remove_row > self.current_row:
             raise ValueError(f"row {remove_row} is already empty.")
         for func in remove_box.change_funcs:
@@ -223,18 +249,19 @@ class InputTable(QTableWidget):    # table for all inputs
             self.empty_rows.append(remove_row)
             self.boxes[remove_row] = ()
 
-    def add_slider(self, name: str, init_value=1.0, min_value=0.0, max_value=10.0, n_ticks=51,
-                   tick_interval=None, only_ints=False, logscale=False, custom_arr=None, var_name=None,
-                   print_value=False, row=None):
+    def add_slider(self, name: str, init_value: float = 1.0, min_value: float = 0.0, max_value: float = 10.0,
+                   n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
+                   logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
+                   print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
         """Create a slider with the given parameters, and add it to window.first_input_table.
 
         Args:
             name (str): The name in front of the slider.
-            init_value (Number, optional): The initial value of the slider.
-            min_value (Number, optional): The minimum value of the slider.
-            max_value (Number, optional): The maximum value of the slider.
+            init_value (float, optional): The initial value of the slider.
+            min_value (float, optional): The minimum value of the slider.
+            max_value (float, optional): The maximum value of the slider.
             n_ticks (int, optional): The number of ticks on the slider. Defaults to 51.
-            tick_interval (Number, optional): The interval between ticks. If provided, overwrites `n_ticks`.
+            tick_interval (float, optional): The interval between ticks. If provided, overwrites `n_ticks`.
             only_ints (bool, optional): Whether to use whole numbers as ticks. If set to True, `tick_interval` is used
                 as spacing between the ticks and `n_ticks` is ignored. If `tick_interval` is not specified, it defaults
                 to 1. Rounds `tick_interval` to an integer and changes the variable to always be an integer. Not allowed
@@ -251,13 +278,13 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The slider widget.
+            InputTable.Slider: The slider widget.
         """
         return self.Slider(self, name, init_value, min_value, max_value, n_ticks, tick_interval, only_ints, logscale,
                            custom_arr, var_name, print_value, row)
 
-    def add_checkbox(self, name: str, init_value: bool = False, var_name: str = None, print_value: bool = False,
-                     row: int | None = None):
+    def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
         """Create a checkbox with the given parameters, and add it to window.first_input_table.
 
         Args:
@@ -269,11 +296,13 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The checkbox widget.
+            InputTable.CheckBox: The checkbox widget.
         """
         return self.CheckBox(self, name, init_value, var_name, print_value, row)
 
-    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func=None, var_name=None, print_value=False, row=None):
+    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
+                     var_name: Optional[str] = None, print_value: bool = False,
+                     row: Optional[int] = None) -> 'InputTable.InputBox':
         """Create an inputbox with the given parameters, and add it to window.first_input_table.
 
         Args:
@@ -300,11 +329,11 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The inputbox widget.
+            InputTable.InputBox: The inputbox widget.
         """
         return self.InputBox(self, name, init_value, type_func, var_name, print_value, row)
 
-    def add_button(self, name: str, func=None, row=None):
+    def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
         """Create a button with name `name` and bound function `func`, and add it to window.first_input_table.
 
         Args:
@@ -313,12 +342,12 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The button widget.
+            InputTable.Button: The button widget.
         """
         return self.Button(self, name, func, row)
 
-    def add_dropdown(self, name: str, options: list, init_index=0, option_names=None, var_name=None, print_value=False,
-                     row=None):
+    def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
+                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
         """Create a dropdown widget with the given parameters, and add it to window.first_input_table.
 
         Args:
@@ -334,18 +363,20 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The dropdown widget.
+            InputTable.Dropdown: The dropdown widget.
         """
         return self.Dropdown(self, name, options, init_index, option_names, var_name, print_value, row)
 
-    def add_rate_slider(self, name: str, init_value=1.0, change_rate=10.0, absolute=False, time_var=None,
-                        custom_func=None, var_name=None, print_value=False, row=None):
+    def add_rate_slider(self, name: str, init_value: float = 1.0, change_rate: float = 10.0, absolute: bool = False,
+                        time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
+                        var_name: Optional[str] = None, print_value: bool = False,
+                        row: Optional[int] = None) -> 'InputTable.RateSlider':
         """Create a RateSlider with the given parameters, and add it to window.first_input_table.
 
         Args:
             name (str): The name in front of the rate slider.
-            init_value (Number, optional): The initial value of the rate slider.
-            change_rate (Number, optional): Change to the value of the variable per second (how it changes depends
+            init_value (float, optional): The initial value of the rate slider.
+            change_rate (float, optional): Change to the value of the variable per second (how it changes depends
                 on `absolute`), multiplied by the current rate_slider position (value between -1 and 1).
             absolute (bool, optional): How the value of the variable is changed. If absolute is True, changerate will be
                 added every second. If it is set to False, the variable will be multiplied be changerate every second.
@@ -362,15 +393,15 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The rate_slider widget.
+            InputTable.RateSlider: The rate_slider widget.
         """
         return self.RateSlider(
             self, name, init_value, change_rate,
             absolute, time_var, custom_func, var_name, print_value, row
         )
 
-    def add_color_picker(self, name: str, init_value=(255, 255, 255), var_name=None, print_value=False,
-                         row=None):
+    def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
+                         print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
         """Create a ColorPicker with the gives parameters, and add it to window.first_input_table.
 
         Args:
@@ -382,7 +413,7 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
-            The color_picker widget.
+            InputTable.ColorPicker: The color_picker widget.
         """
         return self.ColorPicker(
             self, name, init_value, var_name, print_value, row
@@ -392,9 +423,10 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the slider widget. See `add_slider` docstring for more information.
         """
-        def __init__(self, parent, name: str, init_value: float, min_value: float, max_value: float, n_ticks=51,
-                     tick_interval=None, only_ints=False, logscale=False, custom_arr=None, var_name=None,
-                     print_value=False, row=None):
+        def __init__(self, parent: 'InputTable', name: str, init_value: float, min_value: float, max_value: float,
+                     n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
+                     logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QSlider.__init__(self, parent=parent, orientation=Qt.Orientation.Horizontal)
             self.link_funcs = {}            # for linking this box to others
@@ -620,7 +652,8 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the checkbox widget. See `add_checkbox` docstring for more information.
         """
-        def __init__(self, parent, name: str, init_value: bool, var_name=None, print_value=False, row=None):
+        def __init__(self, parent: 'InputTable', name: str, init_value: bool, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QCheckBox.__init__(self)
 
@@ -732,8 +765,8 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the inputbox widget. See `add_inputbox` docstring for more information.
         """
-        def __init__(self, parent, name: str, init_value, type_func=None, var_name=None, print_value=False,
-                     row=None):
+        def __init__(self, parent: 'InputTable', name: str, init_value: Any, type_func: Optional[Callable] = None,
+                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             self.var_name = var_name
             self.actual_change_funcs = []
@@ -875,7 +908,8 @@ class InputTable(QTableWidget):    # table for all inputs
         def print_val(self):
             print(f"{self.current_name} = {self.val()}")
 
-        def refresh_type_func(self, value):         # Extra function for when type_func must be changed during runtime,
+        def refresh_type_func(self, value: Any):         # Extra function for when type_func must be changed during runtime,
+            """Updates the type function so that the provided value would parse successfully."""
             self.type_func = get_type_func(value, self.parent, self.col)        # is not explained anywhere
             return self
 
@@ -883,7 +917,7 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the button widget. See `add_button` docstring for more information.
         """
-        def __init__(self, parent, name: str, func=None, row=None):
+        def __init__(self, parent: 'InputTable', name: str, func: Optional[Callable] = None, row: Optional[int] = None):
             Box.__init__(self, parent)
             QPushButton.__init__(self, parent=parent, text=name)
 
@@ -932,8 +966,9 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the dropdown widget. See `add_dropdown` docstring for more information.
         """
-        def __init__(self, parent, name: str, options: typing.List, init_index=0, option_names=None, var_name=None,
-                     print_value=False, row=None):
+        def __init__(self, parent: 'InputTable', name: str, options: list, init_index: int = 0,
+                     option_names: Optional[Iterable[str]] = None, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QComboBox.__init__(self)
 
@@ -1075,8 +1110,9 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the rate_slider widget. See `add_rate_slider` docstring for more information.
         """
-        def __init__(self, parent, name: str, init_value: float, change_rate=10.0, absolute=False,
-                     time_var=None, custom_func=None, var_name=None, print_value=False, row=None):
+        def __init__(self, parent: 'InputTable', name: str, init_value: float, change_rate: float = 10.0,
+                     absolute: bool = False, time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
+                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QSlider.__init__(self)
             self.slider = QSlider(Qt.Orientation.Horizontal, parent)    # done here so it can be added to parent.boxes
@@ -1339,7 +1375,8 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the color_picker widget. See `add_color_picker` docstring for more information.
         """
-        def __init__(self, parent, name: str, init_value, var_name=None, print_value=False, row=None):
+        def __init__(self, parent: 'InputTable', name: str, init_value: ColorType, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             ColorButton.__init__(self)
 
