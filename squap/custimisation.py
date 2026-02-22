@@ -1,5 +1,5 @@
 from .helper_funcs import get_single_color, get_cmap, Font, ColorType
-from typing import Iterable, Callable
+from typing import Iterable, Optional
 from PySide6.QtGui import QLinearGradient, QRadialGradient, QConicalGradient, QGradient, QCursor, QGuiApplication
 from PySide6.QtCore import QPointF
 from matplotlib import colors
@@ -15,7 +15,7 @@ def get_font(*args, **kwargs) -> Font:
 
 
 def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "horizontal",
-                 position: Iterable | None = None, extend: str = "pad", resolution: int = 256) -> QGradient:
+                 position: Optional[Iterable] = None, extend: str = "pad", resolution: int = 256) -> QGradient:
     """Obtain a gradient. Gradients can sometimes be used instead of normal colors.
 
     The gradient can be seen as a 2D image of a gradient spaced depending on `position`. Only the parts are shown at
