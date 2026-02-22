@@ -257,16 +257,16 @@ class InputTable(QTableWidget):    # table for all inputs
 
         Args:
             name (str): The name in front of the slider.
-            init_value (float, optional): The initial value of the slider.
-            min_value (float, optional): The minimum value of the slider.
-            max_value (float, optional): The maximum value of the slider.
-            n_ticks (int, optional): The number of ticks on the slider. Defaults to 51.
+            init_value (float): The initial value of the slider.
+            min_value (float): The minimum value of the slider.
+            max_value (float): The maximum value of the slider.
+            n_ticks (int): The number of ticks on the slider. Defaults to 51.
             tick_interval (float, optional): The interval between ticks. If provided, overwrites `n_ticks`.
-            only_ints (bool, optional): Whether to use whole numbers as ticks. If set to True, `tick_interval` is used
+            only_ints (bool): Whether to use whole numbers as ticks. If set to True, `tick_interval` is used
                 as spacing between the ticks and `n_ticks` is ignored. If `tick_interval` is not specified, it defaults
                 to 1. Rounds `tick_interval` to an integer and changes the variable to always be an integer. Not allowed
                 in combination with `logscale`. Defaults to False
-            logscale (bool, optional): Whether to use a logarithmic scale. When `tick_interval` is given it serves as a
+            logscale (bool): Whether to use a logarithmic scale. When `tick_interval` is given it serves as a
                 multiplication factor between a point and the previous point (it is rounded to fit min_value and
                 max_value. Not allowed in combination with `only_ints`. Defaults to False.
             custom_arr (Iterable, optional): Array or list of values, where `custom_arr[i]` will be the value (can be
@@ -274,7 +274,7 @@ class InputTable(QTableWidget):    # table for all inputs
                 `init_value`). Defaults to None.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will
                 be named name.
-            print_value (bool, optional): Whether to print the value of the slider when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the slider when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
@@ -289,10 +289,10 @@ class InputTable(QTableWidget):    # table for all inputs
 
         Args:
             name (str): The name in front of the checkbox.
-            init_value (bool, optional): The initial value of the checkbox. Defaults to `False` (not ticked).
+            init_value (bool): The initial value of the checkbox. Defaults to `False` (not ticked).
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will
                 be named name.
-            print_value (bool, optional): Whether to print the value of the checkbox when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the checkbox when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
@@ -325,7 +325,7 @@ class InputTable(QTableWidget):    # table for all inputs
                 bool, range, and the following iterables: tuple, list, dict, set, np.ndarray.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will
                 be named name.
-            print_value (bool, optional): Whether to print the value of the inputbox when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
@@ -353,13 +353,13 @@ class InputTable(QTableWidget):    # table for all inputs
         Args:
             name (str): The name in front of the dropdown.
             options (Iterable): A list of all options shown in the dropdown menu.
-            init_index (int, optional): The index that the dropdown is initially set to.
+            init_index (int): The index that the dropdown is initially set to.
             option_names (Iterable[str], optional): A list of all options the created variable can be, where
                 option_names[index] is the value given to the variable, if the dropdown is set to index. If option_names
                 is not provided it will be set to `options`.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will be
                 named name.
-            print_value (bool, optional): Whether to print the value of the dropdown when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the dropdown when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
@@ -375,10 +375,10 @@ class InputTable(QTableWidget):    # table for all inputs
 
         Args:
             name (str): The name in front of the rate slider.
-            init_value (float, optional): The initial value of the rate slider.
-            change_rate (float, optional): Change to the value of the variable per second (how it changes depends
+            init_value (float): The initial value of the rate slider.
+            change_rate (float): Change to the value of the variable per second (how it changes depends
                 on `absolute`), multiplied by the current rate_slider position (value between -1 and 1).
-            absolute (bool, optional): How the value of the variable is changed. If absolute is True, changerate will be
+            absolute (bool): How the value of the variable is changed. If absolute is True, changerate will be
                 added every second. If it is set to False, the variable will be multiplied be changerate every second.
             time_var (str, optional): If set to None (default), actual time will be used. It can also be set to the name of
                 a variable in `squap.var` as a string. Then that variable will be regarded as time: if it increases by 1,
@@ -389,7 +389,7 @@ class InputTable(QTableWidget):    # table for all inputs
                 `time_var` into account). `slider_value` is a value between -1 and 1, dependent on the slider position.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will be
                 named name.
-            print_value (bool, optional): Whether to print the value of the slider when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the slider when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
@@ -406,10 +406,10 @@ class InputTable(QTableWidget):    # table for all inputs
 
         Args:
             name (str): The name in front of the slider.
-            init_value (ColorType, optional): The initial value of the slider.
+            init_value (ColorType): The initial value of the slider.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will be
                 named name.
-            print_value (bool, optional): Whether to print the value of the color picker when it changes. Defaults to False.
+            print_value (bool): Whether to print the value of the color picker when it changes. Defaults to False.
             row (int, optional): Row to which the widget is added. Defaults to first empty row.
 
         Returns:
