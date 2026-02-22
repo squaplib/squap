@@ -22,11 +22,11 @@ class TableManager:
 
         self.n_links = 0            # number of links between boxes
 
-    def set_input_partition(self, fraction: float = 1 / 3):
+    def set_input_partition(self, fraction: float = 1/3):
         """Set the position of the partition between the 2 columns of the input_widget.
 
         Args:
-            fraction (float, optional): value between 0 and 1, specifying the portion of the window taken up by the
+            fraction (float): value between 0 and 1, specifying the portion of the window taken up by the
                 partition. Starts off at 1/3
         """
         self.first_input_table.set_partition(fraction)
@@ -155,6 +155,7 @@ class TableManager:
         Args:
             boxes (Iterable[Box | int]): list of boxes or row numbers of the boxes to link
             only_update_boxes (list, optional): todo: I forgot what this does...
+                something like one way update, test if this can be simplified, it seems unnecessarily complex rn.
         """
         self.n_links += 1
         if only_update_boxes is None:
