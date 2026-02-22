@@ -7,8 +7,7 @@ from argparse import Namespace
 import cv2
 import numpy as np
 
-from typing import Callable
-from numbers import Number
+from typing import Callable, Optional
 from inspect import signature
 from argparse import ArgumentError
 
@@ -71,7 +70,7 @@ class MainWindow(QMainWindow):
         if event:
             event.accept()
 
-    def add_table(self, name=None) -> InputTable:
+    def add_table(self, name: Optional[str] = None) -> InputTable:
         if name is None:
             name = f"tab{len(self.table_manager.input_tables)+1}"
         if self.table_manager.tab_widget is not None:
@@ -81,17 +80,16 @@ class MainWindow(QMainWindow):
         else:
             return self.init_first_tab(name=name)
 
-    def init_first_tab(self, width_ratio=0.5, name=None):
+    def init_first_tab(self, width_ratio: float = 0.5, name: Optional[str] = None) -> InputTable:
         """
-        Initialises the first tab and adds it to a widget so that it can be moved into a QTabWidget later. This first
-        tab is a standalone and a QTabWidget is not created yet.
+        Initialises the first tab and adds it to a widget so that it can be moved into a QTabWidget later. For the first
+        tab we do not yet use a QTabWidget.
 
-        :param width_ratio: width=width_ratio*fig_widget.width. By default, width_ratio=0.5, probably meaning that
-            fig_widget will be width 640, input_widget width 320, and window width 964. Note that width_ratio is a
-            ratio not a fraction.
-        :type width_ratio: float
-        :param name: Name of the tab, only visible when multiple input tables are added.
-        :type name: str
+        Args:
+            width_ratio (float): width=width_ratio*fig_widget.width. By default, width_ratio=0.5, probably meaning that
+                fig_widget will be width 640, input_widget width 320, and window width 964. Note that width_ratio is a
+                ratio not a fraction.
+            name (str, optional): Name of the tab, only visible when multiple input tables are added.
         """
         if self.table_manager.first_input_table is not None:
             raise RuntimeError("Can not create a first table when one already exists, use `add_tab()` instead.")
@@ -150,7 +148,7 @@ class MainWindow(QMainWindow):
         """Set interval between frames.
 
         Args:
-            interval (Number): The time interval (in seconds) to set for updating the plot.
+            interval (float): The time interval (in seconds) to set for updating the plot.
         """
         self.interval = interval * 1000
         if self.is_alive():
@@ -179,7 +177,7 @@ class MainWindow(QMainWindow):
                 if self.timer:
                     self.timer.timeout.disconnect(func)
 
-    def benchmark(self, n_frames: int | None = None, duration: float | None = None):
+    def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
         """Run the program until it is closed and then report the total frames and fps.
 
         If n_frames or duration are specified, the program will quit when either has passed.
@@ -365,13 +363,13 @@ class MainWindow(QMainWindow):
         self.update_funcs = []
         self.plot_manager.clear()
 
-    def export(self, filename: str, widget: QWidget | None = None):
-        """Save the current window as an image to file `filename`.
+    def export(self, filename: str, widget: Optional[QWidget] = None):
+        """Saves the current window as an image to file `filename`.
 
         Args:
             filename (str): Name of the file to which the image must be saved. Extension can be png, jpg, jpeg, bmp, pbm,
                 pgm, ppm, xbm and xpm. Defaults to png if no extension is provided.
-            widget (bool, optional): The widget to export.
+            widget (QWidget, optional): The widget to export. By default, the full window is used.
         """
         if widget is None:
             pixmap = self.grab()
@@ -390,9 +388,9 @@ class MainWindow(QMainWindow):
             raise RuntimeError(f"Saving failed, probably because extension {extension} is not an allowed extension")
 
     def export_video(
-            self, filename: str, fps: float | int = 30.0, n_frames: int | None = None, duration: float | None = None,
-            stop_func: Callable | None = None, skip_frames: int = 0, display_window: bool = False,
-            widget: QWidget | None = None, save_on_close: bool = True
+            self, filename: str, fps: float | int = 30.0, n_frames: Optional[int] = None, duration: Optional[float] = None,
+            stop_func: Optional[Callable] = None, skip_frames: int = 0, display_window: bool = False,
+            widget: Optional[QWidget] = None, save_on_close: bool = False
     ):
         """Saves a video to file `filename` with the specified parameters.
 
@@ -409,12 +407,13 @@ class MainWindow(QMainWindow):
                 after the time is up as well.
             stop_func (Callable, optional): This function will be run after every iteration. If it returns True, the video
                 stops and saves.
-            skip_frames (int, optional): number of frames to not save after a frame is saved.
-            display_window (bool, optional): Whether to display the window or not. Defaults to False.
+            skip_frames (int): Number of frames to not save after a frame is saved. Defaults to 0.
+            display_window (bool): Whether to display the window or not. Defaults to False.
             widget (QWidget, optional): which widget to record. Can be eg. a single plot, the entire window, or only
                 the plot window. Defaults to only the plot window.
-            save_on_close (bool, optional): Whether to save the video if the window is closed prematurely. Defaults to True.
+            save_on_close (bool): Whether to save the video if the window is closed prematurely. Defaults to False.
         """
+        # save_on_close is False by default so that you don't accidentally overwrite a video that took very long to make.
         if widget is None:
             widget = self
 
@@ -495,14 +494,15 @@ class MainWindow(QMainWindow):
         out.release()
         print("Saving finished.")
 
-    def start_recording(self, filename: str, fps: Number = 30.0, skip_frames: int = 0,
-                        widget: QWidget | None = None) -> Callable:
+    def start_recording(self, filename: str, fps: float = 30.0, skip_frames: int = 0,
+                        widget: Optional[QWidget] = None) -> Callable:
         """Start recording to file `filename` with the specified parameters. Use function returned by this function to stop
         the recording.
 
         Args:
             filename (str): Name of the file to which the video will be exported.
-            fps (Number, optional): Frames per second of the video. Defaults to 30.
+            fps (float): Frames per second of the video. Defaults to 30.
+            skip_frames (int): number of frames to not save after a frame is saved. Defaults to 0.
             widget (QWidget, optional): which widget to record. Can be eg. a single plot, the entire window, or only
                 the plot window. Defaults to only the plot window.
 
@@ -563,15 +563,15 @@ class MainWindow(QMainWindow):
         return stop_func
 
     def display_fps(self, update_speed: float = 0.2, get_fps: bool = False, optimized: bool = False,
-                    ax: PlotWidget | None = None):
+                    ax: Optional[PlotWidget] = None):
         """
         Display frames per second(fps) at the top of the plot widget.
 
         Args:
-            update_speed (float, optional): The update speed for fps calculation. Defaults to 0.2 second.
-            get_fps (bool, optional): Whether to store fps. If set to True, the fps will be saved to var.fps every time it
+            update_speed (float): The update speed for fps calculation. Defaults to 0.2 second.
+            get_fps (bool): Whether to store fps. If set to True, the fps will be saved to var.fps every time it
                 is updated. Defaults to False
-            optimized (bool, optional): Whether to use an optimized calculation method. If set to True, it is a bit
+            optimized (bool): Whether to use an optimized calculation method. If set to True, it is a bit
                 quicker, but less consistent for variable fps. Defaults to False.
             ax (squap.PlotWidget, optional): Which window to set the title to the fps. Defaults to top-left.
 
@@ -625,7 +625,7 @@ class MainWindow(QMainWindow):
 
         self.update_funcs.append(func)  # both so that it works for both styles
 
-    def on_mouse_click(self, func: Callable, pixel_mode: bool = False, ax: PlotWidget | None = None):
+    def on_mouse_click(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
         """
         Bind function to run on mouse click. As arguments it gets the position of the mouse, in pixels if `pixel_mode` is
         set to `True`, in coordinates if set to `True`. Second argument that is passed is which mouse button is clicked. If
@@ -634,7 +634,7 @@ class MainWindow(QMainWindow):
         Args:
             func (Callable): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
                 the first is the mouse position, the second is the pyqtgraph internal event for more advanced usage.
-            pixel_mode (bool, optional): whether to return pixels from the top left (`True`), or coordinates (`False`).
+            pixel_mode (bool): whether to return pixels from the top left (`True`), or coordinates (`False`).
                 Defaults to `False`.
             ax (PlotWidget, optional): Axes on which to count the coordinate. Defaults to the first plot.
         todo: check all MouseClickEvent options, and check with middle mouse button
@@ -670,13 +670,13 @@ class MainWindow(QMainWindow):
 
         self.plot_manager.fig_widget.scene().sigMouseClicked.connect(mouse_func)
 
-    def on_mouse_move(self, func: Callable, pixel_mode=False, ax: PlotWidget | None = None):
+    def on_mouse_move(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
         """Bind a function to mouse move.
 
         Args:
             func (Callable): The function that is called when the mouse is moved. The function can take 1 argument: the
                 mouse position.
-            pixel_mode (bool, optional): whether to return pixels from the top left (`True`), or coordinates (`False`).
+            pixel_mode (bool): whether to return pixels from the top left (`True`), or coordinates (`False`).
                 Defaults to `False`.
             ax (PlotWidget, optional): Axes on which to count the coordinate. Defaults to the first plot.
         """
@@ -711,11 +711,11 @@ class MainWindow(QMainWindow):
 
         self.plot_manager.fig_widget.scene().sigMouseMoved.connect(mouse_func)
 
-    def get_mouse_pos(self, pixel_mode=False, ax: PlotWidget | None = None) -> tuple:
+    def get_mouse_pos(self, pixel_mode=False, ax: Optional[PlotWidget] = None) -> tuple:
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
 
         Args:
-            pixel_mode (bool, optional): whether to return pixels from the top left (`True`), or coordinates (`False`).
+            pixel_mode (bool): whether to return pixels from the top left (`True`), or coordinates (`False`).
                 Defaults to `False`.
             ax (PlotWidget, optional): Axes on which to count the coordinate. Only matters when `pixel_mode` is `False`.
                 Defaults to the first plot.
@@ -739,11 +739,11 @@ class MainWindow(QMainWindow):
 
         Args:
             func (Callable): The function that is called when the key is pressed.
-            accept_modifier (bool, optional): Whether to call the function when the input is a modifier, such as shift or
+            accept_modifier (bool): Whether to call the function when the input is a modifier, such as shift or
                 alt. Defaults to `False`.
-            modifier_arg (bool, optional): Whether to call the function with the modifier as an extra argument. Defaults to
+            modifier_arg (bool): Whether to call the function with the modifier as an extra argument. Defaults to
                 `False`.
-            event_arg (bool, optional): Whether to call the function with just the event as an argument. Is more complex
+            event_arg (bool): Whether to call the function with just the event as an argument. Is more complex
                 to deal with but much more versatile. Defaults to `False`.
             """
         if self.keyboardGrabber() is None:
