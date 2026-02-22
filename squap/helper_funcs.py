@@ -2,7 +2,7 @@ import ast
 import os.path
 import json
 from argparse import ArgumentError
-from typing import TypeAlias, Union, Tuple, Iterable
+from typing import TypeAlias, Union, Iterable, Optional
 
 import numpy as np
 from numbers import Number
@@ -13,7 +13,7 @@ from pyqtgraph import mkPen, mkColor, colormap
 
 
 ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[int], float]
-# ColorsType: TypeAlias = Union[Iterable[ColorType], Iterable[Iterable[ColorType]]]
+ColorsType: TypeAlias = Union[ColorType, Iterable["ColorsType"]]        # allows arbitrary nesting
 
 # def map_color(color_name):
 #     translator = str.maketrans({'_': '', ' ': ''})
@@ -57,7 +57,7 @@ class Font(QFont):
         "ls": "letter_spacing", "ws": "word_spacing"
     }
 
-    def __init__(self, font_name: str = "Segoe UI", font_size: int | None = None, bold: bool = False,
+    def __init__(self, font_name: str = "Segoe UI", font_size: Optional[int] = None, bold: bool = False,
                  italic: bool = False, underline: bool = False, strikeout: bool = False, overline: bool = False,
                  kerning: bool = False, stretch: int = 100, letter_spacing: float = .0, word_spacing: float = .0,
                  **kwargs):
@@ -363,9 +363,10 @@ def get_new_kwargs(current_locals, none_kwargs, exclude_args):
     """
     makes new kwargs exluding some kwargs and excluding some kwargs only if they are left at None.
 
-    current_locals: pass locals()
-    none_kwargs: kwargs to skip if they are None
-    exclude_args: kwargs to always exclude. Stuff like "self", "args", "kwargs"
+    Args:
+        current_locals: pass locals()
+        none_kwargs: kwargs to skip if they are None
+        exclude_args: kwargs to always exclude. Stuff like "self", "args", "kwargs"
     """
     new_kwargs = {}
     for k, v in current_locals.items():
@@ -376,6 +377,7 @@ def get_new_kwargs(current_locals, none_kwargs, exclude_args):
 
 
 def transform_kwargs(kwargs, mapping):
+    """Apply mapping to check kwargs for aliases."""
     result = {}
     for k, v in kwargs.items():
         if k not in result:
