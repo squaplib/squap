@@ -1,7 +1,7 @@
 from pyqtgraph import GraphicsLayoutWidget
 from .plot_widget import PlotWidget
 import numpy as np
-from typing import Optional, List, Iterable
+from typing import Optional, Iterable
 from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 from time import perf_counter as current_time
 
@@ -54,16 +54,21 @@ class PlotManager:
             event.accept()
 
     def create_subplots(
-            self, nrows=1, ncols=1, heightratios: Optional[List[int]] = None, widthratios: Optional[List[int]] = None):
+            self, nrows: int = 1, ncols: int = 1, heightratios: Optional[list[int]] = None,
+            widthratios: Optional[list[int]] = None) -> Iterable:
         """
+        Initialises a subplot window.
 
-        :param nrows: number of rows.
-        :param ncols: number of columns.
-        :param heightratios: ratios between the heights of the rows. Defaults to all ones. Only integer values allowed.
-            Not working yet!
-        :param widthratios: ratios between the widths of the columns. Defaults to all ones. Only integer values allowed.
-            Not working yet!
-        :return: nested list of plot_windows on which the plots can be drawn.
+        Args:
+            nrows (int): number of rows.
+            ncols (int): number of columns.
+            heightratios (list[int], optional): ratios between the heights of the rows. Defaults to all ones. Only
+                integer values allowed. Not working yet!
+            widthratios (list[int], optional): ratios between the widths of the columns. Defaults to all ones. Only
+                integer values allowed. Not working yet!
+
+        Returns:
+            Iterable: nested list of plot_windows on which the plots can be drawn.
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
