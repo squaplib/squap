@@ -1,6 +1,6 @@
 .. _docs_mainpage:
 
-Squap documentation
+squap documentation
 ==============================
 A package for animated plots, built on PyQtGraph with PySide6. It focussed on simplicity and speed.
 
@@ -9,7 +9,7 @@ A package for animated plots, built on PyQtGraph with PySide6. It focussed on si
     :hidden:
     :maxdepth: 1
 
-    user/getting_started
+    user/index
     user_guide/index
     squap_api/index
     developer_guide/guide
@@ -28,7 +28,7 @@ A package for animated plots, built on PyQtGraph with PySide6. It focussed on si
 
         +++
 
-        .. button-ref:: user/getting_started
+        .. button-ref:: user/index
             :expand:
             :color: success
             :click-parent:

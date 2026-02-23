@@ -62,13 +62,13 @@ class PlotManager:
         Args:
             nrows (int): number of rows.
             ncols (int): number of columns.
-            heightratios (list[int], optional): ratios between the heights of the rows. Defaults to all ones. Only
+            heightratios (list of int, optional): ratios between the heights of the rows. Defaults to all ones. Only
                 integer values allowed. Not working yet!
-            widthratios (list[int], optional): ratios between the widths of the columns. Defaults to all ones. Only
+            widthratios (list of int, optional): ratios between the widths of the columns. Defaults to all ones. Only
                 integer values allowed. Not working yet!
 
         Returns:
-            Iterable: nested list of plot_windows on which the plots can be drawn.
+            list: nested list of plot_windows on which the plots can be drawn.
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
@@ -145,10 +145,10 @@ class PlotManager:
         """Merge multiple subplots into a single plot. This is used for unevenly spaced grids of subplots.
 
         Args:
-            plots (Iterable[PlotWidget]): list of plots to merge.
+            plots (list of PlotWidget): list of plots to merge.
 
         Returns:
-            PlotWidget: One plot object that is the merged plot.
+            PlotWidget: One new plot object in place of the merged plots.
 
         """
         # hrs = list(np.cumsum(window.heightratios))

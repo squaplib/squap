@@ -1,7 +1,6 @@
 import ast
 import os.path
 import json
-from argparse import ArgumentError
 from typing import TypeAlias, Union, Iterable, Optional
 
 import numpy as np
@@ -9,7 +8,7 @@ from numbers import Number
 from PySide6.QtGui import QGradient, Qt, QFont, QColor, QPen
 
 from PySide6.QtWidgets import QTableWidgetItem
-from pyqtgraph import mkPen, mkColor, colormap
+from pyqtgraph import mkPen, mkColor
 
 
 ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[int], float]
@@ -175,105 +174,6 @@ def update_pen(pen: QPen, **kwargs) -> QPen:
     return pen
 
 
-def get_cmap(data: str | dict[float | int, ColorType] | Iterable[ColorType], source: str = "matplotlib"):
-    """Tool for getting cmap from different sources.
-
-    If `data` is of type `str`, `source` decides from which library the cmap is obtained.
-
-    Args:
-        data (str, Iterable or dict): Has different behaviour depending on type:
-            str: Name of the cmap. `source` specifies from which library the cmap is obtained.
-            dict: `data[x]` is the cmap color at `x`, where the cmap is defined from x=0 to x=1. Every value not in
-                `data` is interpolated. So e.g. `data` can be {0.0: "green", 0.25: "red", 1.0: "blue"}, which would
-                mean a cmap going from green to red rather quickly, and then slowly turning blue.
-            Iterable: `data[i]` should be colors, and the cmap becomes those colors equally spaced and interpolated
-                between them.
-        source (str): Library to obtain cmap from if it is a string. Currently you can choose from matplotlib and
-            colorcet. Feel free to request me more.
-    Returns:
-        Callable:
-    """
-    if callable(data):  # probably catches too much, todo: check
-        return data
-
-    if isinstance(data, list):  # turns data into dict with equal spacing
-        data = {index / (len(data) - 1): np.array(get_single_color(col).toTuple()) for index, col in enumerate(data)}
-
-    if isinstance(data, str):
-        def cmap_func(i):
-            return colormap.get(data, source).map(i)
-
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            data[key] = np.array(get_single_color(value).toTuple())
-        keys, values = map(np.array, zip(*sorted(data.items())))
-
-        def cmap_func(i):
-            """
-            Interpolates to find the best approximation of the color at location `i`.
-            A cmap generated from a dictionary defines color values at different positions on the interval [0, 1]. This
-            function finds the closest two colors to `i`, and interpolates appropriately. If `i` is smaller than the
-            lowest point at which a color is defined (usually 0), then this function returns the color at that lowest
-            point, and similarly for the highest point.
-            Works for scalar and array input.
-            """
-            i_arr = np.asarray(i)  # turns i into 1D array if it is just a number.
-            is_scalar = i_arr.ndim == 0
-            original_shape = i_arr.shape
-            i_arr = i_arr.ravel()
-            indices = np.array(np.searchsorted(keys, i_arr))  # index of first item that is bigger than i.
-
-            lower_bound = indices == 0
-            upper_bound = indices == max(keys)
-
-            result = np.zeros((len(i_arr), 4))
-            result[lower_bound] = values[0]
-            result[upper_bound] = values[-1]
-
-            interior = ~(lower_bound | upper_bound)
-
-            if np.any(interior):
-                interior_indices = indices[interior]
-                interior_i = i_arr[interior]
-
-                v_1, v_2 = values[interior_indices - 1], values[interior_indices]
-                x_1, x_2 = keys[interior_indices - 1], keys[interior_indices]
-
-                result[interior] = v_1 + (v_2 - v_1) * ((interior_i - x_1) / (x_2 - x_1))[:, np.newaxis]
-
-            if is_scalar:
-                return result[0]
-            else:
-                return result.reshape(original_shape + (4,))
-
-            # Simplified slower version with iteration instead of array calculations below. Does not include dealing with bounds.
-            # result = np.zeros((len(i), 4))
-            # for ii, index in enumerate(indices):
-            #     v_1, v_2, x_1, x_2 = values[index - 1], values[index], keys[index - 1], keys[index]
-            #     result[ii] = v_1 + (v_2 - v_1) / (x_2 - x_1) * (i[ii] - x_1)
-    else:
-        raise TypeError("cmap is of incorrect type. Must be str, list or dict.")
-
-    cmap_func.data = data
-
-    return cmap_func
-
-
-def cmap_to_gradient(cmap, gradient):
-    """
-    cmap must be from get_cmap, or accepted by get_cmap, and the gradient must be from get_gradient
-    """
-    cmap = get_cmap(cmap)
-    if isinstance(cmap.data, str):
-        for i in range(gradient.resolution):
-            value = cmap(i / (gradient.resolution - 1))
-            gradient.setColorAt(i / (gradient.resolution - 1), get_single_color(value))
-    else:
-        for key, value in cmap.data.items():
-            gradient.setColorAt(key, get_single_color(value))
-    return gradient
-
-
 def qvect_to_arr(qvect):    # turns any type of QVector into an array
     return np.array(qvect.toTuple())
 
@@ -307,7 +207,7 @@ def is_multiple_colors(arg):
 
 def get_single_color(input_col):
     if is_iter(input_col):
-        if isinstance(input_col[0], Number):
+        if isinstance(input_col[0], float):
             if len(input_col) == 3 or len(input_col) == 4:
                 if max(input_col) <= 1:
                     return mkColor(np.array(input_col)*255)

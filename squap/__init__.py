@@ -4,11 +4,10 @@ from typing import Callable
 from .table_manager import TableManager
 from .main_window import MainWindow
 from .plot_widget import PlotWidget
-from .helper_funcs import get_cmap
 from .input_widget import InputTable
 from .variables import Variables
 from .plot_manager import PlotManager
-from .custimisation import get_font, get_gradient
+from .custimisation import get_font, get_gradient, get_cmap
 
 from functools import wraps
 
@@ -263,7 +262,7 @@ def set_input_partition(*args, **kwargs):
     return get_table_manager().set_input_partition(*args, **kwargs)
 
 
-@wraps(MainWindow.resize)
+@wraps(MainWindow.resize_window)
 def resize(*args, **kwargs):
     return get_window().resize_window(*args, **kwargs)
 
@@ -303,13 +302,13 @@ def on_refresh(*args, **kwargs):
     return get_window().on_refresh(*args, **kwargs)
 
 
-@wraps(MainWindow.show)
+@wraps(MainWindow.start)
 def show():
     return get_window().start()
 
 
-@wraps(MainWindow.close)
 def close_window():
+    """Closes the window."""
     return get_window().close()
 
 

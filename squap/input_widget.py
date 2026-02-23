@@ -406,7 +406,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         Args:
             name (str): The name in front of the slider.
-            init_value (ColorType): The initial value of the slider.
+            init_value (:ref:`ColorType`): The initial value of the slider.
             var_name (str, optional): The name of the created variable. If var_name is not provided, the variable will be
                 named name.
             print_value (bool): Whether to print the value of the color picker when it changes. Defaults to False.
