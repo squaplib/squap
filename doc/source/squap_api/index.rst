@@ -6,9 +6,5 @@ This reference manual describes all functions and object included in this librar
     :maxdepth: 2
 
     plotting/index
+    input_widget/index
     others/index
-
-
-
-
-

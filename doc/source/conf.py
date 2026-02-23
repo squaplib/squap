@@ -27,6 +27,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
     "pyqtgraph": ("https://pyqtgraph.readthedocs.io/en/latest/", None),
     "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
     "numpy": ("https://numpy.org/doc/stable/", None)

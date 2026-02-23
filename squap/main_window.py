@@ -71,6 +71,9 @@ class MainWindow(QMainWindow):
             event.accept()
 
     def add_table(self, name: Optional[str] = None) -> InputTable:
+        """
+        Adds a new table as a tab with name ``name``.
+        """
         if name is None:
             name = f"tab{len(self.table_manager.input_tables)+1}"
         if self.table_manager.tab_widget is not None:

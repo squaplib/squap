@@ -1,5 +1,5 @@
-User Input
-==========
+Mouse And Keyboard Input
+========================
 
 .. autofunction:: squap.on_mouse_click
 .. autofunction:: squap.on_mouse_move

@@ -174,7 +174,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             is_scalar = i_arr.ndim == 0
             original_shape = i_arr.shape
             i_arr = i_arr.ravel()
-            indices = np.array(np.searchsorted(keys, i_arr))  # index of first item that is bigger than i.
+            indices = np.array(np.searchsorted(keys, i_arr))  # index.rst of first item that is bigger than i.
 
             lower_bound = indices == 0
             upper_bound = indices == max(keys)
@@ -201,8 +201,8 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
             # Simplified slower version with iteration instead of array calculations below. Does not include dealing with bounds.
             # result = np.zeros((len(i), 4))
-            # for ii, index in enumerate(indices):
-            #     v_1, v_2, x_1, x_2 = values[index - 1], values[index], keys[index - 1], keys[index]
+            # for ii, index.rst in enumerate(indices):
+            #     v_1, v_2, x_1, x_2 = values[index.rst - 1], values[index.rst], keys[index.rst - 1], keys[index.rst]
             #     result[ii] = v_1 + (v_2 - v_1) / (x_2 - x_1) * (i[ii] - x_1)
     else:
         raise TypeError("cmap is of incorrect type. Must be str, list or dict.")

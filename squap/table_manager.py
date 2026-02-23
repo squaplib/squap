@@ -68,7 +68,7 @@ class TableManager:
                 if old_name is not None:
                     raise ValueError(f"{old_name} is not the current name of a tab.")
                 else:
-                    raise ValueError(f"`index` is too high. It can be at most 0.")
+                    raise ValueError(f"`index.rst` is too high. It can be at most 0.")
             return self.first_input_table
         else:
             if old_name is not None:
@@ -91,7 +91,7 @@ class TableManager:
         """Set active tab using one of the possible arguments. Use exactly one.
 
         Args:
-            *args (int | InputTable | str, optional): One of the possible arguments, automatically determined which it is by
+            *args (int or InputTable or str, optional): One of the possible arguments, automatically determined which it is by
                 given type.
             index (int, optional): Index of the tab to select. Defaults to None.
             tab (InputTable, optional): The tab to select. Defaults to None.

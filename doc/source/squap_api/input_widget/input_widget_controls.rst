@@ -1,0 +1,11 @@
+Input Widget Controls
+=====================
+
+The Input Widget is the widget on the left of the screen that is created when an input box such as a slider is added.
+Multiple tabs can be added using squap.add_tab
+
+.. autofunction:: squap.add_input_table
+.. autofunction:: squap.set_active_tab
+.. autofunction:: squap.set_input_partition
+.. autofunction:: squap.set_input_width
+.. autofunction:: squap.get_all_boxes

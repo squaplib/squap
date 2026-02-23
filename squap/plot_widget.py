@@ -179,7 +179,7 @@ class PlotWidget(PlotItem):
         """
         This function creates a new scatter curve, and calls set_data with the other arguments. If both `x` and `y` are
         provided, you can set them together using `scatter(x, y, ...)`. If only y is provided, using `scatter(y, ...)`,
-        `x` is set as the index of `y`. `x` and `y` can also be passed as keyword arguments by doing `scatter(x=x, ...)`,
+        `x` is set as the index.rst of `y`. `x` and `y` can also be passed as keyword arguments by doing `scatter(x=x, ...)`,
         `scatter(y=y)` or scatter(x=x, y=y, ...)`. Furthermore, you can include additional keyword
         arguments such as color and size to customize the appearance of the curve.
 

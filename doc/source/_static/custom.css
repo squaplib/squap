@@ -34,7 +34,7 @@ button.btn.version-switcher__button:hover {
   font-size: small;
 }
 
-/* Main index page overview cards */
+/* Main index.rst page overview cards */
 
 .sd-card .sd-card-img-top {
   height: 120px;
@@ -44,7 +44,7 @@ button.btn.version-switcher__button:hover {
   margin-top: 10px;
 }
 
-/* Main index page overview images */
+/* Main index.rst page overview images */
 
 html[data-theme=dark] .sd-card img[src*='.svg'] {
   filter: invert(0.82) brightness(0.8) contrast(1.2);

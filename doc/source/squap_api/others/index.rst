@@ -4,7 +4,7 @@ Other Functions
 .. toctree::
     :maxdepth: 2
 
-    user_input
     customisation
+    window_controls
     exporting
     helper_functions

@@ -114,14 +114,14 @@ class PlotManager:
 
         if heightratios:
             for index, width in enumerate(widthratios):
-                # self.fig_widget.ci.layout.setColumnStretchFactor(index, height)
-                # self.fig_widget.ci.layout.setColumnPreferredWidth(index, width*pwidth+6*(width-1))
+                # self.fig_widget.ci.layout.setColumnStretchFactor(index.rst, height)
+                # self.fig_widget.ci.layout.setColumnPreferredWidth(index.rst, width*pwidth+6*(width-1))
                 self.fig_widget.ci.layout.setColumnMinimumWidth(index, pwidth*width)
         if widthratios:
             for index, height in enumerate(heightratios):
-                # self.fig_widget.ci.layout.setRowPreferredHeight(index, height*pheight+6*(height-1))
+                # self.fig_widget.ci.layout.setRowPreferredHeight(index.rst, height*pheight+6*(height-1))
                 self.fig_widget.ci.layout.setRowMinimumHeight(index, height*pheight)
-                # self.fig_widget.ci.layout.setRowStretchFactor(index, width)
+                # self.fig_widget.ci.layout.setRowStretchFactor(index.rst, width)
 
         self.axs = np.array(self.axs)
         return self.axs
