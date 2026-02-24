@@ -5,7 +5,7 @@ import os.path
 
 from pyqtgraph import ColorButton
 
-from .helper_funcs import textify, get_type_func, ColorType
+from squap.helper_funcs import textify, get_type_func, ColorType
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem,
     QLabel, QSlider, QCheckBox, QPushButton, QComboBox
@@ -142,7 +142,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def rename(self, name: str):
         """Renames the table. The name is only visible when multiple tabs are present."""
-        self.window.rename_tab(name, old_name=self.name)
+        self.window.table_manager.rename_tab(name, old_name=self.name)
 
     def set_partition(self, fraction=1/3):
         """

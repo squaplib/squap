@@ -16,10 +16,10 @@ from PySide6.QtGui import QCursor, QGuiApplication
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
 
-from .plot_manager import PlotManager
-from .table_manager import TableManager
-from .plot_widget import PlotWidget
-from .input_widget import InputTable
+from squap.widgets.plot_manager import PlotManager
+from squap.widgets.table_manager import TableManager
+from squap.plot_widget import PlotWidget
+from squap.widgets.input_widget import InputTable
 # from .plot_widget_3d import PlotWidget3D
 
 
@@ -73,6 +73,9 @@ class MainWindow(QMainWindow):
     def add_table(self, name: Optional[str] = None) -> InputTable:
         """
         Adds a new table as a tab with name ``name``.
+
+        Returns:
+            InputTable: The created :class:`table <squap.InputTable>`.
         """
         if name is None:
             name = f"tab{len(self.table_manager.input_tables)+1}"
@@ -251,10 +254,11 @@ class MainWindow(QMainWindow):
         """
         Set the relative size of the input window compared to the plot window. A fraction of 1/2 (default value) means that
         the plot window is 2 times wider than the input window.
+        todo: should be changed to be 1/3 of total size. Can't set input width to full width
 
         Args:
-            fraction (float, optional): value between 0 and 1, specifying the portion of the window taken up by the
-                input window. Starts off at 1/2
+            fraction (float, optional): value between ``0`` and ``1``, specifying the size of the input widget in comparison to
+                the plot widget. Starts off at 1/2.
         """
         if not self.table_manager.first_input_table:
             self.init_first_tab(width_ratio=fraction)
@@ -323,7 +327,7 @@ class MainWindow(QMainWindow):
             self.update_funcs.append(interval_func)
 
     def start(self):
-        """Shows window and starts loop. Use in combination with `Box.bind`, :func:`squap.on_refresh` or for static plots. """
+        """Shows window and starts loop. Use in combination with :meth:`Box.bind`, :func:`squap.on_refresh` or for static plots. """
 
         timer = QTimer()  # timer is required for running functions on refresh and executing pyqtgraph programs
         if len(self.update_funcs):
@@ -372,7 +376,8 @@ class MainWindow(QMainWindow):
         Args:
             filename (str): Name of the file to which the image must be saved. Extension can be png, jpg, jpeg, bmp, pbm,
                 pgm, ppm, xbm and xpm. Defaults to png if no extension is provided.
-            widget (QWidget, optional): The widget to export. By default, the full window is used.
+            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): The widget to export. By default, the full
+                window is used.
         """
         if widget is None:
             pixmap = self.grab()
@@ -398,7 +403,7 @@ class MainWindow(QMainWindow):
         """Saves a video to file ``filename`` with the specified parameters.
 
         Out of ``n_frames``, ``duration`` and ``stop_func`` at most one can be provided. If none of these are given, the video
-        will be indefinite, and will be stopped and saved as soon as the window is closed, or when KeyboardInterrupt is
+        will be indefinite, and will be stopped and saved as soon as the window is closed, or when :exc:`KeyboardInterrupt` is
         raised (when the user attempts to manually stop the program).
 
         Args:
@@ -410,10 +415,11 @@ class MainWindow(QMainWindow):
             stop_func (Callable, optional): This function will be run after every iteration. If it returns True, the video
                 stops and saves.
             save_on_close (bool): Whether to save the video if the window is closed prematurely. Defaults to ``False``,
-                except when neither ``n_frames``, ``duration`` nor ``stop_func`` are provided.            skip_frames (int): Number of frames to not save after a frame is saved. Defaults to 0.
+                except when neither ``n_frames``, ``duration`` nor ``stop_func`` are provided.
+            skip_frames (int): Number of frames to not save after a frame is saved. Defaults to ``0``.
             display_window (bool): Whether to display the window or not. Defaults to ``False``.
-            widget (QWidget, optional): which widget to record. Can be eg. a single plot, the entire window, or only
-                the plot window. Defaults to only the plot window.
+            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. Can be eg. a single plot,
+                the entire window, or only the plot window. Defaults to only the plot window.
 
         """
         # save_on_close is False by default so that you don't accidentally overwrite a video that took very long to make.
@@ -500,18 +506,18 @@ class MainWindow(QMainWindow):
 
     def start_recording(self, filename: str, fps: float = 30.0, skip_frames: int = 0,
                         widget: Optional[QWidget] = None) -> Callable:
-        """Start recording to file `filename` with the specified parameters. Use function returned by this function to stop
+        """Start recording to file ``filename`` with the specified parameters. Use function returned by this function to stop
         the recording.
 
         Args:
             filename (str): Name of the file to which the video will be exported. Currently only supports .mp4 files.
             fps (float): Frames per second of the video. Defaults to 30.
             skip_frames (int): number of frames to not save after a frame is saved. Defaults to 0.
-            widget (QWidget, optional): which widget to record. Can be eg. a single plot, the entire window, or only
-                the plot window. Defaults to only the plot window.
+            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. Can be eg. a
+                single plot, the entire window, or only the plot window. Defaults to only the plot window.
 
         Returns:
-            Callable: Call this function to stop the recording and save the video.
+            :term:`callable`: Call this function to stop the recording and save the video.
         """
         if widget is None:
             widget = self
@@ -573,18 +579,18 @@ class MainWindow(QMainWindow):
 
         Args:
             update_speed (float): The update speed for fps calculation. Defaults to ``0.2`` seconds.
-            get_fps (bool): Whether to store the fps. If set to ``True``, the fps will be saved to ``var.fps`` every
-                time it is updated. Defaults to ``False``.
+            get_fps (bool): Whether to store the fps. If set to ``True``, the fps will be saved to
+                :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
             optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
-            ax (squap.PlotWidget, optional): Which window to set the title to the fps. Defaults to top-left.
+            ax (`squap.PlotWidget`, optional): Which window to set the title to the fps. Defaults to top-left.
 
         Returns:
-            Callable: function that is needed to update the fps. If the program is run in refresh mode, this function
+            :term:`callable`: function that is needed to update the fps. If the program is run in refresh mode, this function
             needs to be run each loop
 
         Raises:
-            NotImplementedError: If the function is called in 3D plot style, which is not supported yet.
+            :exc:`NotImplementedError`: If the function is called in 3D plot style, which is not supported yet.
         """
         if ax is None:
             ax = self.plot_manager.plot_widget

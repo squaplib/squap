@@ -50,13 +50,13 @@ class PlotWidget(PlotItem):
             text_width (int, optional): The width of the text. Todo: check how it works
 
         Returns:
-            TextWidget: The created text widget.
+            TextCurve: The created text object.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["text_width", "font", "font_size", "html"],
                                     exclude_args=["self", "kwargs", "text", "pos"])
 
-        text_widget = TextWidget(text, pos, **new_kwargs, **kwargs)
+        text_widget = TextCurve(text, pos, **new_kwargs, **kwargs)
         # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
         self.addItem(text)
         return text_widget
@@ -877,7 +877,7 @@ class ErrorbarCurve(ErrorBarItem):
             self.setData(**errorbar_kwargs)
 
 
-class TextWidget(TextItem):
+class TextCurve(TextItem):
     kwarg_mapping = {
         "c": "color", "colour": "color", "text_color": "color", "fill": "fill_color", "fc": "fill_color",
         "tw": "text_width"

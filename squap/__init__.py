@@ -1,12 +1,12 @@
 # starts off by creating an instance of main_window, containing a plot widget.
 from typing import Callable
 
-from .table_manager import TableManager
-from .main_window import MainWindow
+from squap.widgets.table_manager import TableManager
+from squap.widgets.main_window import MainWindow
 from .plot_widget import PlotWidget
-from .input_widget import InputTable
+from . import widgets
 from .variables import Variables
-from .plot_manager import PlotManager
+from squap.widgets.plot_manager import PlotManager
 from .custimisation import get_font, get_gradient, get_cmap
 
 from functools import wraps
@@ -15,10 +15,11 @@ from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
 
 __all__ = [
+    "widgets",
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font"
 ]
 

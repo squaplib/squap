@@ -3,7 +3,7 @@
 Input boxes
 ===========
 
-All boxes that can be placed in the input window
+All boxes that can be placed in the input window.
 
 .. toctree::
     :maxdepth: 2

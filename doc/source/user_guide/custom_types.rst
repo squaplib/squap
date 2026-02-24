@@ -10,11 +10,11 @@ ColorType
 
 Any argument that can be used to make a color:
 
-- ``str``: The name of a color. todo: list allowed colors.
-- ``tuple``: An RGB tuple or an RGBA tuple. todo: hyperref and look up 0-1 or 0-255.
-- ``float``: A single float represents a grayscale value, where ``0.0`` corresponds to black and ``1.0`` corresponds to white.
-- ``mkColor``: A color object from the pyqtgraph library.
-- ``QColor``: A color object from the PySide6 library.
+- :class:`str`: The name of a color. todo: list allowed colors.
+- :class:`tuple`: An RGB or RGBA tuple containing 3 or 4 floats between 0 and 1.
+- :class:`float`: A single float represents a grayscale value, where ``0.0`` corresponds to black and ``1.0`` corresponds to white.
+- :class:`mkColor <pyqtgraph.mkColor>`: A color object from the pyqtgraph library.
+- :class:`QColor <PySide6.QtGui.QColor>`: A color object from the PySide6 library.
 
 .. _ColorsType:
 

@@ -1,5 +1,5 @@
 from pyqtgraph import GraphicsLayoutWidget
-from .plot_widget import PlotWidget
+from squap.plot_widget import PlotWidget
 import numpy as np
 from typing import Optional, Iterable
 from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject

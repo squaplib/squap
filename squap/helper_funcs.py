@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QTableWidgetItem
 from pyqtgraph import mkPen, mkColor
 
 
-ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[int], float]
+ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[float], float]
 ColorsType: TypeAlias = Union[ColorType, Iterable["ColorsType"]]        # allows arbitrary nesting
 
 # def map_color(color_name):
@@ -209,10 +209,7 @@ def get_single_color(input_col):
     if is_iter(input_col):
         if isinstance(input_col[0], float):
             if len(input_col) == 3 or len(input_col) == 4:
-                if max(input_col) <= 1:
-                    return mkColor(np.array(input_col)*255)
-                else:
-                    return mkColor(np.array(input_col))
+                return mkColor(np.array(input_col)*255)
             else:
                 raise ValueError(f"Expected tuple of lenght 3 or 4, but got length {len(input_col)} (Note that a "
                                  f"line can only be one color).")

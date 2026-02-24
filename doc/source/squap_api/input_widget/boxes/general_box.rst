@@ -1,5 +1,6 @@
 General Box
 ===========
+This is the general class all input boxes inherit from. For all input boxes see :ref:`this page <input_boxes>`.
 
 .. autoclass:: squap.input_widget.Box
 .. automethod:: squap.input_widget.Box.bind

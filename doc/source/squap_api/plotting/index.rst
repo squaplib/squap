@@ -11,4 +11,5 @@ All functions used for elementary plotting.
     other_plot_objects
     plot_control
     starting
+    widgets
 
