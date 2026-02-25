@@ -1,3 +1,6 @@
+Developer Guide
+===============
+
 Feel free to submit bugfixes, clarify documentation or fix spelling errors by forking from the main repository on github, then submit a pull request.
 Especially the installation guide needs updating now.
 

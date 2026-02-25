@@ -10,7 +10,7 @@ from pyqtgraph import PlotDataItem, PlotItem, InfiniteLine, TextItem, ImageItem,
 
 from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
     transform_kwargs, get_new_kwargs, ColorType, ColorsType
-from ..custimisation import cmap_to_gradient, get_cmap, Font
+from ..customisation import cmap_to_gradient, get_cmap, Font
 
 
 class PlotWidget(PlotItem):

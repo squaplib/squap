@@ -1,13 +1,15 @@
 # starts off by creating an instance of main_window, containing a plot widget.
-from typing import Callable
+from typing import Callable, Iterable       # Iterable is necessary for docs compiler
 
 from . import widgets
+from .widgets import (MainWindow, PlotManager, TableManager, PlotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
+                      TextCurve, InfLine, ImageCurve, GridCurve)
 from .variables import Variables
-from .custimisation import get_font, get_gradient, get_cmap
+from .customisation import get_font, get_gradient, get_cmap
+from .helper_funcs import ColorType, ColorsType
 
 from functools import update_wrapper        # for copy_docstring decorator
 from inspect import signature
-from functools import wraps
 
 from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
@@ -18,9 +20,9 @@ __all__ = [
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
-    "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font"
+    "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
+    "ColorType", "ColorsType"
 ]
-
 
 def _copy_docstring(method):
     def decorator(func):

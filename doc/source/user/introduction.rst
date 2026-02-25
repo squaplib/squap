@@ -8,6 +8,14 @@ functionality to matplotlib for static plots, and for animated plots it is even 
 a lot faster.
 
 Some core features of squap are:
-* Fast enough for realtime update of video/plot data
-* .set_data() methods to easily change all features of an existing curve or other object
-* pre-made real time input widgets such as sliders, buttons and checkboxes
+
+    - Fast enough for realtime update of video/plot data
+    - .set_data() methods to easily change all features of an existing curve or other object
+    - pre-made real time input widgets such as sliders, buttons and checkboxes
+
+
+I advise new users to read through the entire beginner guide, and play around with the examples in this guide.
+
+Since the package is still in its early development, if you get stuck on something or have some advice or feature requests,
+feel free to send me an e-mail at squaplib@proton.me or rikmulder7@proton.me.
+

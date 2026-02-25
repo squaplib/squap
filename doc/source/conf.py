@@ -24,6 +24,8 @@ extensions = [
     "sphinx_autodoc_typehints",
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
+    "sphinx.ext.mathjax",
+    "sphinx_gallery.gen_gallery",
 ]
 
 intersphinx_mapping = {
@@ -33,11 +35,14 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None)
 }
 
+sphinx_gallery_conf = {
+    "examples_dirs": "examples",    # where your example scripts live
+    "gallery_dirs": "auto_examples",      # where the generated output goes (relative to doc/source)
+}
+
 autodoc_mock_imports = ["pyqtgraph", "PySide6"]
 
 exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
-suppress_warnings = ["sphinx_autodoc_typehints.forward_reference"]      # sphinx throws an error which is sphinx's fault
-# hopefully this doesn't affect anything
 
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True

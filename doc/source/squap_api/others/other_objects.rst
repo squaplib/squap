@@ -1,6 +1,6 @@
 Other Objects
 =============
 
-.. autoclass:: squap.custimisation.Font
+.. autoclass:: squap.customisation.Font
 
-    .. automethod:: squap.custimisation.Font.set_data
+    .. automethod:: squap.customisation.Font.set_data

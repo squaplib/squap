@@ -10,7 +10,8 @@ Often the simplest speedup can be achieved by explicitly setting :func:`limits <
 convenient but slow. Other things you can define explicitly include:
 
     - Set ``pos`` when using a :class:`QGradient <PySide6.QtGui.QGradient>`.
-    - Set ``skip_finite_check`` to ``True``.
+    - Set ``skip_finite_check`` to ``True`` when using :func:`squap.plot` or similar plotting functions.
+    - Set ``Antialiasing`` to ``False`` when using :func:`squap.plot` or similar plotting functions.
 
 Skip Boring Frames
 ------------------

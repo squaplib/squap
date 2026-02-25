@@ -18,7 +18,7 @@ We start by making a static plot. The syntax is similar to matplotlib: ::
 
     squap.show()
 
-We use :func:`np.linspace <numpy.linspace>` to initialise `x` as `50` evenly spaced points between `0` and :math:`2\pi`.
+We use :func:`np.linspace <numpy.linspace>` to initialise ``x`` as 50 evenly spaced points between 0 and :math:`2\pi`.
 
 Time Dependent Plot
 -------------------
@@ -51,8 +51,8 @@ with time dependence with a static plot in the background: ::
 First we define an ``update`` function that should run on each refresh, and then we use :func:`squap.on_refresh` to make
 sure this function is called on every screen refresh.
 
-Note:
-    Try out adding :func:`squap.display_fps()` before `squap.show()` to see how fast the plot is refreshing.
+.. Tip::
+    Try out adding :func:`squap.display_fps()` before :func:`squap.show()` to see how fast the plot is refreshing.
 
 Adding A Slider
 ---------------
@@ -81,11 +81,10 @@ Now we add a slider for the sine function: ::
     squap.set_xlim(0, 2 * np.pi)
     squap.set_ylim(-1, 1)
     squap.on_refresh(update)
-    squap.display_fps()
     squap.show()
 
-The slider is added using :func:`squap.add_slider`, where we specify the name is ``a``, the value sarts off at ``0``,
-and can be varied between ``0`` and :math:`2\pi`. For other input methods see :ref:`this page <input_boxes>`.
+The slider is added using :func:`squap.add_slider`, where we specify the name is ``a``, the value sarts off at 0,
+and can be varied between 0 and :math:`2\pi`. For other input methods see :ref:`this page <input_boxes>`.
 
 
 

@@ -74,7 +74,7 @@ def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold:
                  italic: bool = False, underline: bool = False, strikethrough: bool = False, overline: bool = False,
                  kerning: bool = False, stretch: int = 100, letter_spacing: float = .0, word_spacing: float = .0,
                  **kwargs) -> Font:
-    """Creates and returns a :class:`font object <squap.custimisation.Font>`. Usually font names are allowed when a
+    """Creates and returns a :class:`font object <squap.customisation.Font>`. Usually font names are allowed when a
     function requires a font as an argument, but this function creates more complex fonts.
 
     Args:

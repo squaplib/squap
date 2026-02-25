@@ -7,9 +7,6 @@ from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 from .plot_widget import PlotWidget
 
 
-PlotGrid = Union[PlotWidget, list['PlotGrid']]
-
-
 class PlotManager:
     """Stores the plots and GraphicsLayoutWidget so that not everything is located inside the main window. The main
     window is only a window. """
@@ -59,7 +56,7 @@ class PlotManager:
 
     def create_subplots(
             self, nrows: int = 1, ncols: int = 1, heightratios: Optional[list[int]] = None,
-            widthratios: Optional[list[int]] = None) -> PlotGrid:
+            widthratios: Optional[list[int]] = None) -> list:
         """
         Initialises a subplot window and gives a 1D or 2D list of :class:`PlotWidgets <squap.widgets.plot_widget.PlotWidget>`.
 
