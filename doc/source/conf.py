@@ -36,6 +36,8 @@ intersphinx_mapping = {
 autodoc_mock_imports = ["pyqtgraph", "PySide6"]
 
 exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
+suppress_warnings = ["sphinx_autodoc_typehints.forward_reference"]      # sphinx throws an error which is sphinx's fault
+# hopefully this doesn't affect anything
 
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True

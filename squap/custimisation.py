@@ -43,21 +43,21 @@ def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "ho
                  position: Optional[Iterable] = None, extend: str = "pad", resolution: int = 256) -> QGradient:
     """Obtain a gradient. Gradients can sometimes be used instead of normal colors.
 
-    The gradient can be seen as a 2D image of a gradient spaced depending on `position`. Only the parts are shown at
-    each pixel that is drawn by eg. a plot line. When `style` of the gradient is set to "horizontal" or "vertical", or
-    "radial" without providing `position`, the bounds of the gradient will be automatically determined when set_data is
-    called. Specify `position` for optimal performance.
+    The gradient can be seen as a 2D image of a gradient placed depending on ``position``. Only the parts are shown at
+    each pixel that is drawn by eg. a plot line. When `style` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or
+    ``"radial"`` without providing ``position``, the bounds of the gradient will be automatically determined when
+    :meth:`curve.set_data <squap.widgets.plot_widget.PlotCurve.set_data>` is called. Specify ``position`` for optimal performance.
 
     Args:
         cmap (str, dict, list or Colormap): The colormap used as gradient. Can either be a string, a dictionary,
             a list of colors or an instance of `matplotlib.colors.Colormap`:
 
-            - ``"str"``: Any matplotlib colormap name. When a colormap exists in both matplotlib and cmasher,
+            - ``str``: Any matplotlib colormap name. When a colormap exists in both matplotlib and cmasher,
               matplotlib takes priority. Prefix with ``"mpl_"`` or ``"cmasher_"`` to select explicitly.
-            - ``"dict"``: Maps positions (0–1) to colors. ``cmap[0]`` and ``cmap[1]`` are the start and end,
+            - ``dict``: Maps positions (0–1) to colors. ``cmap[0]`` and ``cmap[1]`` are the start and end,
               with linear interpolation between any intermediate points.
-            - ``"list"``: Colors equally spaced between 0 and 1, with linear interpolation between them.
-            - ``"Colormap"``: Used directly.
+            - ``list``: Colors equally spaced between 0 and 1, with linear interpolation between them.
+            - ``Colormap``: Used directly.
 
         style (str): The style of the gradient.
 
@@ -174,7 +174,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             is_scalar = i_arr.ndim == 0
             original_shape = i_arr.shape
             i_arr = i_arr.ravel()
-            indices = np.array(np.searchsorted(keys, i_arr))  # index.rst of first item that is bigger than i.
+            indices = np.array(np.searchsorted(keys, i_arr))  # index of first item that is bigger than i.
 
             lower_bound = indices == 0
             upper_bound = indices == max(keys)
@@ -201,8 +201,8 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
             # Simplified slower version with iteration instead of array calculations below. Does not include dealing with bounds.
             # result = np.zeros((len(i), 4))
-            # for ii, index.rst in enumerate(indices):
-            #     v_1, v_2, x_1, x_2 = values[index.rst - 1], values[index.rst], keys[index.rst - 1], keys[index.rst]
+            # for ii, index in enumerate(indices):
+            #     v_1, v_2, x_1, x_2 = values[index - 1], values[index], keys[index - 1], keys[index]
             #     result[ii] = v_1 + (v_2 - v_1) / (x_2 - x_1) * (i[ii] - x_1)
     else:
         raise TypeError("cmap is of incorrect type. Must be str, list or dict.")

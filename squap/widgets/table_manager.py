@@ -1,6 +1,7 @@
 from typing import Iterable, Optional
-from squap.widgets.input_widget import InputTable, Box            # only for type hinting
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
+
+from .input_widget import InputTable, Box            # only for type hinting
 
 
 class TableManager:
@@ -25,8 +26,8 @@ class TableManager:
         self.n_links = 0            # number of links between boxes
 
     def set_input_partition(self, fraction: float = 1/3):
-        """Set the position of the partition between the 2 columns of all :class:`input tables <squap.InputTable>`, and
-        any newly created ones. Use :meth:`table.set_partition <InputTable.set_partition>` to set different
+        """Set the position of the partition between the 2 columns of all :class:`input tables <squap.widgets.input_widget.InputTable>`, and
+        any newly created ones. Use :meth:`table.set_partition <squap.widgets.input_widget.InputTable.set_partition>` to set different
         partitions for different tables when you have multiple tabs.
 
         Args:
@@ -78,7 +79,7 @@ class TableManager:
             old_name (str, optional): Current name of the tab you want to rename.
 
         Returns:
-            InputTable: The renamed :class:`table <squap.InputTable>`.
+            InputTable: The renamed :class:`table <squap.widgets.input_widget.InputTable>`.
         """
         if self.tab_widget is None:
             if index == 0 or old_name == self.first_input_table.name:
@@ -87,7 +88,7 @@ class TableManager:
                 if old_name is not None:
                     raise ValueError(f"{old_name} is not the current name of a tab.")
                 else:
-                    raise ValueError(f"`index.rst` is too high. It can be at most 0.")
+                    raise ValueError(f"`index` is too high. It can be at most 0.")
             return self.first_input_table
         else:
             if old_name is not None:
@@ -117,7 +118,7 @@ class TableManager:
             name (str, optional): Name of the tab to select. Defaults to ``None``.
 
         Returns:
-            InputTable: The :class:`InputTable <squap.InputTable>` belonging to the selected tab.
+            InputTable: The :class:`InputTable <squap.widgets.input_widget.InputTable>` belonging to the selected tab.
         """
         if self.tab_widget is None:
             if self.first_input_table is None:
@@ -157,7 +158,10 @@ class TableManager:
         return self.input_tables
 
     def get_all_boxes(self) -> list[Box]:
-        """Return a list containing all :class:`boxes <squap.input_widget.Box>` that exist at this time. """
+        """
+        Returns:
+            list of Box: A list containing all :class:`boxes <squap.widgets.Box>` that exist at this time.
+        """
         result = []
         for table in self.input_tables:
             result.extend(table.get_boxes())

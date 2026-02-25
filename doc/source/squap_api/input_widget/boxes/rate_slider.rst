@@ -3,11 +3,12 @@ Rate Slider
 
 .. autofunction:: squap.add_rate_slider
 
-.. autoclass:: squap.InputTable.RateSlider
-.. automethod:: squap.InputTable.RateSlider.bind
-.. automethod:: squap.InputTable.RateSlider.unbind
-.. automethod:: squap.InputTable.RateSlider.set_value
-.. automethod:: squap.InputTable.RateSlider.value
-.. automethod:: squap.InputTable.RateSlider.change_params
-.. automethod:: squap.InputTable.RateSlider.print_val
-.. automethod:: squap.InputTable.RateSlider.remove
+.. class:: squap.widgets.InputTable.RateSlider
+
+    .. automethod:: squap.widgets.InputTable.RateSlider.bind
+    .. automethod:: squap.widgets.InputTable.RateSlider.unbind
+    .. automethod:: squap.widgets.InputTable.RateSlider.set_value
+    .. automethod:: squap.widgets.InputTable.RateSlider.value
+    .. automethod:: squap.widgets.InputTable.RateSlider.change_params
+    .. automethod:: squap.widgets.InputTable.RateSlider.print_val
+    .. automethod:: squap.widgets.InputTable.RateSlider.remove

@@ -1,3 +1,5 @@
+.. _api-label:
+
 squap API reference
 ===================
 This reference manual describes all functions and object included in this library in detail.

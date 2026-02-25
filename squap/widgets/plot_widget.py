@@ -1,16 +1,16 @@
 import numpy as np
 import os.path
-
-from PySide6.QtWidgets import QWidget
-from pyqtgraph import PlotDataItem, PlotItem, InfiniteLine, TextItem, ImageItem, mkPen, InfLineLabel, GridItem, \
-    getConfigOption, ErrorBarItem
-from PySide6.QtGui import QFont, QGradient, QBrush, Qt
-from .helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, Font, \
-    transform_kwargs, get_new_kwargs, ColorType, ColorsType
-from .custimisation import cmap_to_gradient, get_cmap
 from copy import copy
 from typing import Iterable, Any, Optional
-from numbers import Number      # for type hinting
+
+from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QFont, QGradient, QBrush, Qt
+from pyqtgraph import PlotDataItem, PlotItem, InfiniteLine, TextItem, ImageItem, mkPen, InfLineLabel, GridItem, \
+    getConfigOption, ErrorBarItem
+
+from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, Font, \
+    transform_kwargs, get_new_kwargs, ColorType, ColorsType
+from ..custimisation import cmap_to_gradient, get_cmap
 
 
 class PlotWidget(PlotItem):
@@ -37,7 +37,7 @@ class PlotWidget(PlotItem):
     def plot_text(self, text: str, pos: Iterable[float], color: ColorType = (200, 200, 200), angle: float = 0,
                   font: Optional[str | Font] = None, font_size: Optional[int] = None, html: Optional[str] = None,
                   text_width: Optional[int] = None, **kwargs):
-        """ Displays text at coordinates pos. See `squap.get_font` for more information on fonts.
+        """ Displays a :class:`text object <squap.widgets.plot_widget.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
 
         Args:
             text (str): The text to be displayed.
@@ -50,7 +50,7 @@ class PlotWidget(PlotItem):
             text_width (int, optional): The width of the text. Todo: check how it works
 
         Returns:
-            TextCurve: The created text object.
+            TextCurve: The created :class:`text object <squap.widgets.plot_widget.TextCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["text_width", "font", "font_size", "html"],
@@ -65,11 +65,12 @@ class PlotWidget(PlotItem):
                auto_levels: bool = False, levels=None, axis_order="row-major",
                border_color: ColorType | None = None, **kwargs):      # **kwargs for aliases
         """
-        Plots an image at location ``location``. This image consists of equally spaced pixels, colored according to ``data``
-        and ``cmap``.
+        Creates an :py:class:`image <squap.widgets.plot_widget.ImageCurve>` at location ``location``. This image consists
+        of equally spaced pixels, colored according to ``data`` and ``cmap``.
+        This function hasn't been tested thoroughly
 
         Args:
-            data (np.ndarray, optional): Array containing data to be shown.
+            data (:class:`np.ndarray <numpy.ndarray>`, optional): Array containing data to be shown.
                 Can be shape:
 
                 - ``(Nx, Ny, 3)``: array of colors, between ``0`` and ``1``.
@@ -79,12 +80,12 @@ class PlotWidget(PlotItem):
 
             location (tuple, optional): Location of the image. ``(location[0], location[1])`` is the bottom left coordinate, and
                 ``(location[2], location[3])`` is the top right coordinate.
-            cmap: Colormap from :func:``squap.get_colormap`` or ``data`` argument accepted by :func:``squap.get_colormap``.
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`.
             auto_levels (bool, optional): todo: describe
             levels (optional): todo: describe
             axis_order (bool, optional): Whether the ordering of the pixels listed in ``data`` is ``"row-major"`` or
                 ``"col-major"``. Todo: test if it does anything.
-            border_color (:ref:`ColorType`, optional): Color of the border around the image. Defaults to `None`, meaning no border.
+            border_color (:ref:`ColorType`, optional): Color of the border around the image. Defaults to ``None``, meaning no border.
             todo: border thickness?
 
         Returns:
@@ -107,13 +108,13 @@ class PlotWidget(PlotItem):
             skip_finite_check: bool = False, **kwargs
     ) -> 'PlotCurve':
         """
-        Create a new :class:`plot curve <squap.plot_widget.PlotCurve>`, and calls :meth:`set_data <squap.plot_widget.
-        PlotCurve.set_data>` with the other (keyword)
-        arguments.
+        Creates a new :class:`plot curve <squap.widgets.plot_widget.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
 
         Args:
             *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
-            color (:ref:`ColorsType`): The color of the line. Default is ``"y'`` (yellow). Can also be a gradient (see :func:`squap.get_gradient`).
+            color (:ref:`ColorsType`): The color of the line. Default is ``"y"`` (yellow). Can also be a gradient
+                (created with :func:`squap.get_gradient`).
             width (int): Width of the plot line. Default is ``1``.
             dashed (bool): If ``True``, draws a dashed line between the points (for more options see dash_pattern).
                 Default is ``False``.
@@ -121,7 +122,7 @@ class PlotWidget(PlotItem):
                 will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
                 a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
                 integer multiple of 2. Defaults to ``[16, 16]``.
-            connect (str or np.ndarray): Can be one of the following options:
+            connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
 
                 - ``"all"``: Connects all points.
                 - ``"pairs"``: Generates lines between every other point.
@@ -133,13 +134,153 @@ class PlotWidget(PlotItem):
                   respective point will be connected to the next.
 
                 Defaults to ``"auto"``.
-            gradient (QGradient, optional): gradient of the line. Use :func:`squap.get_gradient` to get the gradient. The
+            gradient (:class:`QGradient <PySide6.QtGui.QGradient>`, optional): gradient of the line. Use :func:`squap.get_gradient` to get the gradient. The
+                gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
+                When ``style`` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or ``"radial"`` without providing
+                ``position``, the bounds of the gradient will be automatically determined when
+                :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
+                optimal performance. Default is ``None``.
+            line_style (optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
+            downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
+            downsample_method (str): Can be one of the following options:
+
+                - ``"subsample"``: Downsample by taking the first of ``downsample`` samples. This method is fastest and least accurate.
+                  Length of datasets will be divided by downsample
+                - ``"mean"``: Downsample by taking the mean of ``downsample`` samples. Length of datasets will be divided by ``downsample``.
+                - ``"peak"``: Downsample by drawing a saw wave that follows the min and max of the original data. This
+                  method produces the best visual representation of the data but is slower. Length of dataset will
+                  stay the same.
+
+                Defaults to ``"mean"``.
+            auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
+                for less data. Defaults to ``False``.
+            antialias (bool): By default, antialiasing is disabled to improve performance.
+            skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
+                for :data:`NaN <numpy.nan>` values. If set to ``True``, and :data:`NaN <numpy.nan>` values exist,
+                unpredictable behavior will occur. The data may
+                not be displayed or the plot may take a significant performance hit. Defaults to ``False``.
+            **kwargs: Can contain aliases and the following:
+                - ``x``: You can provide ``x`` as keyword argument as well.
+                - ``y``: You can provide ``y`` as keyword argument as well.
+
+        Returns:
+            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["dash_pattern", "gradient", "line_style"],
+                                    exclude_args=["self", "args", "kwargs"])
+
+        return self.base_plot("plot", *args, **new_kwargs, **kwargs)
+        # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
+
+    def scatter(
+            self, *args, color: ColorsType = "y", size: int = 7, edge_width: int = -1, edge_color: ColorType = "white",
+            pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
+            antialias: bool = False, **kwargs
+    ) -> 'PlotCurve':
+        """
+        Freates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other arguments.
+        If both ``x`` and ``y`` are provided, you can set them together using ``scatter(x, y, ...)``.
+        If only ``y`` is provided using ``scatter(y, ...)``,
+        ``x`` is set as the index of ``y``. ``x`` and ``y`` can also be passed as keyword arguments by doing ``scatter(x=x, ...)``,
+        ``scatter(y=y)`` or ``scatter(x=x, y=y, ...)``. Furthermore, you can include additional keyword
+        arguments such as color and size to customize the appearance of the curve.
+
+        Args:
+            *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
+            color (:ref:`ColorType`): the color of the points. See :ref:`ColorsType` for allowed values.
+                If a list of colors is passed, it should be the same length as ``x`` and ``y``.
+            size (float): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
+            edge_width (int): Width of the edge around each point. Default is ``-1`` (no edge).
+            edge_color (:ref:`ColorType`): Color of the edge around each point. Default is white.
+            pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
+                If ``False``, size is specified in data coordinates. Defaults to ``True``.
+            downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
+            downsample_method (str): Can be one of the following options:
+
+                - ``"subsample"``: Downsample by taking the first of ``downsample`` samples. This method is fastest and least accurate.
+                  Length of datasets will be divided by downsample
+                - ``"mean"``: Downsample by taking the mean of ``downsample`` samples. Length of datasets will be divided by ``downsample``.
+                - ``"peak"``: Downsample by drawing a saw wave that follows the min and max of the original data. This
+                  method produces the best visual representation of the data but is slower. Length of dataset will
+                  stay the same.
+
+                Defaults to ``"mean"``.
+            auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
+                for less data. Defaults to ``False``.
+            antialias (bool): Antialiasing is disabled by default to improve performance.
+
+            kwargs: Can contain the following:
+                - ``x``: You can provide ``x`` as keyword argument as well.
+                - ``y``: You can provide ``y`` as keyword argument as well.
+
+        Returns:
+            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self", "args", "kwargs"])
+
+        return self.base_plot("scatter", *args, **new_kwargs, **kwargs)
+        # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
+
+    def errorbar(self, *args, x_err=None, y_err=None, color: ColorType = "y",
+                 width: int = 1, errorbar_width: int = 1, beam_size: float = 0, dashed: bool = False,
+                 dash_pattern: Iterable[int] = None, connect: str = "auto", gradient: Optional[QGradient] = None,
+                 line_style: Optional[str] = None, antialias: bool = False, auto_downsample: bool = False,
+                 downsample: int = 1, downsample_method: str = "mean", skip_finite_check: bool = False, **kwargs
+         ) -> 'PlotCurve':
+        """
+        Creates a new :class:`errorbar curve <squap.widgets.plot_widget.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
+
+
+        Args:
+            *args: For providing ``x`` and ``y``. (Can also be provided as keyword arguments). ``x`` and ``y`` must be the same
+                length. If only one argument is provided, it is interpreted as ``y`` and ``x`` is set
+                to the index of ``y``.
+            x_err: Size of the errorbar at each x value. Can be the following types:
+
+                - ``None``: No error in the x-direction.
+                - ``float``: x-error at all points.
+                - Iterable of same size as ``x``: x-error at each point.
+                - Iterable of size `(Nx, 2)`: ``x_err[i, 0]`` is the error on the left at each point, and ``x_err[i, 1]`` is the error on the right at each point ``i``.
+
+                Defaults to ``None``.
+
+            y_err: Same as ``x_err`` but for ``y``.
+            color (:ref:`ColorType`): Color of the line and errorbar. Default is ``"y"`` (yellow). Can also be a gradient (see
+                :func:`squap.get_gradient`). If the color of the line and of the errorbar should be different, provide both
+                ``line_color`` and ``error_color``.
+            width (int): Width of the plot line. Default is ``1``. Does not affect the width of the errorbars.
+            errorbar_width (int): Width of the errorbar lines. Default is ``1``.
+            beam_size (float): Size of the bars at the ends of the errorbar lines. Default is ``0``.
+            dashed (bool): If ``True``, draws a dashed line between the points (for more options see ``dash_pattern``).
+                Defaults to ``False``.
+            dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
+                will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
+                a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
+                integer multiple of 2. Defaults to ``[16, 16]``.
+            connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
+
+                - ``"all"``: Connects all points.
+                - ``"pairs"``: Generates lines between every other point.
+                - ``"finite"``: Creates a break when a nonfinite points is encountered.
+                - ``"auto"``: This will normally use ``"all"``, but if any nonfinite data points are detected,
+                  it will automatically switch to ``"finite"``.
+                - ``ndarray`` - ``N`` values of ``0`` or ``1``
+                  (``N`` being the length of ``x`` and ``y``). Values of ``1`` indicate that the
+                  respective point will be connected to the next.
+
+                Defaults to ``"auto"``.
+            line_style (str, optional): todo: some presets for simplicity, `ls` is also allowed instead of `line_style`.
+            gradient (:class:`QGradient <PySide6.QtGui.QGradient>`, optional): gradient of the line. Use :func:`squap.get_gradient` to get the gradient. The
                 gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
                 When ``style`` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or ``"radial"`` without providing
                 ``position``, the bounds of the gradient will be automatically determined when :meth:`set_data <squap.
                 plot_widget.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
-                optimal performance. Default is ``None``.
-            line_style(optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
+                optimal performance.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
             downsample_method (str): Can be one of the following options:
 
@@ -157,141 +298,7 @@ class PlotWidget(PlotItem):
             skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
                 for ``NaN`` values. If set to ``True``, and ``NaN`` values exist, unpredictable behavior will occur. The data may
                 not be displayed or the plot may take a significant performance hit. Defaults to ``False``.
-            **kwargs: Can contain aliases and the following:
-                - ``x``: You can provide ``x`` as keyword argument as well.
-                - ``y``: You can provide ``y`` as keyword argument as well.
 
-        Returns:
-            :class:`PlotCurve <squap.plot_widget.PlotCurve>`: The generated curve.
-        """
-        new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=["dash_pattern", "gradient", "line_style"],
-                                    exclude_args=["self", "args", "kwargs"])
-
-        return self.base_plot("plot", *args, **new_kwargs, **kwargs)
-        # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
-
-    def scatter(
-            self, *args, color: ColorsType = "y", size: int = 7, edge_width: int = -1, edge_color: ColorType = "white",
-            pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
-            antialias: bool = False, **kwargs
-    ) -> 'PlotCurve':
-        """
-        This function creates a new scatter curve, and calls set_data with the other arguments. If both `x` and `y` are
-        provided, you can set them together using `scatter(x, y, ...)`. If only y is provided, using `scatter(y, ...)`,
-        `x` is set as the index.rst of `y`. `x` and `y` can also be passed as keyword arguments by doing `scatter(x=x, ...)`,
-        `scatter(y=y)` or scatter(x=x, y=y, ...)`. Furthermore, you can include additional keyword
-        arguments such as color and size to customize the appearance of the curve.
-
-        Args:
-            *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
-            color (:ref:`ColorType`): The color of the points.  Can be a single color name, an
-                RGB tuple, an RGBA tuple (with values between 0 and 1), or a hex code. If provided as a list or array,
-                it should have the same length as ``x`` and ``y``. Also accepted as ``c`` or ``colour``.
-                Default is ``"y"`` (yellow).
-            size (float): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
-            edge_width (int): Width of the edge around each point. Default is ``-1`` (no edge).
-            edge_color (:ref:`ColorType`): Color of the edge around each point. Default is white.
-            pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
-                If ``False``, size is specified in data coordinates. Defaults to ``True``.
-            downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
-            downsample_method (str): Can be one of the following options:
-
-                - ``"subsample"``: Downsample by taking the first of ``downsample`` samples. This method is fastest and least accurate.
-                  Length of datasets will be divided by downsample
-                - ``"mean"``: Downsample by taking the mean of ``downsample`` samples. Length of datasets will be divided by ``downsample``.
-                - ``"peak"``: Downsample by drawing a saw wave that follows the min and max of the original data. This
-                  method produces the best visual representation of the data but is slower. Length of dataset will
-                  stay the same.
-
-            Defaults to ``"mean"``.
-            auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
-                for less data. Defaults to ``False``.
-            antialias (bool): Antialiasing is disabled by default to improve performance.
-
-            kwargs: Can contain the following:
-                - ``x``: You can provide ``x`` as keyword argument as well.
-                - ``y``: You can provide ``y`` as keyword argument as well.
-
-        Returns:
-            :class:`PlotCurve <squap.plot_widget.PlotCurve>`: The generated curve.
-        """
-        new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=[],
-                                    exclude_args=["self", "args", "kwargs"])
-
-        return self.base_plot("scatter", *args, **new_kwargs, **kwargs)
-        # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
-
-    def errorbar(self, *args, x_err=None, y_err=None, color: ColorType = "y",
-                 width: int = 1, errorbar_width: int = 1, beam_size: float = 0, dashed: bool = False,
-                 dash_pattern: Iterable[int] = None, connect: str = "auto", gradient: Optional[QGradient] = None,
-                 line_style: Optional[str] = None, antialias: bool = False, auto_downsample: bool = False,
-                 downsample: int = 1, downsample_method: str = "mean", skip_finite_check: bool = False, **kwargs
-         ) -> 'PlotCurve':
-        """
-        Create a line with errorbars at the x and y positions.
-
-        Args:
-            *args: For providing ``x`` and ``y``. (Can also be provided as keyword arguments). ``x`` and ``y`` must be the same
-                length. If only one argument is provided, it is interpreted as ``y`` and ``x`` is set
-                to ``list(range(len(y))``
-            x_err: Size of the errorbar at each x value. Can be the following types:
-
-                - ``None``: No error in the x-direction.
-                - ``float``: x-error at all points.
-                - Iterable of same size as ``x``: x-error at each point.
-                - Iterable of size `(Nx, 2)`: ``x_err[0]`` is the error on the left at each point, and ``x_err[1]`` is the error
-                    on the right at each point.
-                - Defaults to ``None``.
-
-            y_err: Same as ``x_err`` but for ``y``.
-            color (:ref:`ColorType`): Color of the line and errorbar. Default is ``"y"`` (yellow). Can also be a gradient (see
-                :func:`squap.get_gradient`). If the color of the line and of the errorbar should be different, provide both
-                ``line_color`` and ``error_color``.
-            width (int): Width of the plot line. Default is ``1``. Does not affect the width of the errorbars.
-            errorbar_width (int): Width of the errorbar lines. Default is ``1``.
-            beam_size (float): Size of the bars at the ends of the errorbar lines. Default is ``0``.
-            dashed (bool): If set to `True`, draws a dashed line between the points (for more options see dash_pattern).
-            dash_pattern (list, optional): How the dashes are spaced. For example, if `dash_pattern` is [16, 16, 4, 16],
-                the pattern will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels
-                long and then a dash of 16 pixels long. This pattern is then repeated. This should be a list with a
-                length that is an integer multiple of 2. Defaults to [16, 16].
-            connect (str or np.ndarray): Can be one of the following options:
-
-                - ``"all"``: Connects all points.
-                - ``"pairs"``: Generates lines between every other point.
-                - ``"finite"``: Creates a break when a nonfinite points is encountered.
-                - ``"auto"``: This will normally use ``"all"``, but if any nonfinite data points are detected,
-                  it will automatically switch to ``"finite"``.
-                - ``ndarray`` - ``N`` values of ``0`` or ``1``
-                  (``N`` being the length of ``x`` and ``y``). Values of ``1`` indicate that the
-                  respective point will be connected to the next.
-
-                Defaults to ``"auto"``.
-            gradient (QGradient, optional): gradient of the line. Use `squap.get_gradient` to get the gradient. The gradient can
-                be seen as a 2D image of a gradient which appears at each pixel that lies on the line. When `style` of
-                the gradient is set to "horizontal" or "vertical", or "radial" without providing `position`, the bounds
-                of the gradient will be automatically determined when set_data is called, which can decrease
-                performance. So, specify `position` for optimal performance. Default is None.
-            line_style (str, optional): todo: some presets for simplicity, `ls` is also allowed instead of `line_style`.
-            downsample (int): Reduce the number of samples displayed by the given factor. Default is 1 (no
-                downsampling).
-            downsample_method (str): Can be one of the following options:
-
-                - ``"subsample"``: Downsample by taking the first of ``downsample`` samples. This method is fastest and least accurate.
-                  Length of datasets will be divided by downsample
-                - ``"mean"``: Downsample by taking the mean of ``downsample`` samples. Length of datasets will be divided by ``downsample``.
-                - ``"peak"``: Downsample by drawing a saw wave that follows the min and max of the original data. This
-                  method produces the best visual representation of the data but is slower. Length of dataset will
-                  stay the same.
-
-            auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
-                for fewer data.
-            antialias (bool): By default, antialiasing is disabled to improve performance.
-            skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
-                for NaN values. If set to True, and NaN values exist, unpredictable behavior will occur. The data may
-                not be displayed or the plot may take a significant performance hit. Defaults to False.
             **kwargs: Can contain the following:
                 - `x`: You can provide `x` as keyword argument as well.
                 - `y`: You can provide `y` as keyword argument as well.
@@ -301,8 +308,9 @@ class PlotWidget(PlotItem):
                 - `error_width`: For seperating errorbar and line width.
 
         Returns:
-             The created curve. The errorbar curve is technically located at `curve.errorbar_curve`, but everything
-             can be set with just `curve.set_data(...)`.
+             :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve. The errorbar curve is
+             technically located at :class:`ErrorbarCurve <squap.widgets.plot_widget.ErrorbarCurve>`, but everything
+             can be set with just :meth:`PlotCurve.set_data() <squap.widgets.plot_widget.PlotCurve.set_data>`.
         """
 
         new_kwargs = get_new_kwargs(locals(),
@@ -326,7 +334,7 @@ class PlotWidget(PlotItem):
             pos (float or tuple): A position through which the line runs. When ``angle`` is ``0`` or ``90`` this can be a
                 single value: the y- or x-value of the line respectively.
             angle (float): The angle of the line in degrees. ``0`` is horizontal, ``90`` is vertical. Default is ``45``.
-            color (:ref:`ColorType`): Color of the line. Default is ``"y"`` (yellow). Can also be a :func:`gradient <squap.gradient>`.
+            color (:ref:`ColorType`): Color of the line. Default is ``"y"`` (yellow). Can also be a :func:`gradient <squap.get_gradient>`.
             width (int): Width of the plot line. Default is ``1``.
             dashed (bool): If ``True``, draws a dashed line between the points (for more options see dash_pattern).
                 Default is ``False``.
@@ -344,7 +352,7 @@ class PlotWidget(PlotItem):
             label (bool): The label doesn't work completely yet, I think this is due to pyqtgraph itself. Will look into
                 this later. If ``True``, a label is added to the line. Default is ``False``.
             label_text (str): The text that is shown on the label. ``{value}`` can be used inside the string, which will be
-                replaced by the lines current position. Default is ``{value}``.
+                replaced by the lines current position. Default is ``"{value}"``.
             label_movable (bool, optional): Whether the label is movable or not. Overwrites ``movable`` if changed.
                 Default is None.
             label_position (float): The relative position (between ``0.0`` and ``1.0``) of this label within the view box and
@@ -379,7 +387,7 @@ class PlotWidget(PlotItem):
                   name: Optional[str] = None, **kwargs):
         """
         This function is used to create a horizontal infinite line and add it to the view. This function is the same as
-        :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default label_text is now ``"y={value}"``.
+        :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default ``label_text`` is now ``"y={value}"``.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["dash_pattern", "line_style"],
@@ -401,7 +409,7 @@ class PlotWidget(PlotItem):
                   name: Optional[str] = None, **kwargs):
         """
         This function is used to create a horizontal infinite line and add it to the view. This function is the same as
-        :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default label_text is now ``"x={value}"``.
+        :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default ``label_text`` is now ``"x={value}"``.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["dash_pattern", "line_style"],
@@ -417,7 +425,7 @@ class PlotWidget(PlotItem):
     def grid(self, tick_spacing: Optional[tuple | float] = None, color: Optional[ColorType] = None, width: int = 1,
              **kwargs):
         """
-        This function is used to create a grid and add it to view. Todo: improve
+        This function is used to create a :class:`grid <squap.widgets.plot_widget.GridCurve>` and add it to view. Todo: improve
 
         Args:
             tick_spacing(tuple or float, optional): Set the grid spacing. When set to ``None`` grid line distance is
@@ -431,7 +439,7 @@ class PlotWidget(PlotItem):
             **kwargs: Some aliases are allowed.
 
         Returns:
-            GridCurve: The generated grid.
+            GridCurve: The generated :class:`grid <squap.widgets.plot_widget.GridCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=[],
@@ -446,10 +454,13 @@ class PlotWidget(PlotItem):
 
     def lock_zoom(self, curves: 'Iterable[PlotCurve]'):
         """
-        Locks zoom onto current range of specified curves. Works only if curves are normal curves with x- and y- data.
+        Locks zoom onto current range of specified :class:`curves <squap.widgets.plot_widget.PlotCurve>`. Works only
+        if they are normal :class:`curves <squap.widgets.plot_widget.PlotCurve>` with x- and y- data.
 
         Args:
-            curves (list): curves on which the zoom should lock
+            curves (list of :class:`curves <squap.widgets.plot_widget.PlotCurve>`):
+                :class:`curves <squap.widgets.plot_widget.PlotCurve>` on which the zoom should lock
+
         """
         x_min, x_max, y_min, y_max = [], [], [], []
 
@@ -507,7 +518,7 @@ class PlotWidget(PlotItem):
         Args:
             axis (str, optional): Axis to autoscale. Can be ``"x"``, ``"y"``, or ``"xy"``, or ``None`` for both. Defaults to ``None``.
             enable (bool): Whether to enable or disable. Defaults to ``True``.
-            x (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the x-direction.              Defaults to `None`.
+            x (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the x-direction.
                 Defaults to ``None``.
             y (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the y-direction.
                 Defaults to ``None``.
@@ -606,77 +617,88 @@ class PlotCurve(PlotDataItem):
 
     def set_data(self, x=None, y=None, **kwargs):
         """
-        This function updates the data of a plot curve. If both x and y are provided, you can set them together
-        using set_data(x, y, ...). If either x or y is provided, you can set them individually, for example,
-        set_data(x=x, ...) or set_data(y=y, ...). Furthermore, you can include additional keyword
-        arguments such as color and width to customize the appearance of the curve. Note that for scatter points,
-        symbol_color is used for the color of points instead of color. In scatter(), color is allowed for the points.
+        This function updates the data of a :class:`plot <squap.widgets.plot_widget.PlotCurve>`,
+        :class:`scatter <squap.widgets.plot_widget.PlotCurve>`, or
+        :class:`errorbar <squap.widgets.plot_widget.PlotCurve>`, curve. If both ``x`` and ``y`` are provided, you can set them together
+        using ``set_data(x, y, ...)``. If either ``x`` or ``y`` is provided, you can set them individually, for example,
+        ``set_data(x=x, ...)`` or ``set_data(y=y, ...)``. Furthermore, you can include additional keyword
+        arguments such as ``color`` and ``width`` to customize the appearance of the curve.
+
+        Note:
+            For scatter points, ``symbol_color`` is used for the color of points instead of ``color`` when the curve
+            was not initialised as a scatter plot.
 
         Args:
             x: New x-locations of each point. Defaults to the previous value of x.
             y: New y-locations of each point. Defaults to the previous value of y.
-            **kwargs: Can contain the following:
-                - `color`: Changes the color of the curve. For a scatter-plot this is equivalent to symbol_color, for a
-                    regular plot is equivalent to line_color. `colour` or `c` is also allowed instead of `color`.
-                - `width` (float): Changes the width (in pixels) of the curve. `w` is also allowed instead of `width`.
-                - `line_color`: Changes the color of the line. It can either be a single color name, an RGB tuple,
-                    a float between 0.0 (black) and 1.0 (white), an integer (where each integer corresponds to a different
-                    color already), a hex code or of type gradient (created with `squap.get_gradient`).
-                - `dashed` (bool): If True, draws a dashed line between the points (for more options see dash_pattern).
-                    Defaults to False.
-                - `dash_pattern` (list): How the dashes are spaced. For example, if `dash_pattern` is [16, 16, 4, 16],
-                    the pattern will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels
-                    long and then a dash of 16 pixels long. This pattern is then repeated. This should be a list with a
-                    length that is an integer multiple of 2. Defaults to [16, 16].
-                - `line_style` (str): todo: some presets for simplicity, `ls` is also allowed instead of `line_style`.
-                - `gradient`: gradient of the line. Use `squap.get_gradient` to get the gradient. The gradient can
-                    be seen as a 2D image of a gradient which appears at each pixel that lies on the line. When `style` of
-                    the gradient is set to "horizontal" or "vertical", or "radial" without providing `position`, the bounds
-                    of the gradient will be automatically determined when set_data is called, which can decrease
-                    performance. So, specify `position` for optimal performance. Default is None.
-                - `fill_level`: fills the area under the curve to this Y-value. When provided, either provide `fill_color`
-                    or `fill_gradient`. Default is None.
-                - `fill_color`: color of the filled area.
-                - `fill_gradient`: gradient of the filled area.
-                - `symbol_color`: Changes the color of the symbols. It can be a single color name, an RGB tuple (with values
-                    between 0 and 1), one float between 0.0 (black) and 1.0 (white), an integer (where each integer
-                    corresponds to a different color already), or a hex code, or it can be multiple colors of the
-                    previous types. If multiple colors are provided, there should be as many colors as there are points.
-                - `symbol_size` (int): The size (in pixels) of each symbol. Can also be a list or array.
-                    `s` and `size` are also allowed instead of `symbol_size`.
-                - `symbol` (str): symbol to draw at each (x, y) location. Can be e.g.: "o" for circles (default), "t" for
-                    triangles, "s" for squares, "d" for diamonds. For all options see an example that I still have to make.
-                - `symbol_line_width` (int): the line width each symbol is drawn with, `symbol_lw is` also allowed.
-                - `symbol_line_color`: Change the color of the line around each symbol (Same allowed values
-                    as symbol_color), `symbol_lc` is also allowed.
-                - `connect` (str): Can be one of the following options:
-                    - ‘all’ connects all points.
-                    - ‘pairs’ generates lines between every other point.
-                    - ‘finite’ creates a break when a nonfinite point is encountered.
-                    - ‘auto’ mode, it will normally use connect=‘all’, but if any nonfinite data points are detected,
-                        it will automatically switch to ‘finite’.
-                    - If an ndarray is passed, it should contain N int32 values of 0 or 1. Values of 1 indicate that the
-                        respective point will be connected to the next.
-                - `pixel_mode` (bool): Whether to fix the size of each point. If True, size is specified
-                    in pixels. If False, size is specified in data coordinates.
-                - `antialias` (bool): Antialiasing is disabled by default to improve performance.
-                - `skip_finite_check` (bool): Optimization flag that can speed up plotting by not checking and
-                    compensating for NaN values. If set to True, and NaN values exist, unpredictable behavior will occur.
-                    The data may not be displayed or the plot may take a significant performance hit. Defaults to False.
-                - `downsample` (int): Reduce the number of samples by the given factor
-                - `downsample_method` (str): Can be one of the following options:
-                    - ‘subsample’: Downsample by taking the first of N samples. This method is fastest and least accurate.
-                        Length of datasets will be divided by downsample.
-                    - ‘mean’: Downsample by taking the mean of N samples. Length of datasets will be divided by downsample.
-                    - ‘peak’: Downsample by drawing a saw wave that follows the min and max of the original data.
-                        This method produces the best visual representation of the data but is slower. Length of dataset
-                        will stay the same.
-                    Defaults to `subsample`.
-                - `auto_downsample` (bool): Can increase performance by not drawing one pixel multiple times, but is slower
-                    for fewer data.
-                - `clip_to_view` (bool): If True, only data visible within the X range of the containing ViewBox is plotted.
-                    This can improve performance when plotting very large data sets where only a fraction of the data
-                    is visible at any time.
+
+        Keyword Args:
+            color (:ref:`ColorsType`): Changes the ``color`` of the curve.
+                For a scatter-plot this is equivalent to ``symbol_color``, for a
+                regular plot it is equivalent to ``line_color``. ``colour`` or ``c`` is also allowed instead of ``color``.
+            width (int): Changes the width (in pixels) of the curve. ``w`` is also allowed instead of ``width``.
+            line_color (:ref:`ColorType`): Changes the color of the line. See :ref:`ColorsType` for allowed values.
+                It can also be a gradient (created with :func:`squap.get_gradient`).
+            dashed (bool): If ``True``, draws a dashed line between the points (for more options see ``dash_pattern``).
+                Defaults to ``False``.
+            dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
+                will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
+                a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
+                integer multiple of 2. Defaults to ``[16, 16]``.
+            line_style(optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
+            gradient (:class:`QGradient <PySide6.QtGui.QGradient>`, optional): gradient of the line. Use :func:`squap.get_gradient` to get the gradient. The
+                gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
+                When ``style`` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or ``"radial"`` without providing
+                ``position``, the bounds of the gradient will be automatically determined when :meth:`set_data <squap.
+                plot_widget.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
+                optimal performance.
+            fill_level (float): fills the area under the curve to this Y-value. When provided, either provide ``fill_color``
+                or ``fill_gradient``.
+            fill_color (:ref:`ColorType`): color of the filled area.
+            fill_gradient : gradient of the filled area.
+            symbol_color (:ref:`ColorsType`): Changes the color of the symbols. See :ref:`ColorsType` for allowed values.
+                If a list of colors is passed, it should be the same length as ``x`` and ``y``.
+            symbol_size (int): The size (in pixels) of each symbol. Can also be a list or array.
+                `s` and `size` are also allowed instead of `symbol_size`.
+            symbol (str): symbol to draw at each (x, y) location. Can be e.g.: ``"o"`` for circles (default), ``"t"`` for
+                triangles, ``"s"`` for squares, ``"d"`` for diamonds. For all options see an example that I still have to make.
+            symbol_line_width (int): the line width each symbol is drawn with, ``symbol_lw`` and ``slw`` are also allowed.
+            symbol_line_color (:ref:`ColorsType`): Change the color of the line around each symbol, see :ref:`ColorsType`
+                for allowed values. ``symbol_lc`` and ``slc`` are also allowed.
+            pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
+                If ``False``, size is specified in data coordinates. Defaults to ``True``.
+            connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
+
+                - ``"all"``: Connects all points.
+                - ``"pairs"``: Generates lines between every other point.
+                - ``"finite"``: Creates a break when a nonfinite points is encountered.
+                - ``"auto"``: This will normally use ``"all"``, but if any nonfinite data points are detected,
+                  it will automatically switch to ``"finite"``.
+                - ``ndarray`` - ``N`` values of ``0`` or ``1``
+                  (``N`` being the length of ``x`` and ``y``). Values of ``1`` indicate that the
+                  respective point will be connected to the next.
+
+                Defaults to ``"auto"``.
+            downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
+            downsample_method (str): Can be one of the following options:
+
+                - ``"subsample"``: Downsample by taking the first of ``downsample`` samples. This method is fastest and least accurate.
+                  Length of datasets will be divided by downsample
+                - ``"mean"``: Downsample by taking the mean of ``downsample`` samples. Length of datasets will be divided by ``downsample``.
+                - ``"peak"``: Downsample by drawing a saw wave that follows the min and max of the original data. This
+                  method produces the best visual representation of the data but is slower. Length of dataset will
+                  stay the same.
+
+                Defaults to ``"mean"``.
+            auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
+                for less data. Defaults to ``False``.
+            antialias (bool): By default, antialiasing is disabled to improve performance.
+            skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
+                for ``NaN`` values. If set to ``True``, and ``NaN`` values exist, unpredictable behavior will occur. The data may
+                not be displayed or the plot may take a significant performance hit. Defaults to ``False``.
+            clip_to_view (bool): If True, only data visible within the X range of the containing ViewBox is plotted.
+                This can improve performance when plotting very large data sets where only a fraction of the data
+                is visible at any time.
         """
         if x is None and y is None:     # needed for autoscaling gradient, so done here.
             x, y = self.getData()
@@ -786,13 +808,13 @@ class PlotCurve(PlotDataItem):
 
 
 class ErrorbarCurve(ErrorBarItem):
-    """Will be added to PlotCurve as attribute. User probably will not interact with this object."""
+    """Is added to PlotCurve as attribute when an errorbar curve is initialised. Users probably will not interact with this object."""
     kwarg_mapping = {"xe": "x_err", "xerr": "x_err", "yerr": "y_err", "beamsize": "beam_size",
                      "bs": "beam_size", "c": "color", "colour": "color", "w": "width", "errorbar_color": "color",
                      "errorbar_width": "width"}
 
-    def __init__(self, parent, x_err: None | Number | Iterable = None, y_err: None | Number | Iterable = None,
-                 beam_size: Number = 0.0, color: ColorType = "white", width: int = 1):
+    def __init__(self, parent, x_err: None | float | Iterable = None, y_err: None | float | Iterable = None,
+                 beam_size: float = 0.0, color: ColorType = "white", width: int = 1):
         super().__init__()
         self.parent = parent        # for giving just one value for x_err or y_err
         self.pen = None
@@ -801,8 +823,7 @@ class ErrorbarCurve(ErrorBarItem):
         self.set_data(x_err=x_err, y_err=y_err, beam_size=beam_size, color=color, width=width)
 
     def set_data(self, *args, **kwargs):
-        """Used internally when plotting with an errorbar. Users will only interact with the PlotCurve, so see that
-        docstring for more info."""
+        """Used internally when plotting with an errorbar. Users will only interact with the :class:`~squap.widgets.plot_widget.PlotCurve`."""
         if args:
             if len(args) == 1:
                 kwargs["y"] = args[0]
@@ -840,7 +861,7 @@ class ErrorbarCurve(ErrorBarItem):
 
                 # is a little vague right now, fill in arg_strings for x to get clearer code.
                 if kwarg_name in new_kwargs:
-                    if isinstance(new_kwargs[kwarg_name], Number):
+                    if isinstance(new_kwargs[kwarg_name], int) or isinstance(new_kwargs[kwarg_name], float):
                         if self.old_y_err is None or len(self.old_y_err) == 0:
                             errorbar_kwargs[errorbar_kwarg1] = None
                             errorbar_kwargs[errorbar_kwarg2] = None
@@ -888,6 +909,7 @@ class TextCurve(TextItem):
         self.set_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
+        """Updates an existing text object. Takes the same arguments and keyword arguments as :func:`squap.plot_text`."""
         if args:
             self.setText(str(args[0]))
             if is_iter(args[1]):
@@ -968,18 +990,7 @@ class InfLine(InfiniteLine):
         self.set_data(**kwargs)
 
     def set_data(self, pos: Optional[float | Iterable[float]]=None, **kwargs):
-        """
-        This function updates the data of an infinite line.
-
-        Args:
-            pos (float or Iterable[float]): The new x-value for a vertical line, the new y-value for horizontal line, otherwise it must be a
-                tuple of a position on the line. Defaults to `None`, meaning the position is not changed
-            **kwargs: Can contain any argument accepted by `squap.inf_dline`, meaning the following arguments are
-                accepted: `angle`, `color`, `width`, `dashed`, `dash_pattern`, `line_style`, `bounds`, `span`, `movable`,
-                `line_movable`, `label`, `label_text`, `label_movable`, `label_position`, `label_anchors`,
-                `hover_color`, `hover_width` and `name`. For information
-                on these see `squap.inf_dline` documentation.
-        """
+        """Updates an existing line object. Takes the same arguments and keyword arguments as :func:`squap.inf_dline`."""
         if pos is not None:
             self.setValue(pos)
 
@@ -1070,15 +1081,7 @@ class ImageCurve(ImageItem):
                       axis_order=axis_order, border_color=border_color, **kwargs)
 
     def set_data(self, data=None, **kwargs):
-        """
-        This function updates the data of an image.
-
-        Args:
-            data: New data. Behaviour depends on other kwargs. For more information see `squap.imshow` documentation.
-            **kwargs: Can contain any argument accepted by `squap.imshow`, meaning the following arguments are
-                accepted: `data`, `location`, `cmap`, `auto_levels`, `levels`, `axis_order`, `border_color` and some
-                aliases. For information on these see `squap.imshow` documentation.
-        """
+        """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""
         kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
         final_kwargs = {}
         if data is not None:
@@ -1143,6 +1146,7 @@ class GridCurve(GridItem):
         self.set_data(**kwargs)
 
     def set_data(self, **kwargs):
+        """Updates an existing grid object. Takes the same arguments and keyword arguments as :func:`squap.grid`."""
         kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
         if "tick_spacing" in kwargs:
             tick_spacing = kwargs["tick_spacing"]

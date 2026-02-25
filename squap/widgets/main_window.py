@@ -16,10 +16,10 @@ from PySide6.QtGui import QCursor, QGuiApplication
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
 
-from squap.widgets.plot_manager import PlotManager
-from squap.widgets.table_manager import TableManager
-from squap.plot_widget import PlotWidget
-from squap.widgets.input_widget import InputTable
+from .plot_manager import PlotManager
+from .table_manager import TableManager
+from .plot_widget import PlotWidget
+from .input_widget import InputTable
 # from .plot_widget_3d import PlotWidget3D
 
 
@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
         Adds a new table as a tab with name ``name``.
 
         Returns:
-            InputTable: The created :class:`table <squap.InputTable>`.
+            InputTable: The created :class:`table <squap.widgets.input_widget.InputTable>`.
         """
         if name is None:
             name = f"tab{len(self.table_manager.input_tables)+1}"
@@ -166,12 +166,11 @@ class MainWindow(QMainWindow):
 
     def on_refresh(self, func: Callable, disconnect: bool = False):
         """Adds or removes a function that will be called on window refresh.
-        If you try to disconnect a function that cannot be disconnected, nothing happens.
 
         Args:
-            func (Callable): The function that will be called on refresh.
+            func (:term:`callable`): The function that will be called on refresh.
             disconnect (bool, optional): Whether the function should be connected (``False``) or disconnected (``True``).
-                Defaults to False.
+                If you try to disconnect a function that cannot be disconnected, nothing happens. Defaults to False.
         """
         if not disconnect:
             if self.timer:
@@ -247,14 +246,14 @@ class MainWindow(QMainWindow):
             self.table_manager.resized = True
 
     def window_size(self) -> tuple:
-        """Returns the size of the window as a tuple. Can be unreliable when called before the window is shown. """
+        """Returns the size of the window as a :class:`tuple`. Can be unreliable when called before the window is shown. """
         return self.size().toTuple()
 
     def set_input_width_ratio(self, fraction: float = 1 / 2):
         """
         Set the relative size of the input window compared to the plot window. A fraction of 1/2 (default value) means that
         the plot window is 2 times wider than the input window.
-        todo: should be changed to be 1/3 of total size. Can't set input width to full width
+        todo: should be changed to be 1/3 of total size. Can't set input width to full width rn.
 
         Args:
             fraction (float, optional): value between ``0`` and ``1``, specifying the size of the input widget in comparison to
@@ -274,8 +273,9 @@ class MainWindow(QMainWindow):
 
         Args:
             wait_interval (bool, optional): If set to ``False``, doesn't wait for time set by :func:`squap.set_interval`.
+                Defaults to ``True``.
             call_update_funcs (bool, optional): If set to ``True``, calls all functions bound by :func:`squap.on_refresh` when
-                this function is called.
+                this function is called. Defaults to ``True``.
         """
         if wait_interval and self.interval:
             now = current_time()
@@ -292,7 +292,8 @@ class MainWindow(QMainWindow):
         # timer.start(0)
 
     def show_window(self):
-        """Shows the window and refreshes it. Use in combination with :func:`squap.refresh`"""
+        """Shows the window and refreshes it. It is Non-blocking, so use in combination with your own loop and
+        :func:`squap.refresh`."""
         self.refresh_timer = current_time()
 
         if self.table_manager.main_input_widget:
@@ -327,7 +328,8 @@ class MainWindow(QMainWindow):
             self.update_funcs.append(interval_func)
 
     def start(self):
-        """Shows window and starts loop. Use in combination with :meth:`Box.bind`, :func:`squap.on_refresh` or for static plots. """
+        """Shows window and starts loop. Use in combination with :meth:`squap.widgets.Box.bind`,
+        :func:`squap.on_refresh` or for static plots. """
 
         timer = QTimer()  # timer is required for running functions on refresh and executing pyqtgraph programs
         if len(self.update_funcs):
@@ -412,7 +414,7 @@ class MainWindow(QMainWindow):
             n_frames (int, optional): Number of frames before the video stops and saves.
             duration (float, optional): Duration in seconds before the video stops and saves. It will save the last frame
                 after the time is up as well.
-            stop_func (Callable, optional): This function will be run after every iteration. If it returns True, the video
+            stop_func (:term:`callable`, optional): This function will be run after every iteration. If it returns True, the video
                 stops and saves.
             save_on_close (bool): Whether to save the video if the window is closed prematurely. Defaults to ``False``,
                 except when neither ``n_frames``, ``duration`` nor ``stop_func`` are provided.
@@ -637,16 +639,16 @@ class MainWindow(QMainWindow):
 
     def on_mouse_click(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
         """
-        Bind function to run on mouse click. As arguments it gets the position of the mouse, in pixels if ``pixel_mode`` is
-        set to ``True``, in coordinates if set to ``False``. Second argument that is passed is which mouse button is clicked. If
-        ``pixel_mode`` is False, ``ax`` should specify in which plot you expect clicks.
+        Bind function to run on mouse click. As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
+        set to ``True`` and in coordinates if set to ``False``. The second argument that is passed is which mouse button is clicked. If
+        ``pixel_mode`` is False and there are multiple subplots, ``ax`` should specify in which plot you expect clicks.
 
         Args:
-            func (Callable): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
+            func (:term:`callable`): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
                 the first is the mouse position, the second is the pyqtgraph internal event for more advanced usage.
             pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
                 Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinate. Defaults to the first plot.
+            ax (PlotWidget, optional): Axes on which to count the coordinates. Defaults to the first plot.
         todo: check all MouseClickEvent options, and check with middle mouse button
         todo: automatically determine which ax.
         """
@@ -684,11 +686,11 @@ class MainWindow(QMainWindow):
         """Bind a function to mouse move.
 
         Args:
-            func (Callable): The function that is called when the mouse is moved. The function receives the mouse position
+            func (:term:`callable`): The function that is called when the mouse is moved. The function receives the mouse position
                 as an argument.
             pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
                 Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinate. Defaults to the first plot.
+            ax (PlotWidget, optional): Axes on which to count the coordinates. Defaults to the first plot.
         """
         if ax is None:
             ax = self.plot_manager.plot_widget
@@ -727,7 +729,7 @@ class MainWindow(QMainWindow):
         Args:
             pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
                 Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinate. Only matters when ``pixel_mode`` is ``False``.
+            ax (PlotWidget, optional): Axes on which to count the coordinates. Only matters when ``pixel_mode`` is ``False``.
                 Defaults to the first plot.
 
         Returns:
@@ -748,14 +750,17 @@ class MainWindow(QMainWindow):
         but good enough for simple stuff. For complex stuff look into event_arg for now.
 
         Args:
-            func (Callable): The function that is called when the key is pressed.
+            func (:term:`callable`): The function that is called when the key is pressed.
             accept_modifier (bool): Whether to call the function when the input is a modifier, such as shift or
                 alt. Defaults to ``False``.
             modifier_arg (bool): Whether to call the function with the modifier as an extra argument. Defaults to
                 ``False``.
-            event_arg (bool): Whether to call the function with just the event as an argument. Is more complex
+            event_arg (bool): Whether to call the function with just the event as an argument. This is more complex
                 to deal with but much more versatile. Defaults to ``False``.
-            """
+
+        Returns:
+            :term:`callable`: The edited function that accepts the arguments listed above.
+        """
         if self.keyboardGrabber() is None:
             self.grabKeyboard()
 

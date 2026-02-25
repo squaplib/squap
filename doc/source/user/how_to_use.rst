@@ -1,5 +1,5 @@
-How to use
-==========
+Simple plots
+============
 
 We start by making a static plot. The syntax is similar to matplotlib: ::
 

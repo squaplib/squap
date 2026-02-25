@@ -1,4 +1,4 @@
-.. beginner_guide-label:
+.. _beginner_guide-label:
 
 Beginner guide
 ==============

@@ -1,14 +1,12 @@
 # starts off by creating an instance of main_window, containing a plot widget.
 from typing import Callable
 
-from squap.widgets.table_manager import TableManager
-from squap.widgets.main_window import MainWindow
-from .plot_widget import PlotWidget
 from . import widgets
 from .variables import Variables
-from squap.widgets.plot_manager import PlotManager
 from .custimisation import get_font, get_gradient, get_cmap
 
+from functools import update_wrapper        # for copy_docstring decorator
+from inspect import signature
 from functools import wraps
 
 from pyqtgraph import setConfigOption
@@ -23,6 +21,23 @@ __all__ = [
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font"
 ]
 
+
+def _copy_docstring(method):
+    def decorator(func):
+        original_module = func.__module__
+        sig = signature(method)
+        params = list(sig.parameters.values())
+        if params and params[0].name == 'self':
+            params = params[1:]
+        new_sig = sig.replace(parameters=params)
+        update_wrapper(func, method)
+        if hasattr(func, '__wrapped__'):
+            del func.__wrapped__
+        func.__module__ = original_module
+        func.__signature__ = new_sig  # set AFTER update_wrapper
+        return func
+    return decorator
+
 _window = None
 _input_table = None
 _table_manager = None
@@ -32,7 +47,7 @@ var = Variables()
 def get_window():
     global _window
     if _window is None:
-        _window = MainWindow(var)
+        _window = widgets.MainWindow(var)
     return _window
 
 
@@ -53,257 +68,257 @@ def get_table_manager():
 
 
 # <editor-fold desc="wrapped functions">
-@wraps(PlotWidget.plot)
+@_copy_docstring(widgets.PlotWidget.plot)
 def plot(*args, **kwargs):
     return get_window().plot_manager.plot_widget.plot(*args, **kwargs)
 
 
-@wraps(PlotWidget.scatter)
+@_copy_docstring(widgets.PlotWidget.scatter)
 def scatter(*args, **kwargs):
     return get_window().plot_manager.plot_widget.scatter(*args, **kwargs)
 
 
-@wraps(PlotWidget.errorbar)
+@_copy_docstring(widgets.PlotWidget.errorbar)
 def errorbar(*args, **kwargs):
     return get_window().plot_manager.plot_widget.errorbar(*args, **kwargs)
 
 
-@wraps(PlotWidget.inf_dline)
+@_copy_docstring(widgets.PlotWidget.inf_dline)
 def inf_dline(*args, **kwargs):
     return get_window().plot_manager.plot_widget.inf_dline(*args, **kwargs)
 
 
-@wraps(PlotWidget.inf_hline)
+@_copy_docstring(widgets.PlotWidget.inf_hline)
 def inf_hline(*args, **kwargs):
     return get_window().plot_manager.plot_widget.inf_hline(*args, **kwargs)
 
 
-@wraps(PlotWidget.inf_vline)
+@_copy_docstring(widgets.PlotWidget.inf_vline)
 def inf_vline(*args, **kwargs):
     return get_window().plot_manager.plot_widget.inf_vline(*args, **kwargs)
 
 
-@wraps(PlotWidget.grid)
+@_copy_docstring(widgets.PlotWidget.grid)
 def grid(*args, **kwargs):
     return get_window().plot_manager.plot_widget.grid(*args, **kwargs)
 
 
-@wraps(PlotWidget.plot_text)
+@_copy_docstring(widgets.PlotWidget.plot_text)
 def plot_text(*args, **kwargs):
     return get_window().plot_manager.plot_widget.plot_text(*args, **kwargs)
 
 
-@wraps(PlotWidget.imshow)
+@_copy_docstring(widgets.PlotWidget.imshow)
 def imshow(*args, **kwargs):
     return get_window().plot_manager.plot_widget.imshow(*args, **kwargs)
 
 
-@wraps(PlotWidget.set_xlim)
+@_copy_docstring(widgets.PlotWidget.set_xlim)
 def set_xlim(*args, **kwargs):
     return get_window().plot_manager.plot_widget.set_xlim(*args, **kwargs)
 
 
-@wraps(PlotWidget.set_ylim)
+@_copy_docstring(widgets.PlotWidget.set_ylim)
 def set_ylim(*args, **kwargs):
     return get_window().plot_manager.plot_widget.set_ylim(*args, **kwargs)
 
 
-@wraps(PlotWidget.xlim)
+@_copy_docstring(widgets.PlotWidget.xlim)
 def xlim(*args, **kwargs):
     return get_window().plot_manager.plot_widget.xlim(*args, **kwargs)
 
 
-@wraps(PlotWidget.ylim)
+@_copy_docstring(widgets.PlotWidget.ylim)
 def ylim(*args, **kwargs):
     return get_window().plot_manager.plot_widget.ylim(*args, **kwargs)
 
 
-@wraps(PlotWidget.enable_autoscale)
+@_copy_docstring(widgets.PlotWidget.enable_autoscale)
 def enable_autoscale(*args, **kwargs):
     return get_window().plot_manager.plot_widget.enable_autoscale(*args, **kwargs)
 
 
-@wraps(PlotWidget.disable_autoscale)
+@_copy_docstring(widgets.PlotWidget.disable_autoscale)
 def disable_autoscale(*args, **kwargs):
     return get_window().plot_manager.plot_widget.disable_autoscale(*args, **kwargs)
 
 
-@wraps(PlotWidget.legend)
+@_copy_docstring(widgets.PlotWidget.legend)
 def legend(*args, **kwargs):
     return get_window().plot_manager.plot_widget.legend(*args, **kwargs)
 
 
-@wraps(PlotWidget.set_title)
+@_copy_docstring(widgets.PlotWidget.set_title)
 def set_title(*args, **kwargs):
     return get_window().plot_manager.plot_widget.set_title(*args, **kwargs)
 
 
-@wraps(PlotWidget.lock_zoom)
+@_copy_docstring(widgets.PlotWidget.lock_zoom)
 def lock_zoom(*args, **kwargs):
     return get_window().plot_manager.plot_widget.lock_zoom(*args, **kwargs)
 
 
-@wraps(PlotManager.create_subplots)
+@_copy_docstring(widgets.PlotManager.create_subplots)
 def subplots(*args, **kwargs):
     return get_window().plot_manager.create_subplots(*args, **kwargs)
 
 
-@wraps(PlotManager.remove_item)
+@_copy_docstring(widgets.PlotManager.remove_item)
 def remove_item(*args, **kwargs):
     return get_window().plot_manager.remove_item(*args, **kwargs)
 
 
-@wraps(PlotManager.merge_plots)
+@_copy_docstring(widgets.PlotManager.merge_plots)
 def merge_plots(*args, **kwargs):
     return get_window().plot_manager.merge_plots(*args, **kwargs)
 
 
-@wraps(MainWindow.set_interval)
+@_copy_docstring(widgets.MainWindow.set_interval)
 def set_interval(*args, **kwargs):
     return get_window().set_interval(*args, **kwargs)
 
 
-@wraps(MainWindow.is_alive)
+@_copy_docstring(widgets.MainWindow.is_alive)
 def is_alive():
     return get_window().is_alive()
 
 
-@wraps(InputTable.add_slider)
+@_copy_docstring(widgets.InputTable.add_slider)
 def add_slider(*args, **kwargs):
     return get_input_table().add_slider(*args, **kwargs)
 
 
-@wraps(InputTable.add_checkbox)
+@_copy_docstring(widgets.InputTable.add_checkbox)
 def add_checkbox(*args, **kwargs):
     return get_input_table().add_checkbox(*args, **kwargs)
 
 
-@wraps(InputTable.add_inputbox)
+@_copy_docstring(widgets.InputTable.add_inputbox)
 def add_inputbox(*args, **kwargs):
     return get_input_table().add_inputbox(*args, **kwargs)
 
 
-@wraps(InputTable.add_button)
+@_copy_docstring(widgets.input_widget.InputTable.add_button)
 def add_button(*args, **kwargs):
     return get_input_table().add_button(*args, **kwargs)
 
 
-@wraps(InputTable.add_dropdown)
+@_copy_docstring(widgets.InputTable.add_dropdown)
 def add_dropdown(*args, **kwargs):
     return get_input_table().add_dropdown(*args, **kwargs)
 
 
-@wraps(InputTable.add_rate_slider)
+@_copy_docstring(widgets.InputTable.add_rate_slider)
 def add_rate_slider(*args, **kwargs):
     return get_input_table().add_rate_slider(*args, **kwargs)
 
 
-@wraps(InputTable.add_color_picker)
+@_copy_docstring(widgets.InputTable.add_color_picker)
 def add_color_picker(*args, **kwargs):
     return get_input_table().add_color_picker(*args, **kwargs)
 
 
-@wraps(MainWindow.on_mouse_click)
+@_copy_docstring(widgets.MainWindow.on_mouse_click)
 def on_mouse_click(*args, **kwargs):
     return get_window().on_mouse_click(*args, **kwargs)
 
 
-@wraps(MainWindow.on_mouse_move)
+@_copy_docstring(widgets.MainWindow.on_mouse_move)
 def on_mouse_move(*args, **kwargs):
     return get_window().on_mouse_move(*args, **kwargs)
 
 
-@wraps(MainWindow.get_mouse_pos)
+@_copy_docstring(widgets.MainWindow.get_mouse_pos)
 def get_mouse_pos(*args, **kwargs):
     return get_window().get_mouse_pos(*args, **kwargs)
 
 
-@wraps(MainWindow.on_key_press)
+@_copy_docstring(widgets.MainWindow.on_key_press)
 def on_key_press(*args, **kwargs):
     return get_window().on_key_press(*args, **kwargs)
 
 
-@wraps(MainWindow.add_table)
+@_copy_docstring(widgets.MainWindow.add_table)
 def add_input_table(*args, **kwargs):
     return get_window().add_table(*args, **kwargs)
 
 
-@wraps(TableManager.rename_tab)
+@_copy_docstring(widgets.TableManager.rename_tab)
 def rename_tab(*args, **kwargs):
     return get_table_manager().rename_tab(*args, **kwargs)
 
 
-@wraps(TableManager.set_active_tab)
+@_copy_docstring(widgets.TableManager.set_active_tab)
 def set_active_tab(*args, **kwargs):
     return get_table_manager().set_active_tab(*args, **kwargs)
 
 
-@wraps(TableManager.get_all_tabs)
+@_copy_docstring(widgets.TableManager.get_all_tabs)
 def get_all_tabs():
     return get_table_manager().get_all_tabs()
 
 
-@wraps(TableManager.get_all_boxes)
+@_copy_docstring(widgets.TableManager.get_all_boxes)
 def get_all_boxes():
     return get_table_manager().get_all_boxes()
 
 
-@wraps(TableManager.get_current_row)
+@_copy_docstring(widgets.TableManager.get_current_row)
 def get_current_row():
     return get_table_manager().get_current_row()
 
 
-@wraps(TableManager.link_boxes)
+@_copy_docstring(widgets.TableManager.link_boxes)
 def link_boxes(*args, **kwargs):
     return get_table_manager().link_boxes(*args, **kwargs)
 
 
-@wraps(TableManager.set_input_partition)
+@_copy_docstring(widgets.TableManager.set_input_partition)
 def set_input_partition(*args, **kwargs):
     return get_table_manager().set_input_partition(*args, **kwargs)
 
 
-@wraps(MainWindow.resize_window)
+@_copy_docstring(widgets.MainWindow.resize_window)
 def resize(*args, **kwargs):
     return get_window().resize_window(*args, **kwargs)
 
 
-@wraps(MainWindow.window_size)
+@_copy_docstring(widgets.MainWindow.window_size)
 def size():
     return get_window().window_size()
 
 
-@wraps(MainWindow.set_input_width_ratio)
+@_copy_docstring(widgets.MainWindow.set_input_width_ratio)
 def set_input_width(*args, **kwargs):
     return get_window().set_input_width_ratio(*args, **kwargs)
 
 
-@wraps(MainWindow.display_fps)
+@_copy_docstring(widgets.MainWindow.display_fps)
 def display_fps(*args, **kwargs):
     return get_window().display_fps(*args, **kwargs)
 
 
-@wraps(MainWindow.benchmark)
+@_copy_docstring(widgets.MainWindow.benchmark)
 def benchmark(*args, **kwargs):
     return get_window().benchmark(*args, **kwargs)
 
 
-@wraps(MainWindow.refresh)
+@_copy_docstring(widgets.MainWindow.refresh)
 def refresh(*args, **kwargs):
     return get_window().refresh(*args, **kwargs)
 
 
-@wraps(MainWindow.show_window)
+@_copy_docstring(widgets.MainWindow.show_window)
 def show_window():
     return get_window().show_window()
 
 
-@wraps(MainWindow.on_refresh)
+@_copy_docstring(widgets.MainWindow.on_refresh)
 def on_refresh(*args, **kwargs):
     return get_window().on_refresh(*args, **kwargs)
 
 
-@wraps(MainWindow.start)
+@_copy_docstring(widgets.MainWindow.start)
 def show():
     return get_window().start()
 
@@ -313,22 +328,22 @@ def close_window():
     return get_window().close()
 
 
-@wraps(MainWindow.clear)
+@_copy_docstring(widgets.MainWindow.clear)
 def clear():
     return get_window().clear()
 
 
-@wraps(MainWindow.export)
+@_copy_docstring(widgets.MainWindow.export)
 def export(*args, **kwargs):
     return get_window().export(*args, **kwargs)
 
 
-@wraps(MainWindow.export_video)
+@_copy_docstring(widgets.MainWindow.export_video)
 def export_video(*args, **kwargs):
     return get_window().export_video(*args, **kwargs)
 
 
-@wraps(MainWindow.start_recording)
+@_copy_docstring(widgets.MainWindow.start_recording)
 def start_recording(*args, **kwargs):
     return get_window().start_recording(*args, **kwargs)
 # </editor-fold>

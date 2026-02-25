@@ -1,9 +1,13 @@
-from pyqtgraph import GraphicsLayoutWidget
-from squap.plot_widget import PlotWidget
 import numpy as np
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union
+
+from pyqtgraph import GraphicsLayoutWidget
 from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
-from time import perf_counter as current_time
+
+from .plot_widget import PlotWidget
+
+
+PlotGrid = Union[PlotWidget, list['PlotGrid']]
 
 
 class PlotManager:
@@ -55,20 +59,21 @@ class PlotManager:
 
     def create_subplots(
             self, nrows: int = 1, ncols: int = 1, heightratios: Optional[list[int]] = None,
-            widthratios: Optional[list[int]] = None) -> Iterable:
+            widthratios: Optional[list[int]] = None) -> PlotGrid:
         """
-        Initialises a subplot window.
+        Initialises a subplot window and gives a 1D or 2D list of :class:`PlotWidgets <squap.widgets.plot_widget.PlotWidget>`.
 
         Args:
             nrows (int): number of rows.
             ncols (int): number of columns.
             heightratios (list of int, optional): ratios between the heights of the rows. Defaults to all ones. Only
-                integer values allowed. Not working yet!
+                integer values allowed. Not working yet!(?)
             widthratios (list of int, optional): ratios between the widths of the columns. Defaults to all ones. Only
-                integer values allowed. Not working yet!
+                integer values allowed. Not working yet!(?)
 
         Returns:
-            list: nested list of plot_windows on which the plots can be drawn.
+            list of :class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`: Possibly nested list of
+            :class:`plot widgets <squap.widgets.plot_widget.PlotWidget>` on which different plots can be drawn.
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
@@ -114,21 +119,21 @@ class PlotManager:
 
         if heightratios:
             for index, width in enumerate(widthratios):
-                # self.fig_widget.ci.layout.setColumnStretchFactor(index.rst, height)
-                # self.fig_widget.ci.layout.setColumnPreferredWidth(index.rst, width*pwidth+6*(width-1))
+                # self.fig_widget.ci.layout.setColumnStretchFactor(index, height)
+                # self.fig_widget.ci.layout.setColumnPreferredWidth(index, width*pwidth+6*(width-1))
                 self.fig_widget.ci.layout.setColumnMinimumWidth(index, pwidth*width)
         if widthratios:
             for index, height in enumerate(heightratios):
-                # self.fig_widget.ci.layout.setRowPreferredHeight(index.rst, height*pheight+6*(height-1))
+                # self.fig_widget.ci.layout.setRowPreferredHeight(index, height*pheight+6*(height-1))
                 self.fig_widget.ci.layout.setRowMinimumHeight(index, height*pheight)
-                # self.fig_widget.ci.layout.setRowStretchFactor(index.rst, width)
+                # self.fig_widget.ci.layout.setRowStretchFactor(index, width)
 
         self.axs = np.array(self.axs)
         return self.axs
 
     def remove_item(self, item: GraphicsObject):
         """
-        Remove item `item` from the window. Item can be anything that can be added to a plot widget.
+        Remove item ``item`` from the window. Item can be anything that can be added to a plot widget.
         """
         if isinstance(self.axs, np.ndarray):
             for pw in self.axs.flatten():
@@ -142,13 +147,15 @@ class PlotManager:
         raise ValueError("Item has not been found")
 
     def merge_plots(self, plots: Iterable[PlotWidget]) -> PlotWidget:  # not optimised, but fast enough (& not sure if it works)
-        """Merge multiple subplots into a single plot. This is used for unevenly spaced grids of subplots.
+        """Merge multiple :func:`subplots <squap.subplots>` into a single plot. This is used for unevenly spaced grids of subplots.
 
         Args:
-            plots (list of PlotWidget): list of plots to merge.
+            plots (list of :class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`): list of
+                plots to merge.
 
         Returns:
-            PlotWidget: One new plot object in place of the merged plots.
+            :class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`: One new
+            :class:`plot object <squap.widgets.plot_widget.PlotWidget>` in place of the merged plots.
 
         """
         # hrs = list(np.cumsum(window.heightratios))

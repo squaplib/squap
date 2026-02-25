@@ -1,8 +1,11 @@
 Input Table
 ===========
 
-.. class:: squap.InputTable
-    .. automethod:: squap.InputTable.rename
-    .. automethod:: squap.InputTable.get_boxes
-    .. automethod:: squap.InputTable.remove_row
-    .. automethod:: squap.InputTable.set_partition
+.. currentmodule:: squap.widgets.input_widget
+
+.. autoclass:: InputTable
+
+    .. automethod:: rename
+    .. automethod:: get_boxes
+    .. automethod:: remove_row
+    .. automethod:: set_partition

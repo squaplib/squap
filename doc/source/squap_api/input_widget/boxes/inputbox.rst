@@ -3,13 +3,14 @@ Inputbox
 
 .. autofunction:: squap.add_inputbox
 
-.. autoclass:: squap.InputTable.InputBox
-.. automethod:: squap.InputTable.InputBox.bind
-.. automethod:: squap.InputTable.InputBox.unbind
-.. automethod:: squap.InputTable.InputBox.set_value
-.. automethod:: squap.InputTable.InputBox.value
-.. automethod:: squap.InputTable.InputBox.change_params
-.. automethod:: squap.InputTable.InputBox.refresh_type_func
-.. automethod:: squap.InputTable.InputBox.print_val
-.. automethod:: squap.InputTable.InputBox.remove
+.. class:: squap.widgets.InputTable.InputBox
+
+    .. automethod:: squap.widgets.InputTable.InputBox.bind
+    .. automethod:: squap.widgets.InputTable.InputBox.unbind
+    .. automethod:: squap.widgets.InputTable.InputBox.set_value
+    .. automethod:: squap.widgets.InputTable.InputBox.value
+    .. automethod:: squap.widgets.InputTable.InputBox.change_params
+    .. automethod:: squap.widgets.InputTable.InputBox.refresh_type_func
+    .. automethod:: squap.widgets.InputTable.InputBox.print_val
+    .. automethod:: squap.widgets.InputTable.InputBox.remove
 

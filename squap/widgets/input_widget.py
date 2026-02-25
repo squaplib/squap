@@ -1,3 +1,5 @@
+from ..helper_funcs import textify, get_type_func, ColorType
+
 import numpy as np
 from typing import Any, Callable, Optional, Iterable
 from time import time as current_time
@@ -5,7 +7,6 @@ import os.path
 
 from pyqtgraph import ColorButton
 
-from squap.helper_funcs import textify, get_type_func, ColorType
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem,
     QLabel, QSlider, QCheckBox, QPushButton, QComboBox
@@ -17,7 +18,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
     """General class for each squap box.
 
     Args:
-        parent (:class:`InputTable <squap.InputTable>`): The parent :class:`InputTable <squap.InputTable>`.
+        parent (:class:`InputTable <squap.widgets.input_widget.InputTable>`): The parent :class:`InputTable <squap.widgets.input_widget.InputTable>`.
 
     Attributes:
         row (int): Row of the box. Is used when removing it after it has been created.
@@ -37,7 +38,8 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
     def change_params(self, **kwargs):
         """
-        Change params. ``kwargs`` can usually be the same arguments that are given to the ``__init__`` function of this box.
+        Change box parameters. ``kwargs`` can usually be the same arguments that are given to the ``__init__`` function
+        of this box, except ``init_value`` and ``row``.
         """
         raise NotImplementedError("Subclasses should implement this! Users should not see this.")
 
@@ -67,14 +69,14 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
     def value(self):
         """
-        Return the current value of ``var.var_name``
+        Return the current value of :ref:`var.var_name <squap.var>`
         """
         raise NotImplementedError("Subclasses should implement this! Users should not see this.")
 
     def set_value(self, value):
         """
-        Set the value of the box and ``var.var_name`` to ``value``. Note that for a slider, the new slider position will be
-        the closest possible position to ``value``, and the new value of ``var.var_name`` will be the value corresponding to
+        Set the value of the box and :ref:`var.var_name <squap.var>` to ``value``. Note that for a slider, the new slider position will be
+        the closest possible position to ``value``, and the new value of :ref:`var.var_name <squap.var>` will be the value corresponding to
         the new slider position.
         """
         raise NotImplementedError("Subclasses should implement this! Users should not see this.")
@@ -146,7 +148,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def set_partition(self, fraction=1/3):
         """
-        Sets the position of the partition between the 2 columns of the ``input_widget``.
+        Sets the position of the partition between the 2 columns of the :class:`~squap.widgets.input_widget.InputTable`.
 
         Args:
             fraction (float): float between ``0`` and ``1``, specifying the portion of the window taken up by the partition.
@@ -157,25 +159,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def get_boxes(self) -> list[Box]:        # assumes actual widget is the leftmost widget
         """
-        Returns a list containing all :class:`boxes <squap.input_widget.Box>` that exist at this point.
+        Returns a list containing all :class:`boxes <squap.widgets.Box>` that exist at this point.
 
         Returns:
-            list of Box: list of all :class:`boxes <squap.input_widget.Box>` added in order.
+            list of Box: list of all :class:`boxes <squap.widgets.Box>` added in order.
         """
         return [box_row[-1] for box_row in self.boxes]
 
     def add_widget(self, row: None | int, box_row: tuple[Box]) -> int:     # if row is specified and row is in empty_rows it is added there
         """
-        Handles all internal stuff that is required when a :class:`box <squap.input_widget.Box>` is added to a
+        Handles all internal stuff that is required when a :class:`box <squap.widgets.Box>` is added to a
         specified row. The row can be the next row or any empty row.
         Args:
             row (None or int): Row in which to add the box. Pass ``None`` to add it to a next row, or choose a row that has
-                no :class:`boxes <squap.input_widget.Box>` in it yet.
-            box_row (tuple of Box): `tuple` containing all :class:`boxes <squap.input_widget.Box>` in the row
-                (so usually a :class:`textbox <PySide6.QtWidgets.QLabel>` and :class:`box widget <squap.input_widget.Box>`)
+                no :class:`boxes <squap.widgets.Box>` in it yet.
+            box_row (tuple of Box): `tuple` containing all :class:`boxes <squap.widgets.Box>` in the row
+                (so usually a :class:`textbox <PySide6.QtWidgets.QLabel>` and :class:`box widget <squap.widgets.Box>`)
 
         Returns:
-            int: Row in which the :class:`box <squap.input_widget.Box>` has been added.
+            int: Row in which the :class:`box <squap.widgets.Box>` has been added.
         """
         if row is None or row == self.current_row+1:
             if not self.empty_rows:
@@ -219,8 +221,8 @@ class InputTable(QTableWidget):    # table for all inputs
         Remove box ``remove_box`` from row ``remove_row``.
 
         Args:
-            remove_row (int): row from which to remove the :class:`box <squap.input_widget.Box>`.
-            remove_box (Box): :class:`Box <squap.input_widget.Box>` to remove.
+            remove_row (int): row from which to remove the :class:`box <squap.widgets.Box>`.
+            remove_box (Box): :class:`Box <squap.widgets.Box>` to remove.
         """
         if remove_row in self.empty_rows or remove_row > self.current_row:
             raise ValueError(f"row {remove_row} is already empty.")
@@ -256,11 +258,13 @@ class InputTable(QTableWidget):    # table for all inputs
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
                    print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
-        """Create a slider with the given parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates a :class:`slider <squap.widgets.input_table.InputTable.Slider>` with the given parameters, and add it to the main
+        :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the slider.
-            init_value (float): The initial value of the slider.
+            init_value (float): The initial value of the slider. If the provided value is not on the slider, it gets set
+                to the closest value.
             min_value (float): The minimum value of the slider.
             max_value (float): The maximum value of the slider.
             n_ticks (int): The number of ticks on the slider. Defaults to ``51``.
@@ -281,14 +285,14 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the slider is added. Defaults to first empty row.
 
         Returns:
-            InputTable.Slider: The :class:`slider widget <squap.InputTable.Slider>`.
+            InputTable.Slider: The :class:`slider widget <squap.widgets.InputTable.Slider>`.
         """
         return self.Slider(self, name, init_value, min_value, max_value, n_ticks, tick_interval, only_ints, logscale,
                            custom_arr, var_name, print_value, row)
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
                      print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
-        """Create a checkbox with the given parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates a :class:`checkbox <squap.widgets.InputTable.CheckBox>` with the given parameters, and add it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the checkbox.
@@ -299,14 +303,14 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the checkbox is added. Defaults to first empty row.
 
         Returns:
-            InputTable.CheckBox: The :class:`checkbox widget  <squap.InputTable.CheckBox>`.
+            InputTable.CheckBox: The :class:`checkbox widget <squap.widgets.InputTable.CheckBox>`.
         """
         return self.CheckBox(self, name, init_value, var_name, print_value, row)
 
     def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
                      var_name: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox':
-        """Create an inputbox with the given parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and add it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the inputbox.
@@ -335,13 +339,13 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
 
         Returns:
-            InputTable.InputBox: The :class:`inputbox widget  <squap.InputTable.InputBox>`.
+            InputTable.InputBox: The :class:`inputbox widget <squap.widgets.InputTable.InputBox>`.
         """
         return self.InputBox(self, name, init_value, type_func, var_name, print_value, row)
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
-        """Create a button with name ``name`` and bound function ``func``, and add it to the main
-        :class:`input table <squap.InputTable>`.
+        """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``, and add it to the main
+        :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the button.
@@ -349,13 +353,14 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the button is added. Defaults to first empty row.
 
         Returns:
-            InputTable.Button: The :class:`button widget  <squap.InputTable.Button>`.
+            InputTable.Button: The :class:`button widget <squap.widgets.InputTable.Button>`.
         """
         return self.Button(self, name, func, row)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
-        """Create a dropdown widget with the given parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates a :class:`dropdown <squap.widgets.InputTable.Dropdown>` widget with the given parameters, and add
+        it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the dropwdown.
@@ -370,7 +375,7 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the dropwdown is added. Defaults to first empty row.
 
         Returns:
-            InputTable.Dropdown: The :class:`dropwdown widget  <squap.InputTable.Dropdown>`.
+            InputTable.Dropdown: The :class:`dropwdown widget <squap.widgets.InputTable.Dropdown>`.
         """
         return self.Dropdown(self, name, options, init_index, option_names, var_name, print_value, row)
 
@@ -378,7 +383,8 @@ class InputTable(QTableWidget):    # table for all inputs
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
                         var_name: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider':
-        """Create a RateSlider with the given parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates a :class:`RateSlider <squap.widgets.InputTable.RateSlider>` with the given parameters, and add it
+        to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the rate slider.
@@ -402,7 +408,7 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the rate slider is added. Defaults to first empty row.
 
         Returns:
-            InputTable.RateSlider: The :class:`rate_slider widget  <squap.InputTable.RateSlider>`.
+            InputTable.RateSlider: The :class:`rate_slider widget <squap.widgets.InputTable.RateSlider>`.
         """
         return self.RateSlider(
             self, name, init_value, change_rate,
@@ -411,7 +417,8 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
-        """Create a ColorPicker with the gives parameters, and add it to the main :class:`input table <squap.InputTable>`.
+        """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and add it
+        to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
 
         Args:
             name (str): The name in front of the color picker.
@@ -422,7 +429,7 @@ class InputTable(QTableWidget):    # table for all inputs
             row (int, optional): Row to which the color picker is added. Defaults to first empty row.
 
         Returns:
-            InputTable.ColorPicker: The :class:`color_picker widget  <squap.InputTable.ColorPicker>`.
+            InputTable.ColorPicker: The :class:`color_picker widget <squap.widgets.InputTable.ColorPicker>`.
         """
         return self.ColorPicker(
             self, name, init_value, var_name, print_value, row
@@ -649,10 +656,12 @@ class InputTable(QTableWidget):    # table for all inputs
             return getattr(self.parent.variables, self.current_name)
 
         def set_index(self, index):
+            """Sets the index to ``index``."""
             self.setValue(index)
 
         def index(self):
-            return super(QSlider, self).value()
+            """Returns the current index."""
+            return super(QSlider, self).value()     # self.value is overwritten so we want to access the parent one.
 
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")
@@ -1108,9 +1117,11 @@ class InputTable(QTableWidget):    # table for all inputs
             self.setCurrentIndex(option_names.index(value))
 
         def set_index(self, index):
+            """Sets the index to ``index``."""
             self.setCurrentIndex(index)
 
         def index(self):
+            """Returns the current index."""
             return self.currentIndex()
 
         def print_val(self):
