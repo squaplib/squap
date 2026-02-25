@@ -182,48 +182,6 @@ class MainWindow(QMainWindow):
                 if self.timer:
                     self.timer.timeout.disconnect(func)
 
-    def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
-        """Run the program until it is closed and then report the total frames and fps.
-
-        If ``n_frames`` or ``duration`` are specified, the program will quit when either has passed.
-
-        Args:
-            n_frames (int, optional): Number of frames to run the program for.
-            duration (float, optional): Total time to run the program for in seconds.
-        """
-        local_vars = Namespace(time=current_time(), count=0)
-        # Namespace used for function variables that need to carry over
-
-        if n_frames is None and duration is None:
-            def func():
-                local_vars.count += 1
-
-        elif n_frames is None:
-            def func():
-                local_vars.count += 1
-                if current_time() - local_vars.time > duration:
-                    self.close()
-
-        elif duration is None:
-            def func():
-                local_vars.count += 1
-                if local_vars.count >= n_frames:
-                    self.close()
-
-        else:
-            def func():
-                local_vars.count += 1
-                if current_time() - local_vars.time > duration or local_vars.count >= n_frames:
-                    self.close()
-
-        def final_func():
-            elapsed = current_time() - local_vars.time
-            print(f"{local_vars.count} frames have passed in {elapsed} seconds, "
-                  f"which gives an fps of {local_vars.count / elapsed}")
-
-        self.update_funcs.append(func)
-        self.close_funcs.append(final_func)
-
     def resize_window(self, width: int, height: int):
         """
         Resize the window.
@@ -585,7 +543,7 @@ class MainWindow(QMainWindow):
                 :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
             optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
-            ax (:class:`~squap.widgets.plot_widget.PlotWidget`, optional): Which window to set the title to the fps. Defaults to top-left.
+            ax (:class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`, optional): Which window to set the title to the fps. Defaults to top-left.
 
         Returns:
             :term:`callable`: Function that is needed to update the fps. If the program is run using :func:`squap.show`,
@@ -637,6 +595,48 @@ class MainWindow(QMainWindow):
                     skip.count = 0
 
         self.update_funcs.append(func)  # both so that it works for both styles
+
+    def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
+        """Run the program until it is closed and then report the total frames and fps.
+
+        If ``n_frames`` or ``duration`` are specified, the program will quit when either has passed.
+
+        Args:
+            n_frames (int, optional): Number of frames to run the program for.
+            duration (float, optional): Total time to run the program for in seconds.
+        """
+        local_vars = Namespace(time=current_time(), count=0)
+        # Namespace used for function variables that need to carry over
+
+        if n_frames is None and duration is None:
+            def func():
+                local_vars.count += 1
+
+        elif n_frames is None:
+            def func():
+                local_vars.count += 1
+                if current_time() - local_vars.time > duration:
+                    self.close()
+
+        elif duration is None:
+            def func():
+                local_vars.count += 1
+                if local_vars.count >= n_frames:
+                    self.close()
+
+        else:
+            def func():
+                local_vars.count += 1
+                if current_time() - local_vars.time > duration or local_vars.count >= n_frames:
+                    self.close()
+
+        def final_func():
+            elapsed = current_time() - local_vars.time
+            print(f"{local_vars.count} frames have passed in {elapsed} seconds, "
+                  f"which gives an fps of {local_vars.count / elapsed}")
+
+        self.update_funcs.append(func)
+        self.close_funcs.append(final_func)
 
     def on_mouse_click(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
         """

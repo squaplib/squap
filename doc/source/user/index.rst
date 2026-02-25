@@ -8,5 +8,5 @@ Beginner guide
 
     introduction
     installation
-    how_to_use
-    plotting
+    simple_plots
+    other_update_methods
