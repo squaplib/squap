@@ -8,9 +8,9 @@ from PySide6.QtGui import QFont, QGradient, QBrush, Qt
 from pyqtgraph import PlotDataItem, PlotItem, InfiniteLine, TextItem, ImageItem, mkPen, InfLineLabel, GridItem, \
     getConfigOption, ErrorBarItem
 
-from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, Font, \
+from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
     transform_kwargs, get_new_kwargs, ColorType, ColorsType
-from ..custimisation import cmap_to_gradient, get_cmap
+from ..custimisation import cmap_to_gradient, get_cmap, Font
 
 
 class PlotWidget(PlotItem):

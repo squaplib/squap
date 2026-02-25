@@ -8,3 +8,4 @@ Other Functions
     window_controls
     exporting
     helper_functions
+    other_objects

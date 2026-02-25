@@ -1,18 +1,81 @@
-from .helper_funcs import get_single_color, Font, ColorType, get_new_kwargs
+from .helper_funcs import get_single_color, ColorType, get_new_kwargs, transform_kwargs
 from typing import Iterable, Optional
-from PySide6.QtGui import QLinearGradient, QRadialGradient, QConicalGradient, QGradient, QCursor, QGuiApplication
+from PySide6.QtGui import QLinearGradient, QRadialGradient, QConicalGradient, QGradient, QFont
 from PySide6.QtCore import QPointF
 from matplotlib import colors
 from pyqtgraph import colormap
 import numpy as np
 
 
+class Font(QFont):
+    """Represents fonts used in squap. Use :func:`squap.get_font` to initialise a font.
+    Based on :class:`PySide6.QtGui.QFont`. """
+    kwarg_mapping = {           # aliases
+        "font": "font_name", "fn": "font_name", "size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
+        "ls": "letter_spacing", "ws": "word_spacing"
+    }
+
+    def __init__(self, font_name: str = "Segoe UI", font_size: Optional[int] = None, bold: bool = False,
+                 italic: bool = False, underline: bool = False, strikeout: bool = False, overline: bool = False,
+                 kerning: bool = False, stretch: int = 100, letter_spacing: float = .0, word_spacing: float = .0,
+                 **kwargs):
+        """See get_font docstring"""
+        if font_size is None:
+            super().__init__(font_name)
+        else:
+            super().__init__(font_name, font_size)
+
+        self.set_data(bold=bold, italic=italic, underline=underline, strikeout=strikeout, overline=overline,
+                      kerning=kerning, stretch=stretch, letter_spacing=letter_spacing, word_spacing=word_spacing,
+                      **kwargs)
+
+    def set_data(self, *args, **kwargs):
+        """Changes Font after creation. Accepts all arguments accepted by :func:`squap.get_font`."""
+        if len(args) > 2:
+            raise ValueError("Too many positional arguments provided, only two are allowed, the first being font_size"
+                             " and the second font_name")
+        elif len(args):
+            self.setPointSize(args[0])
+            if len(args) == 2:
+                self.setFamily(args[1])
+
+        if kwargs:
+            new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+            if "font_name" in new_kwargs:
+                self.setFamily(new_kwargs["font_name"])
+            if "font_size" in new_kwargs:
+                self.setPointSize(new_kwargs["font_size"])
+            if "bold" in new_kwargs:
+                bold = new_kwargs["bold"]
+                if isinstance(bold, bool):
+                    if bold:
+                        self.setBold(bold)
+                elif isinstance(bold, float) or isinstance(bold, int):
+                    self.setWeight(Font.Weight(int(bold*1000)))
+            if "italic" in new_kwargs:
+                self.setItalic(new_kwargs["italic"])
+            if "underline" in new_kwargs:
+                self.setUnderline(new_kwargs["underline"])
+            if "strikeout" in new_kwargs:
+                self.setStrikeOut(new_kwargs["strikeout"])
+            if "overline" in new_kwargs:
+                self.setOverline(new_kwargs["overline"])
+            if "kerning" in new_kwargs:
+                self.setKerning(new_kwargs["kerning"])
+            if "stretch" in new_kwargs:
+                self.setStretch(new_kwargs["stretch"])
+            if "letter_spacing" in new_kwargs:
+                self.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, new_kwargs["letter_spacing"])
+            if "word_spacing" in new_kwargs:
+                self.setWordSpacing(new_kwargs["word_spacing"])
+
+
 def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold: bool = False,
                  italic: bool = False, underline: bool = False, strikethrough: bool = False, overline: bool = False,
                  kerning: bool = False, stretch: int = 100, letter_spacing: float = .0, word_spacing: float = .0,
                  **kwargs) -> Font:
-    """Get font object. Usually names are allowed when a font is required as an argument, but this function creates
-    more complex fonts
+    """Creates and returns a :class:`font object <squap.custimisation.Font>`. Usually font names are allowed when a
+    function requires a font as an argument, but this function creates more complex fonts.
 
     Args:
         font_name (str): Name of the font. Can be any font on your computer. Defaults to ``"Segoe UI"``.
@@ -77,7 +140,7 @@ def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "ho
             anything when the cmap is a dict or a list. Defaults to ``256``.
 
     Returns:
-        QGradient: A gradient object.
+        :class:`QGradient <PySide6.QtGui.QGradient>`: A gradient object.
     """
     style = style.lower()
     extend = extend.lower()
@@ -127,7 +190,8 @@ def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "ho
 
 
 def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: str = "matplotlib"):
-    """Tool for getting cmap from different sources.
+    """Tool for getting cmap from different sources. Returns a function that takes a value between ``0`` and ``1`` and
+    returns a color based on the ``data`` argument.
 
     If ``data`` is of type ``str``, ``source`` decides from which library the cmap is obtained.
 
@@ -143,7 +207,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
         source (str): Library to obtain cmap from if it is a string. Currently, you can choose from matplotlib and
             colorcet. Feel free to request more.
     Returns:
-        Callable: A function that interpolates to find the best approximation of the color at location ``i``: a value
+        :term:`callable`: A function that interpolates to find the best approximation of the color at location ``i``: a value
         between ``0`` and ``1``.
     """
     if callable(data):  # probably catches too much, todo: check

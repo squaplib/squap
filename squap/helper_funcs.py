@@ -5,7 +5,7 @@ from typing import TypeAlias, Union, Iterable, Optional
 
 import numpy as np
 from numbers import Number
-from PySide6.QtGui import QGradient, Qt, QFont, QColor, QPen
+from PySide6.QtGui import QGradient, Qt, QColor, QPen
 
 from PySide6.QtWidgets import QTableWidgetItem
 from pyqtgraph import mkPen, mkColor
@@ -48,89 +48,6 @@ ColorsType: TypeAlias = Union[ColorType, Iterable["ColorsType"]]        # allows
 #         raise TypeError(
 #         f"Not sure how to make a color from {color} with type {type(color)}. If this is a mistake send me a message"
 #         )   # error #1007
-
-class Font(QFont):
-    """Class for generating font. Based on PySide6.QtGui.QFont. """
-    kwarg_mapping = {           # aliases
-        "font": "font_name", "fn": "font_name", "size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
-        "ls": "letter_spacing", "ws": "word_spacing"
-    }
-
-    def __init__(self, font_name: str = "Segoe UI", font_size: Optional[int] = None, bold: bool = False,
-                 italic: bool = False, underline: bool = False, strikeout: bool = False, overline: bool = False,
-                 kerning: bool = False, stretch: int = 100, letter_spacing: float = .0, word_spacing: float = .0,
-                 **kwargs):
-        """
-        Args:
-            font_name (str): Name of the font. Can be any font on your computer. Defaults to "Segoe UI".
-                Aliases: `font`, `fn`.
-            font_size (int): Font size. Defaults to None. This usually means the font_size is 12 todo: check
-                Aliases: `size`, `fs`.
-            bold (bool): Whether to make the font bold. Defaults to `False`.
-            italic (bool): Whether to make the font italic. Defaults to `False`.
-            underline (bool): Whether to give the font underline. Defaults to `False`.
-            strikethrough (bool): Whether to make the font strikethrough. Defaults to `False`. Alias: `strikeout`.
-            overline (bool): Whether to give the font overline. Defaults to `False`.
-            kerning (bool): Whether to draw the font with kerning. If kerning is enabled the text is drawn a bit more
-                compactly. Defaults to `False`.
-            stretch (int): Stretch factor as percentage. Eg. 100 is normal, 200 is twice as wide. Default is 100.
-            letter_spacing (float): Extra spacing between letters in pixels. Defaults to `0.0`. Alias: `ls`.
-            word_spacing (float): Extra spacing between words in pixels. Defaults to `0.0`. Alias: `ws`.
-            **kwargs: Aliases. See argument description for allowed aliases.
-        setFixedPitch?
-        setLetterSpacing?
-        setWordSpacing?
-        """
-        if font_size is None:
-            super().__init__(font_name)
-        else:
-            super().__init__(font_name, font_size)
-
-        self.set_data(bold=bold, italic=italic, underline=underline, strikeout=strikeout, overline=overline,
-                      kerning=kerning, stretch=stretch, letter_spacing=letter_spacing, word_spacing=word_spacing,
-                      **kwargs)
-
-    def set_data(self, *args, **kwargs):
-        """Changes Font after creation. Accepts all arguments appearing in `__init__`, so see that docstring
-        for descriptions."""
-        if len(args) > 2:
-            raise ValueError("Too many positional arguments provided, only two are allowed, the first being font_size"
-                             " and the second font_name")
-        elif len(args):
-            self.setPointSize(args[0])
-            if len(args) == 2:
-                self.setFamily(args[1])
-
-        if kwargs:
-            new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
-            if "font_name" in new_kwargs:
-                self.setFamily(new_kwargs["font_name"])
-            if "font_size" in new_kwargs:
-                self.setPointSize(new_kwargs["font_size"])
-            if "bold" in new_kwargs:
-                bold = new_kwargs["bold"]
-                if isinstance(bold, bool):
-                    if bold:
-                        self.setBold(bold)
-                elif isinstance(bold, Number):
-                    self.setWeight(Font.Weight(int(bold*1000)))
-            if "italic" in new_kwargs:
-                self.setItalic(new_kwargs["italic"])
-            if "underline" in new_kwargs:
-                self.setUnderline(new_kwargs["underline"])
-            if "strikeout" in new_kwargs:
-                self.setStrikeOut(new_kwargs["strikeout"])
-            if "overline" in new_kwargs:
-                self.setOverline(new_kwargs["overline"])
-            if "kerning" in new_kwargs:
-                self.setKerning(new_kwargs["kerning"])
-            if "stretch" in new_kwargs:
-                self.setStretch(new_kwargs["stretch"])
-            if "letter_spacing" in new_kwargs:
-                self.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, new_kwargs["letter_spacing"])
-            if "word_spacing" in new_kwargs:
-                self.setWordSpacing(new_kwargs["word_spacing"])
-
 
 def update_pen(pen: QPen, **kwargs) -> QPen:
     """Update existing pen `pen` using kwargs.

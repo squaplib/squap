@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
 
         Args:
             n_frames (int, optional): Number of frames to run the program for.
-            duration (Number, optional): Total time to run the program for in seconds.
+            duration (float, optional): Total time to run the program for in seconds.
         """
         local_vars = Namespace(time=current_time(), count=0)
         # Namespace used for function variables that need to carry over
@@ -379,7 +379,7 @@ class MainWindow(QMainWindow):
             filename (str): Name of the file to which the image must be saved. Extension can be png, jpg, jpeg, bmp, pbm,
                 pgm, ppm, xbm and xpm. Defaults to png if no extension is provided.
             widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): The widget to export. By default, the full
-                window is used.
+                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
         """
         if widget is None:
             pixmap = self.grab()
@@ -420,8 +420,8 @@ class MainWindow(QMainWindow):
                 except when neither ``n_frames``, ``duration`` nor ``stop_func`` are provided.
             skip_frames (int): Number of frames to not save after a frame is saved. Defaults to ``0``.
             display_window (bool): Whether to display the window or not. Defaults to ``False``.
-            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. Can be eg. a single plot,
-                the entire window, or only the plot window. Defaults to only the plot window.
+            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. By default, the full
+                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
 
         """
         # save_on_close is False by default so that you don't accidentally overwrite a video that took very long to make.
@@ -515,8 +515,8 @@ class MainWindow(QMainWindow):
             filename (str): Name of the file to which the video will be exported. Currently only supports .mp4 files.
             fps (float): Frames per second of the video. Defaults to 30.
             skip_frames (int): number of frames to not save after a frame is saved. Defaults to 0.
-            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. Can be eg. a
-                single plot, the entire window, or only the plot window. Defaults to only the plot window.
+            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. By default, the full
+                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
 
         Returns:
             :term:`callable`: Call this function to stop the recording and save the video.
@@ -577,7 +577,7 @@ class MainWindow(QMainWindow):
     def display_fps(self, update_speed: float = 0.2, get_fps: bool = False, optimized: bool = False,
                     ax: Optional[PlotWidget] = None):
         """
-        Display frames per second (fps) at the top of the plot widget.
+        Display frames per second (fps) at the top of the :class:`plot widget <squap.widgets.plot_widget.PlotWidget>`.
 
         Args:
             update_speed (float): The update speed for fps calculation. Defaults to ``0.2`` seconds.
@@ -585,11 +585,12 @@ class MainWindow(QMainWindow):
                 :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
             optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
-            ax (`squap.PlotWidget`, optional): Which window to set the title to the fps. Defaults to top-left.
+            ax (:class:`~squap.widgets.plot_widget.PlotWidget`, optional): Which window to set the title to the fps. Defaults to top-left.
 
         Returns:
-            :term:`callable`: function that is needed to update the fps. If the program is run in refresh mode, this function
-            needs to be run each loop
+            :term:`callable`: Function that is needed to update the fps. If the program is run using :func:`squap.show`,
+            this is handled automatically, but when you use :func:`squap.show_window`, it needs to be run with
+            :func:`squap.refresh`, either manually or by calling :func:`squap.refresh(call_update_funcs=True) <squap.refresh>`.
 
         Raises:
             :exc:`NotImplementedError`: If the function is called in 3D plot style, which is not supported yet.
