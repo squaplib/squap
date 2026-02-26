@@ -61,7 +61,7 @@ html_theme_options = {
 
 html_show_sourcelink = False
 
-html_logo = r"images\logo_horizontal.png"
+html_logo = r"images/logo_horizontal.png"
 
 html_static_path = ['_static']
 
