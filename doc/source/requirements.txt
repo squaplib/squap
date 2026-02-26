@@ -1,0 +1,8 @@
+PySide6
+pyqtgraph
+numpy
+matplotlib
+sphinx==8.2.3
+pydata-sphinx-theme==0.16.1
+sphinx-design==0.6.1
+sphinx-autodoc-typehints
