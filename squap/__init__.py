@@ -8,7 +8,7 @@ from .variables import Variables
 from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
 
-from functools import update_wrapper        # for copy_docstring decorator
+# from functools import _copy_docstring        # for copy_docstring decorator
 from inspect import signature
 
 from pyqtgraph import setConfigOption
@@ -24,25 +24,17 @@ __all__ = [
     "cmap_to_colors"
 ]
 
-def _copy_docstring(method):        # could maybe be simplified, was written by LLM
-    def decorator(func):
-        original_module = func.__module__  # save before update_wrapper overwrites it
-        sig = signature(method)
-        params = list(sig.parameters.values())
-        if params and params[0].name == 'self':
-            params = params[1:]
-        func.__doc__ = method.__doc__
-        func.__signature__ = sig.replace(parameters=params)
-        update_wrapper(func, method)
-        func.__wrapped__ = func
-        func.__module__ = original_module  # restore original module
-        return func
-    return decorator
-
 _window = None
 _input_table = None
 _table_manager = None
 var = Variables()
+
+
+def _copy_docstring(method):
+    def decorator(func):
+        func.__doc__ = method.__doc__
+        return func
+    return decorator
 
 
 def get_window() -> MainWindow:
