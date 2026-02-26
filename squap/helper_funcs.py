@@ -4,7 +4,6 @@ import json
 from typing import TypeAlias, Union, Iterable, Optional
 
 import numpy as np
-from numbers import Number
 from PySide6.QtGui import QGradient, Qt, QColor, QPen
 
 from PySide6.QtWidgets import QTableWidgetItem

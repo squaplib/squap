@@ -2,14 +2,13 @@ import sys
 import os.path
 from time import perf_counter as current_time
 import time
-from argparse import Namespace
+from argparse import Namespace, ArgumentError
 
 import cv2
 import numpy as np
 
 from typing import Callable, Optional
 from inspect import signature
-from argparse import ArgumentError
 
 from PySide6.QtWidgets import QMainWindow, QSplitter, QWidget, QApplication, QTabWidget
 from PySide6.QtGui import QCursor, QGuiApplication

@@ -9,7 +9,7 @@ from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
 
 # from functools import _copy_docstring        # for copy_docstring decorator
-from inspect import signature
+# from inspect import signature
 
 from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
