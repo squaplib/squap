@@ -1491,13 +1491,13 @@ class InputTable(QTableWidget):    # table for all inputs
             return self
 
         def _on_change(self, *args):
-            setattr(self.parent.variables, self.current_name, self.color(mode="byte"))
+            setattr(self.parent.variables, self.current_name, self.value())
 
         def set_value(self, value):
             self.setColor(value)
 
         def value(self):
-            return self.color(mode="byte")
+            return self.color(mode="float")
 
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")

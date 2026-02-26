@@ -34,7 +34,7 @@ class PlotWidget(PlotItem):
         self.curves.append(curve)
         return curve
 
-    def plot_text(self, text: str, pos: Iterable[float], color: ColorType = (200, 200, 200), angle: float = 0,
+    def plot_text(self, text: str, pos: Iterable[float], color: ColorType = (0.8, 0.8, 0.8), angle: float = 0,
                   font: Optional[str | Font] = None, font_size: Optional[int] = None, html: Optional[str] = None,
                   text_width: Optional[int] = None, **kwargs):
         """ Displays a :class:`text object <squap.widgets.plot_widget.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
@@ -58,7 +58,7 @@ class PlotWidget(PlotItem):
 
         text_widget = TextCurve(text, pos, **new_kwargs, **kwargs)
         # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
-        self.addItem(text)
+        self.addItem(text_widget)
         return text_widget
 
     def imshow(self, data: Iterable | None = None, location: Iterable | None = None, cmap: Any = None,
@@ -121,7 +121,7 @@ class PlotWidget(PlotItem):
             dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
                 will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
                 a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
-                integer multiple of 2. Defaults to ``[16, 16]``.
+                integer multiple of 2. Setting ``dash_pattern`` will also automatically set ``dashed`` to ``True``. Defaults to ``[16, 16]``.
             connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
 
                 - ``"all"``: Connects all points.
@@ -250,9 +250,9 @@ class PlotWidget(PlotItem):
                 Defaults to ``None``.
 
             y_err: Same as ``x_err`` but for ``y``.
-            color (:ref:`ColorType`): Color of the line and errorbar. Default is ``"y"`` (yellow). Can also be a gradient (see
+            color (:ref:`ColorType`): Color of the line and errorbars. Default is ``"y"`` (yellow). Can also be a gradient (see
                 :func:`squap.get_gradient`). If the color of the line and of the errorbar should be different, provide both
-                ``line_color`` and ``error_color``.
+                ``line_color`` and ``errorbar_color``.
             width (int): Width of the plot line. Default is ``1``. Does not affect the width of the errorbars.
             errorbar_width (int): Width of the errorbar lines. Default is ``1``.
             beam_size (float): Size of the bars at the ends of the errorbar lines. Default is ``0``.
@@ -261,7 +261,7 @@ class PlotWidget(PlotItem):
             dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
                 will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
                 a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
-                integer multiple of 2. Defaults to ``[16, 16]``.
+                integer multiple of 2. Setting ``dash_pattern`` will also automatically set ``dashed`` to ``True``. Defaults to ``[16, 16]``.
             connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
 
                 - ``"all"``: Connects all points.
@@ -341,7 +341,7 @@ class PlotWidget(PlotItem):
             dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
                 will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
                 a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
-                integer multiple of 2. Defaults to ``[16, 16]``.
+                integer multiple of 2. Setting ``dash_pattern`` will also automatically set ``dashed`` to ``True``. Defaults to ``[16, 16]``.
             line_style (str): todo: some presets for simplicity, `ls` is also allowed instead of `line_style`.
             movable (bool, optional): Whether the line (and label if it exists) is movable or not. Default is False.
             bounds (tuple, optional): Optional (min, max) bounding values. Bounds are only valid if the line is
@@ -644,7 +644,7 @@ class PlotCurve(PlotDataItem):
             dash_pattern (list, optional): How the dashes are spaced. For example, if ``dash_pattern`` is ``[16, 16, 4, 16]``, the pattern
                 will be: one dash of 16 pixels long, then a space of 16 pixels long, then a dash of 4 pixels long and then
                 a dash of 16 pixels long. This pattern is then repeated. This should be a list with a length that is an
-                integer multiple of 2. Defaults to ``[16, 16]``.
+                integer multiple of 2. Setting ``dash_pattern`` will also automatically set ``dashed`` to ``True``. Defaults to ``[16, 16]``.
             line_style(optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
             gradient (:class:`QGradient <PySide6.QtGui.QGradient>`, optional): gradient of the line. Use :func:`squap.get_gradient` to get the gradient. The
                 gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
@@ -667,6 +667,19 @@ class PlotCurve(PlotDataItem):
                 for allowed values. ``symbol_lc`` and ``slc`` are also allowed.
             pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
                 If ``False``, size is specified in data coordinates. Defaults to ``True``.
+            x_err: Size of the errorbar at each x value. Can be the following types:
+
+                - ``None``: No error in the x-direction.
+                - ``float``: x-error at all points.
+                - Iterable of same size as ``x``: x-error at each point.
+                - Iterable of size `(Nx, 2)`: ``x_err[i, 0]`` is the error on the left at each point, and ``x_err[i, 1]`` is the error on the right at each point ``i``.
+
+                Defaults to ``None``.
+
+            y_err: Same as ``x_err`` but for ``y``.
+            beam_size (float): Size of the bars at the ends of the errorbar lines. Default is ``0``.
+            errorbar_color (:ref:`ColorType`): Color of the errorbars. Default is ``"y"`` (yellow).
+            errorbar_width (int): Width of the errorbar lines. Default is ``1``.
             connect (str or :class:`np.ndarray <numpy.ndarray>`): Can be one of the following options:
 
                 - ``"all"``: Connects all points.
@@ -783,15 +796,15 @@ class PlotCurve(PlotDataItem):
                     if mult_col:
                         if mult_lw:
                             symbol_pen = [
-                                mkPen(color, width=width) for color, width in zip(self.symbol_lc, self.symbol_lw)
+                                mkPen(get_single_color(color), width=width) for color, width in zip(self.symbol_lc, self.symbol_lw)
                             ]
                         else:
-                            symbol_pen = [mkPen(color, width=self.symbol_lw) for color in self.symbol_lc]
+                            symbol_pen = [mkPen(get_single_color(color), width=self.symbol_lw) for color in self.symbol_lc]
                     else:
                         if mult_lw:
-                            symbol_pen = [mkPen(self.symbol_lc, width=width) for width in self.symbol_lw]
+                            symbol_pen = [mkPen(get_single_color(self.symbol_lc), width=width) for width in self.symbol_lw]
                         else:
-                            symbol_pen = mkPen(self.symbol_lc, width=self.symbol_lw)
+                            symbol_pen = mkPen(get_single_color(self.symbol_lc), width=self.symbol_lw)
                     new_kwargs["symbolPen"] = symbol_pen
 
             other_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_other_kwargs if kwarg in new_kwargs}
@@ -854,28 +867,30 @@ class ErrorbarCurve(ErrorBarItem):
             errorbar_kwargs = {}
 
             # repeat the same thing for x and y
-            for arg_strings in [["x_err", "left", "right"], ["y_err", "bottom", "top"]]:
-                kwarg_name = arg_strings[0]
-                errorbar_kwarg1 = arg_strings[1]
-                errorbar_kwarg2 = arg_strings[2]
+            if "x_err" in kwargs or "y_err" in kwargs:
+                if is_iter(kwargs["x_err"]) or is_iter(kwargs["y_err"]):
+                    for arg_strings in [["x_err", "left", "right"], ["y_err", "bottom", "top"]]:
+                        kwarg_name = arg_strings[0]
+                        errorbar_kwarg1 = arg_strings[1]
+                        errorbar_kwarg2 = arg_strings[2]
 
-                # is a little vague right now, fill in arg_strings for x to get clearer code.
-                if kwarg_name in new_kwargs:
-                    if isinstance(new_kwargs[kwarg_name], int) or isinstance(new_kwargs[kwarg_name], float):
-                        if self.old_y_err is None or len(self.old_y_err) == 0:
-                            errorbar_kwargs[errorbar_kwarg1] = None
-                            errorbar_kwargs[errorbar_kwarg2] = None
-                        else:
-                            errorbar_kwargs[errorbar_kwarg1] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
-                            errorbar_kwargs[errorbar_kwarg2] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
-                    elif isinstance(new_kwargs[kwarg_name], Iterable):
-                        kwarg_shape = np.shape(new_kwargs[kwarg_name])
-                        if len(kwarg_shape) == 1 or kwarg_shape[1] == 1:       # if it has only one dimension
-                            errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name]
-                            errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name]
-                        elif kwarg_shape[1] == 2:
-                            errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name][0]
-                            errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name][1]
+                        # is a little vague right now, fill in arg_strings for x to get clearer code.
+                        if kwarg_name in new_kwargs:
+                            if isinstance(new_kwargs[kwarg_name], int) or isinstance(new_kwargs[kwarg_name], float):
+                                if self.old_y_err is None:
+                                    errorbar_kwargs[errorbar_kwarg1] = None
+                                    errorbar_kwargs[errorbar_kwarg2] = None
+                                else:
+                                    errorbar_kwargs[errorbar_kwarg1] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
+                                    errorbar_kwargs[errorbar_kwarg2] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
+                            elif isinstance(new_kwargs[kwarg_name], Iterable):
+                                kwarg_shape = np.shape(new_kwargs[kwarg_name])
+                                if len(kwarg_shape) == 1 or kwarg_shape[1] == 1:       # if it has only one dimension
+                                    errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name]
+                                    errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name]
+                                elif kwarg_shape[1] == 2:
+                                    errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name][0]
+                                    errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name][1]
 
             if "beam_size" in new_kwargs:
                 errorbar_kwargs["beam"] = new_kwargs["beam_size"]

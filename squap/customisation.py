@@ -1,5 +1,5 @@
 from .helper_funcs import get_single_color, ColorType, get_new_kwargs, transform_kwargs
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Callable
 from PySide6.QtGui import QLinearGradient, QRadialGradient, QConicalGradient, QGradient, QFont
 from PySide6.QtCore import QPointF
 from matplotlib import colors
@@ -283,7 +283,7 @@ def cmap_to_gradient(cmap, gradient):
     cmap = get_cmap(cmap)
     if isinstance(cmap.data, str):
         for i in range(gradient.resolution):
-            value = cmap(i / (gradient.resolution - 1))
+            value = cmap(i / (gradient.resolution - 1))/255
             gradient.setColorAt(i / (gradient.resolution - 1), get_single_color(value))
     else:
         for key, value in cmap.data.items():
@@ -291,7 +291,18 @@ def cmap_to_gradient(cmap, gradient):
     return gradient
 
 
-def cmap_to_colors(cmap, N_points):       # todo: temporary, make this better
+def cmap_to_colors(cmap: Callable, N_points: int) -> np.ndarray:       # todo: temporary, make this better
+    """
+    Transform a cmap into N equally spaced colors.
+
+    Args:
+        cmap (:term:callable): the used colormap (from :func:`squap.get_cmap`)
+        N_points (int): the number of points to retrieve
+
+    Returns:
+        np.ndarray: A shape ``(N_points, 4)`` :class:`ndarray <numpy.ndarray>` where ``result[i]`` is ``cmap(i/N_points-1)``.
+
+    """
     colors = np.zeros((N_points, 4))
     if isinstance(cmap, dict):
         col_arr = np.array(list(np.array(get_single_color(col).toTuple()) for col in cmap.values()))

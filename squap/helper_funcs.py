@@ -77,17 +77,22 @@ def update_pen(pen: QPen, **kwargs) -> QPen:
         if kwargs["width"] is not None:
             pen.setWidth(kwargs["width"])
 
+
     if "dashed" in kwargs:
         if kwargs["dashed"]:
             pen.setStyle(Qt.PenStyle.DashLine)
-            pen.setDashPattern([16, 16])
+            if "dash_pattern" not in kwargs:
+                pen.setDashPattern([16, 16])        # not perfect. turning dash off and on will forget the old dashpattern
+            if "dash_pattern" in kwargs:
+                pen.setDashPattern(kwargs["dash_pattern"])
         else:
             pen.setStyle(Qt.PenStyle.SolidLine)
 
-    if "dash_pattern" in kwargs:
-        pen.setDashPattern(kwargs["dash_pattern"])
-        # pen.stored_dash_pattern = None
+    else:
+        if "dash_pattern" in kwargs:
+            pen.setDashPattern(kwargs["dash_pattern"])
 
+        # pen.stored_dash_pattern = None
     return pen
 
 
@@ -114,7 +119,7 @@ def is_multiple_colors(arg):
     if is_iter(arg):
         if is_iter(arg[0]):
             return True
-        elif len(arg) == 3 and isinstance(arg[0], Number):
+        elif (len(arg) == 3 or len(arg) == 4) and (isinstance(arg[0], float) or isinstance(arg[0], int)):
             return False
         else:
             return True
@@ -124,15 +129,16 @@ def is_multiple_colors(arg):
 
 def get_single_color(input_col):
     if is_iter(input_col):
-        if isinstance(input_col[0], float):
+        if isinstance(input_col[0], float) or isinstance(input_col[0], int):
             if len(input_col) == 3 or len(input_col) == 4:
                 return mkColor(np.array(input_col)*255)
             else:
                 raise ValueError(f"Expected tuple of lenght 3 or 4, but got length {len(input_col)} (Note that a "
                                  f"line can only be one color).")
         else:
-            raise TypeError(f"When an iterable is provided, it should have elements that are integers or floats. "
-                            f"Got {type(input_col)} (Note that a line can only be one color).")
+            raise TypeError(f"When an iterable is provided, it should have elements that are floats. "
+                            f"Got {type(input_col)} with elements {type(input_col[0])} (Note that colors are values between 0 and 1 not 0 and 255. Also note"
+                            f" that a line can only be one color).")
     else:
         return mkColor(input_col)
 

@@ -5,7 +5,7 @@ from . import widgets
 from .widgets import (MainWindow, PlotManager, TableManager, PlotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
                       TextCurve, InfLine, ImageCurve, GridCurve)
 from .variables import Variables
-from .customisation import get_font, get_gradient, get_cmap
+from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
 
 from functools import update_wrapper        # for copy_docstring decorator
@@ -21,7 +21,7 @@ __all__ = [
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
-    "ColorType", "ColorsType"
+    "ColorType", "ColorsType", "cmap_to_colors"
 ]
 
 def _copy_docstring(method):
@@ -46,17 +46,20 @@ _table_manager = None
 var = Variables()
 
 
-def get_window():
+def get_window() -> MainWindow:
     global _window
     if _window is None:
         _window = widgets.MainWindow(var)
     return _window
 
 
-def get_input_table():
+def get_input_table() -> InputTable:
     global _input_table
     if _input_table is None:
-        _input_table = get_window().init_first_tab()
+        if get_window().table_manager.main_input_widget:     # it is possible to init table widget without this function
+            _input_table = get_window().table_manager.main_input_widget
+        else:
+            _input_table = get_window().init_first_tab()
     return _input_table
 
 

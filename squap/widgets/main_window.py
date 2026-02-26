@@ -11,7 +11,7 @@ from typing import Callable, Optional
 from inspect import signature
 from argparse import ArgumentError
 
-from PySide6.QtWidgets import QMainWindow, QSplitter, QWidget, QApplication
+from PySide6.QtWidgets import QMainWindow, QSplitter, QWidget, QApplication, QTabWidget
 from PySide6.QtGui import QCursor, QGuiApplication
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
@@ -79,12 +79,14 @@ class MainWindow(QMainWindow):
         """
         if name is None:
             name = f"tab{len(self.table_manager.input_tables)+1}"
-        if self.table_manager.tab_widget is not None:
+        if self.table_manager.main_input_widget is None:
+            return self.init_first_tab(name=name)
+        else:
+            if self.table_manager.tab_widget is None:
+                self.table_manager.init_tab_widget(self)
             new_table = InputTable(self.table_manager.width, self.table_manager.height, name, self)
             self.table_manager.add_table(new_table)
             return new_table
-        else:
-            return self.init_first_tab(name=name)
 
     def init_first_tab(self, width_ratio: float = 0.5, name: Optional[str] = None) -> InputTable:
         """
@@ -123,25 +125,6 @@ class MainWindow(QMainWindow):
             self.move(int(pos[0] - 0.5 * (self.table_manager.width+4)), pos[1])
 
         return table
-
-    def init_tab_widget(self):
-        # size initialisation must be different depending on whether has been resized with existing input_widget
-        # but not yet shown
-        if self.table_manager.resized:
-            # print(self.size())
-            width, height = self.size().toTuple()
-            # copied from resize in __init__.py (when input_widget has been resized, the new QTabWidget is also resized)
-            ratio = self.splitter.width_ratio
-            self.table_manager.main_input_widget.resize(int(ratio * width / (ratio + 1)), height)
-            self.plot_manager.fig_widget.resize(int(width / (ratio + 1)), height)
-            self.splitter.resize(width, height)
-            self.table_manager.resized = True
-        else:
-            self.table_manager.main_input_widget.resize(self.table_manager.width, self.height())
-            self.table_manager.resized = False
-
-        tab_widget = self.table_manager.init_tab_widget()
-        self.splitter.replaceWidget(0, tab_widget)
 
     # def init_3D(self):
     #     self.plot_style_3D = True
@@ -288,7 +271,6 @@ class MainWindow(QMainWindow):
     def start(self):
         """Shows window and starts loop. Use in combination with :meth:`squap.widgets.Box.bind`,
         :func:`squap.on_refresh` or for static plots. """
-
         timer = QTimer()  # timer is required for running functions on refresh and executing pyqtgraph programs
         if len(self.update_funcs):
             for func in self.update_funcs:

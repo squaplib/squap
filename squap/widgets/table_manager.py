@@ -54,14 +54,24 @@ class TableManager:
 
         return input_table, self.table_container
 
-    def init_tab_widget(self):
+    def init_tab_widget(self, window):
         self.tab_widget = QTabWidget()
+        if self.resized:
+            # print(self.size())
+            width, height = window.size().toTuple()
+            # copied from resize in __init__.py (when input_widget has been resized, the new QTabWidget is also resized)
+            ratio = window.splitter.width_ratio
+            self.tab_widget.resize(int(ratio * width / (ratio + 1)), height)
+            window.plot_manager.fig_widget.resize(int(width / (ratio + 1)), height)
+            window.splitter.resize(width, height)
+        else:
+            self.tab_widget.resize(self.width, window.height())
+
         self.main_input_widget = self.tab_widget
         self.table_container.deleteLater()
-        self.tab_widget.addTab(self.first_input_table, self.first_input_table.name)
-        self.input_tables.append(self.first_input_table)
+        window.splitter.replaceWidget(0, self.tab_widget)
 
-        return
+        self.tab_widget.addTab(self.first_input_table, self.first_input_table.name)
 
     def add_table(self, new_table) -> InputTable:
         new_table.set_partition(self.input_partition)
