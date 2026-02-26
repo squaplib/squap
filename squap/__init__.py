@@ -8,8 +8,8 @@ from .variables import Variables
 from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
 
-# from functools import _copy_docstring        # for copy_docstring decorator
-# from inspect import signature
+import functools        # for copy_docstring decorator
+import inspect
 
 from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
@@ -32,7 +32,17 @@ var = Variables()
 
 def _copy_docstring(method):
     def decorator(func):
-        func.__doc__ = method.__doc__
+        original_module = func.__module__
+        sig = inspect.signature(method)
+        params = list(sig.parameters.values())
+        if params and params[0].name == 'self':
+            params = params[1:]
+        new_sig = sig.replace(parameters=params)
+        functools.update_wrapper(func, method)
+        if hasattr(func, '__wrapped__'):
+            del func.__wrapped__
+        func.__module__ = original_module
+        func.__signature__ = new_sig
         return func
     return decorator
 

@@ -20,6 +20,5 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
 [project.urls]
-homepage = "https://numpy.org"
-documentation = "https://numpy.org/doc/"
-source = "https://github.com/numpy/numpy"
+documentation = "https://squap.readthedocs.io/en/latest/
+source = "https://github.com/squaplib/squap"
