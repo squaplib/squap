@@ -3,7 +3,7 @@
 Input boxes
 ===========
 
-All boxes that can be placed in the input window.
+All boxes that can be placed in the input window. For a relevant example see :ref:`sphx_glr_auto_examples_param_and_var.py`.
 
 .. toctree::
     :maxdepth: 2

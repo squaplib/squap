@@ -36,7 +36,7 @@ intersphinx_mapping = {
 }
 
 sphinx_gallery_conf = {
-    "examples_dirs": "examples",    # where your example scripts live
+    "examples_dirs": path.abspath(path.join(path.dirname(__file__), "../../examples")),    # where your example scripts live
     "gallery_dirs": "auto_examples",      # where the generated output goes (relative to doc/source)
 }
 
@@ -54,6 +54,10 @@ python_display_short_literal_types = True
 maximum_signature_line_length = 40
 
 templates_path = ['_templates']
+
+html_theme_options = {
+    "header_links_before_dropdown": 5,      # makes sure examples is always visible in the top bar
+}
 
 html_show_sourcelink = False
 

@@ -13,6 +13,7 @@ A package for animated plots, built on PyQtGraph with PySide6. It focussed on si
     user_guide/index
     squap_api/index
     developer_guide/guide
+    auto_examples/index
 
 .. grid:: 1 1 2 2
     :gutter: 2 3 4 4

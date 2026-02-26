@@ -14,6 +14,8 @@ Widgets And Objects
     .. automethod:: squap.widgets.plot_widget.PlotWidget.scatter
     .. automethod:: squap.widgets.plot_widget.PlotWidget.errorbar
 
+All the customisation options for a PlotCurve are shown in :ref:`sphx_glr_auto_examples_all_plot_options.py`.
+
 .. autoclass:: PlotCurve
 
     .. automethod:: set_data
