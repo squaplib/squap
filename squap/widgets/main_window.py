@@ -312,19 +312,25 @@ class MainWindow(QMainWindow):
         self.update_funcs = []
         self.plot_manager.clear()
 
-    def export(self, filename: str, widget: Optional[QWidget] = None):
+    def export(self, filename: str, widget: str = "window"):
         """Saves the current window as an image to file ``filename``.
 
         Args:
             filename (str): Name of the file to which the image must be saved. Extension can be png, jpg, jpeg, bmp, pbm,
                 pgm, ppm, xbm and xpm. Defaults to png if no extension is provided.
-            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): The widget to export. By default, the full
-                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
+            widget (str): The widget to export. The following options are available:
+
+                    - ``"window"``: The full window.
+                    - ``"plot"``: The plot window.
+                    - ``"input"``: The input window.
+
+                    Defaults to ``"window"``.
+
         """
-        if widget is None:
-            pixmap = self.grab()
-        else:
-            pixmap = widget.grab()
+        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_name = widget
+        widget = widget_map[widget_name]
+        pixmap = widget.grab()
 
         basename, extension = os.path.splitext(filename)
         if extension:
@@ -333,14 +339,14 @@ class MainWindow(QMainWindow):
             success = pixmap.toImage().save(f"{filename}.png")
             extension = ".png"
         if success:
-            print(f"Exported current plot window to {basename}{extension}")
+            print(f"Exported current {widget_name} window to {basename}{extension}")
         else:
             raise RuntimeError(f"Saving failed, probably because extension {extension} is not an allowed extension")
 
     def export_video(
             self, filename: str, fps: float = 30.0, n_frames: Optional[int] = None, duration: Optional[float] = None,
             stop_func: Optional[Callable] = None, skip_frames: int = 0, display_window: bool = False,
-            widget: Optional[QWidget] = None, save_on_close: bool = False
+            widget: str = "window", save_on_close: bool = False
     ):
         """Saves a video to file ``filename`` with the specified parameters.
 
@@ -360,13 +366,19 @@ class MainWindow(QMainWindow):
                 except when neither ``n_frames``, ``duration`` nor ``stop_func`` are provided.
             skip_frames (int): Number of frames to not save after a frame is saved. Defaults to ``0``.
             display_window (bool): Whether to display the window or not. Defaults to ``False``.
-            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. By default, the full
-                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
+            widget (str): The widget to export. The following options are available:
+
+                    - ``"window"``: The full window.
+                    - ``"plot"``: The plot window.
+                    - ``"input"``: The input window.
+
+                    Defaults to ``"window"``.
 
         """
         # save_on_close is False by default so that you don't accidentally overwrite a video that took very long to make.
-        if widget is None:
-            widget = self
+        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_name = widget
+        widget = widget_map[widget_name]
 
         if len([None for arg in [n_frames, duration, stop_func] if arg is None]) < 2:
             raise ValueError("Only one of n_frames, duration or stop_func can be provided, error code 1009.")
@@ -447,7 +459,7 @@ class MainWindow(QMainWindow):
         print("Saving finished.")
 
     def start_recording(self, filename: str, fps: float = 30.0, skip_frames: int = 0,
-                        widget: Optional[QWidget] = None) -> Callable:
+                        widget: str = "window") -> Callable:
         """Start recording to file ``filename`` with the specified parameters. Use function returned by this function to stop
         the recording.
 
@@ -455,14 +467,20 @@ class MainWindow(QMainWindow):
             filename (str): Name of the file to which the video will be exported. Currently only supports .mp4 files.
             fps (float): Frames per second of the video. Defaults to 30.
             skip_frames (int): number of frames to not save after a frame is saved. Defaults to 0.
-            widget (:class:`QWidget <PySide6.QtWidgets.QWidget>`, optional): which widget to record. By default, the full
-                window is used, but can also be e.g. a :class:`~squap.widgets.plot_widget.PlotWidget`.
+            widget (str): The widget to export. The following options are available:
+
+                    - ``"window"``: The full window.
+                    - ``"plot"``: The plot window.
+                    - ``"input"``: The input window.
+
+                    Defaults to ``"window"``.
 
         Returns:
             :term:`callable`: Call this function to stop the recording and save the video.
         """
-        if widget is None:
-            widget = self
+        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_name = widget
+        widget = widget_map[widget_name]
 
         pixmaps = []
         frame_counter = {"i": 0}
