@@ -1,4 +1,4 @@
-from .helper_funcs import get_single_color, ColorType, get_new_kwargs, transform_kwargs
+from .helper_funcs import get_single_color, ColorType, get_new_kwargs, transform_kwargs, mkcol_to_arr
 from typing import Iterable, Optional, Callable
 from PySide6.QtGui import QLinearGradient, QRadialGradient, QConicalGradient, QGradient, QFont
 from PySide6.QtCore import QPointF
@@ -214,7 +214,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
         return data
 
     if isinstance(data, list):  # turns data into dict with equal spacing
-        data = {index / (len(data) - 1): np.array(get_single_color(col).toTuple()) for index, col in enumerate(data)}
+        data = {index / (len(data) - 1): col for index, col in enumerate(data)}
 
     if isinstance(data, str):
         def cmap_func(i):
@@ -222,7 +222,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
     elif isinstance(data, dict):
         for key, value in data.items():
-            data[key] = np.array(get_single_color(value).toTuple())
+            data[key] = np.array(mkcol_to_arr(get_single_color(value)))
         keys, values = map(np.array, zip(*sorted(data.items())))
 
         def cmap_func(i):
@@ -305,7 +305,7 @@ def cmap_to_colors(cmap: Callable, N_points: int) -> np.ndarray:       # todo: t
     """
     colors = np.zeros((N_points, 4))
     if isinstance(cmap, dict):
-        col_arr = np.array(list(np.array(get_single_color(col).toTuple()) for col in cmap.values()))
+        col_arr = np.array([mkcol_to_arr(get_single_color(col)) for col in cmap.values()])
         x_arr = np.linspace(0, 1, N_points)
         for i in range(4):
             colors[:, i] = np.interp(x_arr, list(cmap.keys()), col_arr[:, i])

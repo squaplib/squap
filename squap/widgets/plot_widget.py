@@ -937,7 +937,7 @@ class TextCurve(TextItem):
             if "text" in new_kwargs:
                 self.setText(new_kwargs["text"])
             if "color" in new_kwargs:
-                self.setColor(get_single_color(new_kwargs["color"]).toTuple())
+                self.setColor(get_single_color(new_kwargs["color"]))
             if "angle" in new_kwargs:
                 self.setAngle(new_kwargs["angle"])
             if "font" in new_kwargs:

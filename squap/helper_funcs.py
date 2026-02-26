@@ -143,6 +143,10 @@ def get_single_color(input_col):
         return mkColor(input_col)
 
 
+def mkcol_to_arr(col):
+    return np.array(col.toTuple())/255
+
+
 def normalise_arr(arr):
     arr = np.array(arr)
     arr -= np.min(arr)
