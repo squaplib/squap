@@ -15,28 +15,27 @@ from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
 
 __all__ = [
-    "widgets",
+    "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
-    "ColorType", "ColorsType", "cmap_to_colors"
+    "cmap_to_colors"
 ]
 
-def _copy_docstring(method):
+def _copy_docstring(method):        # could maybe be simplified, was written by LLM
     def decorator(func):
-        original_module = func.__module__
+        original_module = func.__module__  # save before update_wrapper overwrites it
         sig = signature(method)
         params = list(sig.parameters.values())
         if params and params[0].name == 'self':
             params = params[1:]
-        new_sig = sig.replace(parameters=params)
+        func.__doc__ = method.__doc__
+        func.__signature__ = sig.replace(parameters=params)
         update_wrapper(func, method)
-        if hasattr(func, '__wrapped__'):
-            del func.__wrapped__
-        func.__module__ = original_module
-        func.__signature__ = new_sig  # set AFTER update_wrapper
+        func.__wrapped__ = func
+        func.__module__ = original_module  # restore original module
         return func
     return decorator
 
