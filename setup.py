@@ -4,11 +4,4 @@ setup(
     name="squap",
     packages=find_packages(),
     python_requires=">=3.9",
-    install_requires=[
-        "numpy",
-        "matplotlib",
-        "pyqtgraph",
-        "PySide6",
-        "opencv-python",
-    ],
 )

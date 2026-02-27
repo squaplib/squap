@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "squap"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Rik Mulder", email="rikmulder7@proton.me" },
 ]
@@ -18,6 +18,13 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "pyqtgraph",
+    "PySide6",
+    "opencv-python",
+]
 
 [project.urls]
 documentation = "https://squap.readthedocs.io/en/latest/"
