@@ -1,8 +1,8 @@
 # starts off by creating an instance of main_window, containing a plot widget.
-from typing import Callable, Iterable       # Iterable is necessary for docs compiler
+from typing import Callable
 
 from . import widgets
-from .widgets import (MainWindow, PlotManager, TableManager, PlotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
+from .widgets import (MainWindow, FigWidget, TableManager, SubplotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
                       TextCurve, InfLine, ImageCurve, GridCurve)
 from .variables import Variables
 from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
@@ -13,6 +13,7 @@ import inspect
 
 from pyqtgraph import setConfigOption
 from PySide6.QtCore import QTimer
+
 
 __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
@@ -74,109 +75,109 @@ def get_table_manager():
 
 
 # <editor-fold desc="wrapped functions">
-@_copy_docstring(widgets.PlotWidget.plot)
+@_copy_docstring(widgets.SubplotWidget.plot)
 def plot(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.plot(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.plot(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.scatter)
+@_copy_docstring(widgets.SubplotWidget.scatter)
 def scatter(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.scatter(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.scatter(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.errorbar)
+@_copy_docstring(widgets.SubplotWidget.errorbar)
 def errorbar(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.errorbar(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.errorbar(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.inf_dline)
+@_copy_docstring(widgets.SubplotWidget.inf_dline)
 def inf_dline(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.inf_dline(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.inf_dline(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.inf_hline)
+@_copy_docstring(widgets.SubplotWidget.inf_hline)
 def inf_hline(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.inf_hline(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.inf_hline(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.inf_vline)
+@_copy_docstring(widgets.SubplotWidget.inf_vline)
 def inf_vline(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.inf_vline(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.inf_vline(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.grid)
+@_copy_docstring(widgets.SubplotWidget.grid)
 def grid(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.grid(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.grid(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.plot_text)
+@_copy_docstring(widgets.SubplotWidget.plot_text)
 def plot_text(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.plot_text(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.plot_text(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.imshow)
+@_copy_docstring(widgets.SubplotWidget.imshow)
 def imshow(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.imshow(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.imshow(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.set_xlim)
+@_copy_docstring(widgets.SubplotWidget.set_xlim)
 def set_xlim(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.set_xlim(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.set_xlim(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.set_ylim)
+@_copy_docstring(widgets.SubplotWidget.set_ylim)
 def set_ylim(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.set_ylim(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.set_ylim(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.xlim)
+@_copy_docstring(widgets.SubplotWidget.xlim)
 def xlim(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.xlim(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.xlim(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.ylim)
+@_copy_docstring(widgets.SubplotWidget.ylim)
 def ylim(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.ylim(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.ylim(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.enable_autoscale)
+@_copy_docstring(widgets.SubplotWidget.enable_autoscale)
 def enable_autoscale(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.enable_autoscale(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.enable_autoscale(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.disable_autoscale)
+@_copy_docstring(widgets.SubplotWidget.disable_autoscale)
 def disable_autoscale(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.disable_autoscale(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.disable_autoscale(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.legend)
+@_copy_docstring(widgets.SubplotWidget.legend)
 def legend(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.legend(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.legend(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.set_title)
+@_copy_docstring(widgets.SubplotWidget.set_title)
 def set_title(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.set_title(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.set_title(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotWidget.lock_zoom)
+@_copy_docstring(widgets.SubplotWidget.lock_zoom)
 def lock_zoom(*args, **kwargs):
-    return get_window().plot_manager.plot_widget.lock_zoom(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.lock_zoom(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotManager.create_subplots)
+@_copy_docstring(widgets.FigWidget.create_subplots)
 def subplots(*args, **kwargs):
-    return get_window().plot_manager.create_subplots(*args, **kwargs)
+    return get_window().fig_widget.create_subplots(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotManager.remove_item)
+@_copy_docstring(widgets.FigWidget.remove_item)
 def remove_item(*args, **kwargs):
-    return get_window().plot_manager.remove_item(*args, **kwargs)
+    return get_window().fig_widget.remove_item(*args, **kwargs)
 
 
-@_copy_docstring(widgets.PlotManager.merge_plots)
+@_copy_docstring(widgets.FigWidget.merge_plots)
 def merge_plots(*args, **kwargs):
-    return get_window().plot_manager.merge_plots(*args, **kwargs)
+    return get_window().fig_widget.merge_plots(*args, **kwargs)
 
 
 @_copy_docstring(widgets.MainWindow.set_interval)
@@ -224,19 +225,19 @@ def add_color_picker(*args, **kwargs):
     return get_input_table().add_color_picker(*args, **kwargs)
 
 
-@_copy_docstring(widgets.MainWindow.on_mouse_click)
+@_copy_docstring(widgets.SubplotWidget.on_mouse_click)
 def on_mouse_click(*args, **kwargs):
-    return get_window().on_mouse_click(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.on_mouse_click(*args, **kwargs)
 
 
-@_copy_docstring(widgets.MainWindow.on_mouse_move)
+@_copy_docstring(widgets.SubplotWidget.on_mouse_move)
 def on_mouse_move(*args, **kwargs):
-    return get_window().on_mouse_move(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.on_mouse_move(*args, **kwargs)
 
 
-@_copy_docstring(widgets.MainWindow.get_mouse_pos)
+@_copy_docstring(widgets.SubplotWidget.get_mouse_pos)
 def get_mouse_pos(*args, **kwargs):
-    return get_window().get_mouse_pos(*args, **kwargs)
+    return get_window().fig_widget.plot_widget.get_mouse_pos(*args, **kwargs)
 
 
 @_copy_docstring(widgets.MainWindow.on_key_press)
@@ -289,9 +290,9 @@ def resize(*args, **kwargs):
     return get_window().resize_window(*args, **kwargs)
 
 
-@_copy_docstring(widgets.MainWindow.window_size)
+@_copy_docstring(widgets.MainWindow.size)
 def size():
-    return get_window().window_size()
+    return get_window().size()
 
 
 @_copy_docstring(widgets.MainWindow.set_input_width_ratio)
