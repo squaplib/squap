@@ -1,16 +1,13 @@
-Plotting
-========
+Plotting In 3D
+==============
 
-All functions used for elementary plotting.
+All functions used for 3D-plotting.
 
 .. toctree::
     :maxdepth: 2
 
     plotting
-    infinite_lines
     other_plot_objects
     plot_control
-    starting
     widget
     curves
-
