@@ -10,7 +10,7 @@ import numpy as np
 from typing import Callable, Optional
 
 from PySide6.QtWidgets import QMainWindow, QSplitter, QApplication
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QVector3D
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
 
@@ -18,7 +18,7 @@ from .plot_manager import FigWidget
 from .table_manager import TableManager
 from .plot_widget import SubplotWidget
 from .input_widget import InputTable
-# from .plot_widget_3d import PlotWidget3D
+from .plot_widget_3D import SubplotWidget3D
 
 
 class MainWindow(QMainWindow):
@@ -252,6 +252,7 @@ class MainWindow(QMainWindow):
                 self.splitter.setSizes([self.table_manager.width, self.fig_widget.width()])
 
         self.show()
+        self.fig_widget.update_size()
 
         self.refresh()
         if self.interval:
@@ -680,6 +681,61 @@ class MainWindow(QMainWindow):
 
         self.on_key_press_funcs.append(edited_func)
         return edited_func
+
+    def align_camera(self, ax: Optional[SubplotWidget3D] = None, tab: Optional[InputTable | str] = None):
+        """Adjusts camera position of a 3D plot. Use this to find the correct parameters to set the desired initial
+        camera position with :func:`squap.set_camera`.
+
+        Args:
+            ax (SubplotWidget3D, optional): Specifies the plot which the control boxes control. Defaults to the main plot.
+            tab (InputTable or str, optional): The tab to which to add the control boxes, or a string that represents
+                the name of the newly created tab which the control boxes will be added to. Defaults to the main input
+                table.
+        """
+
+        if tab is None:
+            tab = self.table_manager.main_input_widget
+        elif isinstance(tab, str):
+            tab = self.add_table(tab)
+
+        if ax is None:
+            ax = self.fig_widget.plot_widget
+
+        current_params = ax.cameraParams()
+        current_pos = ax.camera_pos
+        var = self.variables
+
+        def update_cam():
+            ax.set_camera(
+                distance=var.distance, azimuth=var.azimuth, elevation=var.elevation, fov=var.fov,
+                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset
+            )
+
+        boxes = [
+            tab.add_rate_slider("distance", current_params["distance"], change_rate=2),
+            tab.add_slider("azimuth", current_params["azimuth"], 0, 360, n_ticks=72),
+            tab.add_slider("elevation", current_params["elevation"], -90, 90, n_ticks=180),
+            tab.add_slider("fov", current_params["fov"], 0, 180, n_ticks=180),
+            tab.add_rate_slider("x_offset", current_pos[0], absolute=True, change_rate=5),
+            tab.add_rate_slider("y_offset", current_pos[1], absolute=True, change_rate=5),
+            tab.add_rate_slider("z_offset", current_pos[2], absolute=True, change_rate=5),
+        ]
+
+        for box in boxes:
+            box.bind(update_cam)
+
+        update_cam()
+
+        def get_params():
+            print(
+                f"The following function would get you the current camera postition: \n"
+                f"squap.set_camera(\n"
+                f"    x_offset={var.x_offset}, y_offset={var.y_offset}, z_offset={var.z_offset}, \n"
+                f"    distance={var.distance}, azimuth={var.azimuth}, elevation={var.elevation}, fov={var.fov}\n)"
+            )
+
+        tab.add_button("print camera parameters", get_params)
+
 
 
 def test_print(*args, **kwargs):

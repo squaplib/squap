@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QTableWidget
 from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 
 from .plot_widget import SubplotWidget
+from .plot_widget_3D import SubplotWidget3D
 
 
 class FigWidget(QTableWidget):
@@ -18,8 +19,6 @@ class FigWidget(QTableWidget):
 
         self.horizontalHeader().setVisible(False)
         self.verticalHeader().setVisible(False)
-
-        self.plot_style_3D = False
 
         self.plot_widget = SubplotWidget(0, 0)
         self.axs = self.plot_widget                     # when there are no subplots, axs is the main plot widget
@@ -42,15 +41,71 @@ class FigWidget(QTableWidget):
             for curve in self.axs.curves:
                 self.axs.removeItem(curve)
 
-        self.plot_style_3D = False
-        self.axs = SubplotWidget(0, 0)
+        self.plot_widget = SubplotWidget(0, 0)
+        self.axs = self.plot_widget                     # when there are no subplots, axs is the main plot widget
         self.shape = (1, 1)
-        self.setCellWidget(0, 0, self.axs)
-        self.plot_widget = self.axs
+        self.setRowCount(1)
+        self.setColumnCount(1)
 
         self.widthratios = None                 # for subplots
         self.heightratios = None
         super().clear()
+
+    def get_plot_widget(self, row: int = 0, col: int = 0):
+        """Gets plot widget at row ``row`` and column ``col``."""
+        if self.shape == (1, 1):
+            if row == 0 and col == 0:
+                return self.plot_widget
+            else:
+                raise IndexError(f"No widget found at ({row}, {col}).")
+        elif self.shape[0] == 1 or self.shape[1] == 1:
+            for ax in self.axs:
+                print(ax.row, ax.col)
+                print(row, col)
+                if row == ax.row and col == ax.col:
+                    return ax
+            else:
+                raise IndexError(f"No widget found at ({row}, {col}).")
+        else:
+            for ax_row in self.axs:
+                for ax in ax_row:
+                    if row == ax.row and col == ax.col:
+                        return ax
+            else:
+                raise IndexError(f"No widget found at ({row}, {col}).")
+
+
+    def make_3D(self, row: int = 0, col: int = 0) -> SubplotWidget3D:
+        """
+        Removes the current plot widget at row ``row`` and column ``col`` and adds a 3D plot widget. When you aren't
+        making use of subplots, the defaults replace the main widget.
+
+        Args:
+            row (int, optional): Row of the replaced widget. Defaults to 0.
+            col (int, optional): Column of the replaced widget. Defaults to 0.
+
+        Returns:
+            SubplotWidget3D: The created 3D plot widget.
+        """
+
+        plot = self.get_plot_widget(row, col)
+        if isinstance(plot, SubplotWidget):
+            self.removeCellWidget(row, col)
+
+            new_plot_widget = SubplotWidget3D(row, col)
+
+            if row == 0 and col == 0:
+                self.plot_widget = new_plot_widget
+
+            self.setCellWidget(row, col, new_plot_widget)
+            self.axs[row, col] = new_plot_widget
+
+            return new_plot_widget
+        elif isinstance(plot, SubplotWidget3D):
+            return plot
+        else:
+            raise NotImplementedError("This shouldn't happen, contact me if it does.")
+
 
     def update_size(self, event=None):
         if self.widthratios is not None:
@@ -97,6 +152,8 @@ class FigWidget(QTableWidget):
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
+        else:
+            self.clear()            # removes all existing plots
 
         self.setRowCount(nrows)
         self.setColumnCount(ncols)
@@ -111,7 +168,6 @@ class FigWidget(QTableWidget):
         else:
             nrows = len(heightratios)
 
-        self.clear()            # removes all existing plots
         self.widthratios = np.array(widthratios)/sum(widthratios)           # normalise ratios
         self.heightratios = np.array(heightratios)/sum(heightratios)
 

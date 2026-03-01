@@ -15,6 +15,12 @@ from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve
 
 
 class SubplotWidget(PlotWidget):
+    """
+    All plotting functions are methods of this widget. e.g. :func:`squap.plot` actually redirects to
+    :py:meth:`SubplotWidget.plot <SubplotWidget.plot>` of the main :class:`SubplotWidget`. When subplots are created
+    with :func:`squap.subplots()` you get an ``axs`` list which contains the created :class:`SubplotWidget <SubplotWidget>`,
+    so that e.g. :meth:`axs[0].plot <SubplotWidget.plot>` will create a regular plot in the first :class:`SubplotWidget`.
+    """
     def __init__(self, row: int, col: int, **kwargs):
         super().__init__(**kwargs)
         self.row = row          # for merging subplots
@@ -175,12 +181,12 @@ class SubplotWidget(PlotWidget):
         # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
 
     def scatter(
-            self, *args, color: ColorsType = "y", size: int = 7, edge_width: int = -1, edge_color: ColorType = "white",
-            pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
+            self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, edge_width: int | Iterable[int] = -1,
+            edge_color: ColorsType = "white", pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
             antialias: bool = False, **kwargs
     ) -> 'PlotCurve':
         """
-        Freates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
+        Creates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
         :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other arguments.
         If both ``x`` and ``y`` are provided, you can set them together using ``scatter(x, y, ...)``.
         If only ``y`` is provided using ``scatter(y, ...)``,
@@ -192,9 +198,9 @@ class SubplotWidget(PlotWidget):
             *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
             color (:ref:`ColorType`): the color of the points. See :ref:`ColorsType` for allowed values.
                 If a list of colors is passed, it should be the same length as ``x`` and ``y``.
-            size (float): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
-            edge_width (int): Width of the edge around each point. Default is ``-1`` (no edge).
-            edge_color (:ref:`ColorType`): Color of the edge around each point. Default is white.
+            size (int or list of int): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
+            edge_width (int or list of int): Width of the edge around each point. Default is ``-1`` (no edge).
+            edge_color (:ref:`ColorsType`): Color of the edge around each point. Default is white.
             pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
                 If ``False``, size is specified in data coordinates. Defaults to ``True``.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
