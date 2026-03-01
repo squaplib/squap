@@ -2,24 +2,23 @@ import sys
 import os.path
 from time import perf_counter as current_time
 import time
-from argparse import Namespace, ArgumentError
+from argparse import Namespace
 
 import cv2
 import numpy as np
 
 from typing import Callable, Optional
-from inspect import signature
 
-from PySide6.QtWidgets import QMainWindow, QSplitter, QWidget, QApplication, QTabWidget
-from PySide6.QtGui import QCursor, QGuiApplication
+from PySide6.QtWidgets import QMainWindow, QSplitter, QApplication
+from PySide6.QtGui import QGuiApplication, QVector3D
 from PySide6.QtCore import QTimer
 from PySide6.QtCore import Qt
 
-from .plot_manager import PlotManager
+from .plot_manager import FigWidget
 from .table_manager import TableManager
-from .plot_widget import PlotWidget
+from .plot_widget import SubplotWidget
 from .input_widget import InputTable
-# from .plot_widget_3d import PlotWidget3D
+from .plot_widget_3D import SubplotWidget3D
 
 
 class MainWindow(QMainWindow):
@@ -32,10 +31,10 @@ class MainWindow(QMainWindow):
         self.variables = variables
         self.update_funcs = []
 
-        self.plot_manager = PlotManager()
-        self.setCentralWidget(self.plot_manager.fig_widget)
+        self.fig_widget = FigWidget(self)       # is also plot_manager
+        self.setCentralWidget(self.fig_widget)
 
-        self.table_manager = TableManager(height)
+        self.table_manager = TableManager(height)       # initialising doesn't do much yet
 
         self.interval = None                # for timer when animated
         self.fps_timer = None
@@ -59,8 +58,9 @@ class MainWindow(QMainWindow):
             sys.exit("Application has been closed (code 1008)")
 
     def resizeEvent(self, event):
-        self.plot_manager.update_size(event)
+        self.fig_widget.update_size(event)
         self.table_manager.height = self.height()
+        event.accept()
 
     def keyPressEvent(self, event):
         for func in self.on_key_press_funcs:
@@ -107,17 +107,17 @@ class MainWindow(QMainWindow):
         self.splitter = QSplitter()
         self.splitter.width_ratio = width_ratio
 
-        self.table_manager.width = int(self.size().width()*width_ratio)
+        self.table_manager.width = int(self.width()*width_ratio)
         table = InputTable(self.table_manager.width, self.table_manager.height, name, self)
         _, table_container = self.table_manager.create_first_table(table)
 
         self.splitter.addWidget(table_container)
-        self.splitter.addWidget(self.plot_manager.fig_widget)
+        self.splitter.addWidget(self.fig_widget)
         self.setCentralWidget(self.splitter)
 
-        height = self.size().height()
+        height = self.height()
         if self.isVisible():
-            self.resize(self.size().width() + self.table_manager.width + 4, height)
+            self.resize(self.width() + self.table_manager.width + 4, height)
             # +4 extra for space between plot_widget and input_widget
 
             pos = self.pos().toTuple()
@@ -181,13 +181,13 @@ class MainWindow(QMainWindow):
         if self.table_manager.main_input_widget:
             ratio = self.splitter.width_ratio
             self.table_manager.main_input_widget.resize(int(ratio * width / (ratio + 1)), height)
-            self.plot_manager.fig_widget.resize(int(width / (ratio + 1)), height)
+            self.fig_widget.resize(int(width / (ratio + 1)), height)
             self.splitter.resize(width, height)
             self.table_manager.resized = True
 
-    def window_size(self) -> tuple:
-        """Returns the size of the window as a :class:`tuple`. Can be unreliable when called before the window is shown. """
-        return self.size().toTuple()
+    def size(self) -> tuple:
+        """Returns the size of the window as a :class:`tuple` (width, height). Can be unreliable when called before the window is shown. """
+        return super().size().toTuple()
 
     def set_input_width_ratio(self, fraction: float = 1 / 2):
         """
@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
             width, height = self.window_size()
             self.splitter.width_ratio = fraction
             self.table_manager.main_input_widget.resize(int(fraction * width / (fraction + 1)), height)
-            self.plot_manager.fig_widget.resize(int(width / (fraction + 1)), height)
+            self.fig_widget.resize(int(width / (fraction + 1)), height)
             self.splitter.resize(width, height)
 
     def refresh(self, wait_interval: bool = True, call_update_funcs: bool = True):
@@ -240,18 +240,19 @@ class MainWindow(QMainWindow):
             if self.resized:
                 if not self.table_manager.resized:
                     x = self.splitter.width_ratio  # calculates width of the input_widget given x and total w
-                    fig_width = self.size().width() / (1 + x)
+                    fig_width = self.width() / (1 + x)
                     self.table_manager.width = fig_width * x
                 else:
                     fig_width = self.width() - self.table_manager.width - 4
                 self.splitter.setSizes([self.table_manager.width, fig_width])
             else:
                 if not self.table_manager.resized:
-                    self.resize(self.size().width() + self.table_manager.width + 4, self.height())
+                    self.resize(self.width() + self.table_manager.width + 4, self.height())
                 # +4 extra for space between plot_widget and input_widget
-                self.splitter.setSizes([self.table_manager.width, self.plot_manager.fig_widget.width()])
+                self.splitter.setSizes([self.table_manager.width, self.fig_widget.width()])
 
         self.show()
+        self.fig_widget.update_size()
 
         self.refresh()
         if self.interval:
@@ -285,21 +286,22 @@ class MainWindow(QMainWindow):
             if self.resized:
                 if not self.table_manager.resized:
                     x = self.splitter.width_ratio  # calculates width of the input_widget given x and total w
-                    fig_width = self.size().width() / (1 + x)
+                    fig_width = self.width() / (1 + x)
                     self.table_manager.width = fig_width * x
                 else:
                     fig_width = self.width() - self.table_manager.width - 4
                 self.splitter.setSizes([self.table_manager.width, fig_width])
             else:
                 if not self.table_manager.resized:
-                    self.resize(self.size().width() + self.table_manager.width + 4, self.height())
+                    self.resize(self.width() + self.table_manager.width + 4, self.height())
                 # +4 extra for space between plot_widget and input_widget
-                self.splitter.setSizes([self.table_manager.width, self.plot_manager.fig_widget.width()])
+                self.splitter.setSizes([self.table_manager.width, self.fig_widget.width()])
 
             # pos = window.pos().toTuple()          # don't know why but this is suddenly not necessary anymore
             # window.move(pos[0]-0.5*(window.input_widget.width() + 4), pos[1])
 
         self.show()
+        self.fig_widget.update_size()
 
         self.app.exec()
 
@@ -309,7 +311,7 @@ class MainWindow(QMainWindow):
             self.timer.timeout.disconnect(update_func)
 
         self.update_funcs = []
-        self.plot_manager.clear()
+        self.fig_widget.clear()
 
     def export(self, filename: str, widget: str = "window"):
         """Saves the current window as an image to file ``filename``.
@@ -326,7 +328,7 @@ class MainWindow(QMainWindow):
                     Defaults to ``"window"``.
 
         """
-        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_map = {"window": self, "plot": self.fig_widget.fig_widget, "input": self.table_manager.table_container}
         widget_name = widget
         widget = widget_map[widget_name]
         pixmap = widget.grab()
@@ -375,7 +377,7 @@ class MainWindow(QMainWindow):
 
         """
         # save_on_close is False by default so that you don't accidentally overwrite a video that took very long to make.
-        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_map = {"window": self, "plot": self.fig_widget, "input": self.table_manager.table_container}
         widget_name = widget
         widget = widget_map[widget_name]
 
@@ -477,7 +479,7 @@ class MainWindow(QMainWindow):
         Returns:
             :term:`callable`: Call this function to stop the recording and save the video.
         """
-        widget_map = {"window": self, "plot": self.plot_manager.fig_widget, "input": self.table_manager.table_container}
+        widget_map = {"window": self, "plot": self.fig_widget, "input": self.table_manager.table_container}
         widget_name = widget
         widget = widget_map[widget_name]
 
@@ -532,9 +534,9 @@ class MainWindow(QMainWindow):
         return stop_func
 
     def display_fps(self, update_speed: float = 0.2, get_fps: bool = False, optimized: bool = False,
-                    ax: Optional[PlotWidget] = None):
+                    ax: Optional[SubplotWidget] = None):
         """
-        Display frames per second (fps) at the top of the :class:`plot widget <squap.widgets.plot_widget.PlotWidget>`.
+        Display frames per second (fps) at the top of the :class:`plot widget <squap.widgets.plot_widget.SubplotWidget>`.
 
         Args:
             update_speed (float): The update speed for fps calculation. Defaults to ``0.2`` seconds.
@@ -542,7 +544,7 @@ class MainWindow(QMainWindow):
                 :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
             optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
-            ax (:class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`, optional): Which window to set the title to the fps. Defaults to top-left.
+            ax (:class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`, optional): Which window to set the title to the fps. Defaults to top-left.
 
         Returns:
             :term:`callable`: Function that is needed to update the fps. If the program is run using :func:`squap.show`,
@@ -553,7 +555,7 @@ class MainWindow(QMainWindow):
             :exc:`NotImplementedError`: If the function is called in 3D plot style, which is not supported yet.
         """
         if ax is None:
-            ax = self.plot_manager.plot_widget
+            ax = self.fig_widget.plot_widget
 
         self.fps_timer = current_time()
         skip = Namespace(total=0, count=0)  # Namespace used for function variables that need to carry over
@@ -570,7 +572,7 @@ class MainWindow(QMainWindow):
                         fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
                         if get_fps:
                             setattr(self.variables, "fps", fps)
-                        if self.plot_manager.plot_style_3D:
+                        if self.fig_widget.plot_style_3D:
                             print(f"{fps = }")
                         else:
                             ax.set_title(f"fps = {fps}")
@@ -587,7 +589,7 @@ class MainWindow(QMainWindow):
                     self.fps_timer = current_time()
                     fps = skip.count / elapsed
                     fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                    if self.plot_manager.plot_style_3D:
+                    if self.fig_widget.plot_style_3D:
                         print(f"{fps = }")
                     else:
                         ax.set_title(f"fps = {fps}")
@@ -637,113 +639,6 @@ class MainWindow(QMainWindow):
         self.update_funcs.append(func)
         self.close_funcs.append(final_func)
 
-    def on_mouse_click(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
-        """
-        Bind function to run on mouse click. As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
-        set to ``True`` and in coordinates if set to ``False``. The second argument that is passed is which mouse button is clicked. If
-        ``pixel_mode`` is False and there are multiple subplots, ``ax`` should specify in which plot you expect clicks.
-
-        Args:
-            func (:term:`callable`): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
-                the first is the mouse position, the second is the pyqtgraph internal event for more advanced usage.
-            pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
-                Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinates. Defaults to the first plot.
-        todo: check all MouseClickEvent options, and check with middle mouse button
-        todo: automatically determine which ax.
-        """
-        if ax is None:
-            ax = self.plot_manager.plot_widget
-
-        params = signature(func).parameters
-        has_var_args = any(
-            param.kind == param.VAR_POSITIONAL
-            for param in params.values()
-        )
-        n_args = 2 if has_var_args else len(params)
-
-        if len(params) > 2:
-            raise ArgumentError(func, f"func should take one or two arguments, but currently takes "
-                                      f"{len(signature(func).parameters)} arguments.")
-
-        if pixel_mode:
-            def mouse_func(event):
-                pos = event.scenePos().toTuple()
-                args = ([pos, event][i] for i in range(n_args))  # handles 0, 1 or 2 n_args
-                func(*args)
-
-        else:
-            def mouse_func(event):
-                pos = event.scenePos()
-                plot_pos = ax.getViewBox().mapSceneToView(pos).toTuple()
-                print(event, pos, plot_pos)
-                args = ([plot_pos, event][i] for i in range(n_args))  # handles 0, 1 or 2 n_args
-                func(*args)
-
-        self.plot_manager.fig_widget.scene().sigMouseClicked.connect(mouse_func)
-
-    def on_mouse_move(self, func: Callable, pixel_mode: bool = False, ax: Optional[PlotWidget] = None):
-        """Bind a function to mouse move.
-
-        Args:
-            func (:term:`callable`): The function that is called when the mouse is moved. The function receives the mouse position
-                as an argument.
-            pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
-                Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinates. Defaults to the first plot.
-        """
-        if ax is None:
-            ax = self.plot_manager.plot_widget
-
-        params = signature(func).parameters
-        has_var_args = any(
-            param.kind == param.VAR_POSITIONAL
-            for param in params.values()
-        )
-        n_args = 1 if has_var_args else len(params)
-
-        if len(params) > 1:
-            raise ArgumentError(func, f"func should take one or two arguments, but currently takes "
-                                      f"{len(signature(func).parameters)} arguments.")
-
-        if pixel_mode:
-            def mouse_func(pos_pixel):
-                pos = pos_pixel.toTuple()
-                if n_args == 0:
-                    func()
-                else:
-                    func(pos)
-        else:
-            def mouse_func(pos_pixel):
-                plot_pos = ax.getViewBox().mapSceneToView(pos_pixel).toTuple()
-                if n_args == 0:
-                    func()
-                else:
-                    func(plot_pos)
-
-        self.plot_manager.fig_widget.scene().sigMouseMoved.connect(mouse_func)
-
-    def get_mouse_pos(self, pixel_mode=False, ax: Optional[PlotWidget] = None) -> tuple:
-        """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
-
-        Args:
-            pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
-                Defaults to ``False``.
-            ax (PlotWidget, optional): Axes on which to count the coordinates. Only matters when ``pixel_mode`` is ``False``.
-                Defaults to the first plot.
-
-        Returns:
-            tuple: The coordinates of the mouse cursor on the plot.
-        """
-        if ax is None:
-            ax = self.plot_manager.plot_widget
-
-        pos = self.plot_manager.fig_widget.mapFromGlobal(QCursor.pos())
-        if pixel_mode:
-            return pos.toTuple()
-        else:
-            return ax.getViewBox().mapSceneToView(pos).toTuple()
-
     def on_key_press(self, func: Callable, accept_modifier: bool = False, modifier_arg: bool = False,
                      event_arg: bool = False) -> Callable:
         """Bind ``func`` to keypress. ``func`` takes as argument which key is pressed. This function is not great yet
@@ -786,6 +681,61 @@ class MainWindow(QMainWindow):
 
         self.on_key_press_funcs.append(edited_func)
         return edited_func
+
+    def align_camera(self, ax: Optional[SubplotWidget3D] = None, tab: Optional[InputTable | str] = None):
+        """Adjusts camera position of a 3D plot. Use this to find the correct parameters to set the desired initial
+        camera position with :func:`squap.set_camera`.
+
+        Args:
+            ax (SubplotWidget3D, optional): Specifies the plot which the control boxes control. Defaults to the main plot.
+            tab (InputTable or str, optional): The tab to which to add the control boxes, or a string that represents
+                the name of the newly created tab which the control boxes will be added to. Defaults to the main input
+                table.
+        """
+
+        if tab is None:
+            tab = self.table_manager.main_input_widget
+        elif isinstance(tab, str):
+            tab = self.add_table(tab)
+
+        if ax is None:
+            ax = self.fig_widget.plot_widget
+
+        current_params = ax.cameraParams()
+        current_pos = ax.camera_pos
+        var = self.variables
+
+        def update_cam():
+            ax.set_camera(
+                distance=var.distance, azimuth=var.azimuth, elevation=var.elevation, fov=var.fov,
+                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset
+            )
+
+        boxes = [
+            tab.add_rate_slider("distance", current_params["distance"], change_rate=2),
+            tab.add_slider("azimuth", current_params["azimuth"], 0, 360, n_ticks=72),
+            tab.add_slider("elevation", current_params["elevation"], -90, 90, n_ticks=180),
+            tab.add_slider("fov", current_params["fov"], 0, 180, n_ticks=180),
+            tab.add_rate_slider("x_offset", current_pos[0], absolute=True, change_rate=5),
+            tab.add_rate_slider("y_offset", current_pos[1], absolute=True, change_rate=5),
+            tab.add_rate_slider("z_offset", current_pos[2], absolute=True, change_rate=5),
+        ]
+
+        for box in boxes:
+            box.bind(update_cam)
+
+        update_cam()
+
+        def get_params():
+            print(
+                f"The following function would get you the current camera postition: \n"
+                f"squap.set_camera(\n"
+                f"    x_offset={var.x_offset}, y_offset={var.y_offset}, z_offset={var.z_offset}, \n"
+                f"    distance={var.distance}, azimuth={var.azimuth}, elevation={var.elevation}, fov={var.fov}\n)"
+            )
+
+        tab.add_button("print camera parameters", get_params)
+
 
 
 def test_print(*args, **kwargs):
