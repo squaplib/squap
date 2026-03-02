@@ -7,6 +7,8 @@ Plot Window Control
 .. autofunction:: squap.ylim
 .. autofunction:: squap.enable_autoscale
 .. autofunction:: squap.disable_autoscale
+.. autofunction:: squap.enable_autopan
+.. autofunction:: squap.disable_autopan
 .. autofunction:: squap.lock_zoom
 
 .. autofunction:: squap.subplots

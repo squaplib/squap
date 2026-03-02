@@ -515,7 +515,7 @@ class SubplotWidget(PlotWidget):
     def enable_autoscale(self, axis: Optional[str] = None, enable: bool = True, x: Optional[bool] = None,
                          y: Optional[bool] = None):
         """
-        Enable (or disable) auto-range for ``axis``, which may be ``"x"``, ``"y"``, or ``"xy"`` for both (if ``axis`` is omitted, both
+        Enables (or disables) auto-range for ``axis``, which may be ``"x"``, ``"y"``, or ``"xy"`` for both (if ``axis`` is omitted, both
         axes will be changed).
         When enabled, the axis will automatically rescale when items are added/removed or change their shape.
         The argument ``enable`` may optionally be a float (``0.0`` to ``1.0``) which indicates the fraction of the data that should
@@ -530,11 +530,51 @@ class SubplotWidget(PlotWidget):
             y (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the y-direction.
                 Defaults to ``None``.
         """
-        self.enableAutoRange(axis, enable, x, y)
+        self.enableAutoRange(axis, enable, x, y)        # None as arg is fine
 
     def disable_autoscale(self, axis: Optional[str] = None, x: Optional[bool] = None, y: Optional[bool] = None):
-        """Disables auto-scale. (Calls :func:`enableAutoRange(enable=False) <squap.enable_autoscale>`)"""
+        """Disables auto-scale. (Equivalent to :func:`enable_autoscale(enable=False) <squap.enable_autoscale>`)"""
         self.enableAutoRange(axis, enable=False, x=x, y=y)
+
+    def enable_autopan(self, axis: Optional[str] = None, enable: bool = True, x: Optional[bool] = None,
+                         y: Optional[bool] = None):
+        """
+        Enables (or disables) autopan for ``axis``, which may be ``"x"``, ``"y"``, or ``"xy"`` for both (if ``axis`` is omitted, both
+        axes will be changed). Only does something when autoscaling is enabled.
+        When enabled, the axis will automatically pan to objects in the plot meaning the zoom level stays the same but the offset changes.
+        The argument ``enable`` may optionally be a float (``0.0`` to ``1.0``) which indicates the fraction of the data that should
+        be visible.
+        Also allows setting ``x`` and or ``y`` to ``True`` for simpler interface.
+
+        Args:
+            axis (str, optional): Axis to autoscale. Can be ``"x"``, ``"y"``, or ``"xy"``, or ``None`` for both. Defaults to ``None``.
+            enable (bool): Whether to enable or disable. Defaults to ``True``.
+            x (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the x-direction.
+                Defaults to ``None``.
+            y (bool, optional): optional simpler interface. Setting this to ``True`` enables autoscaling in the y-direction.
+                Defaults to ``None``.
+        """
+        kwargs = {}
+        if axis is not None:
+            if "x" in axis:
+                x = enable
+            if "y" in axis:
+                y = enable
+        else:
+            if x is None and y is None:
+                x, y = enable, enable
+        if x is not None:
+            kwargs["x"] = x
+        if y is not None:
+            kwargs["y"] = y
+
+        print(kwargs)
+        self.setAutoPan(**kwargs)
+
+    def disable_autopan(self, axis: Optional[str] = None, x: Optional[bool] = None,
+                       y: Optional[bool] = None):
+        """Disables auto-scale. (Equivalent to :func:`enable_autopan(enable=False) <squap.enable_autopan>`)"""
+        self.enable_autopan(axis, enable=False, x=x, y=y)
 
     def legend(self):
         """
