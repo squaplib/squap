@@ -589,7 +589,7 @@ class MainWindow(QMainWindow):
                     self.fps_timer = current_time()
                     fps = skip.count / elapsed
                     fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                    if self.fig_widget.plot_style_3D:
+                    if isinstance(ax, SubplotWidget3D):
                         print(f"{fps = }")
                     else:
                         ax.set_title(f"fps = {fps}")
