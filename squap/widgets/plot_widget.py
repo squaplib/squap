@@ -433,6 +433,7 @@ class SubplotWidget(PlotWidget):
              **kwargs):
         """
         This function is used to create a :class:`grid <squap.widgets.plot_widget.GridCurve>` and add it to view. Todo: improve
+        Use :func:`squap.show_grid` for simple use-cases.
 
         Args:
             tick_spacing(tuple or float, optional): Set the grid spacing. When set to ``None`` grid line distance is
