@@ -5,6 +5,7 @@ Plot Window Control
 .. autofunction:: squap.set_ylim
 .. autofunction:: squap.xlim
 .. autofunction:: squap.ylim
+.. autofunction:: squap.disable_flicker
 .. autofunction:: squap.enable_autoscale
 .. autofunction:: squap.disable_autoscale
 .. autofunction:: squap.enable_autopan

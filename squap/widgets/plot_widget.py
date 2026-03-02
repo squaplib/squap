@@ -512,6 +512,15 @@ class SubplotWidget(PlotWidget):
         """
         return tuple(self.getViewBox().viewRange()[1])
 
+    def disable_flicker(self, disable=True):
+        """This function can be called to disable the flickering that sometimes occur with fast updating plots.
+        It does slow down plotting.
+        """
+        if disable:
+            self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        else:
+            self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
+
     def enable_autoscale(self, axis: Optional[str] = None, enable: bool = True, x: Optional[bool] = None,
                          y: Optional[bool] = None):
         """
