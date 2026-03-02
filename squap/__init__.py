@@ -140,6 +140,22 @@ def xlim(*args, **kwargs):
 def ylim(*args, **kwargs):
     return get_window().fig_widget.plot_widget.ylim(*args, **kwargs)
 
+@_copy_docstring(widgets.SubplotWidget.set_xlabel)
+def set_xlabel(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.set_xlabel(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.set_ylabel)
+def set_ylabel(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.set_ylabel(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.show_grid)
+def show_grid(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.show_grid(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.disable_flicker)
+def disable_flicker(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.disable_flicker(*args, **kwargs)
+
 @_copy_docstring(widgets.SubplotWidget.enable_autoscale)
 def enable_autoscale(*args, **kwargs):
     return get_window().fig_widget.plot_widget.enable_autoscale(*args, **kwargs)
