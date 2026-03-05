@@ -4,7 +4,7 @@ from time import perf_counter as current_time
 import time
 from argparse import Namespace
 
-import cv2
+import imageio
 import numpy as np
 
 from typing import Callable, Optional
@@ -356,7 +356,7 @@ class MainWindow(QMainWindow):
         raised (when the user attempts to manually stop the program).
 
         Args:
-            filename (str): Name of the file to which the video will be exported. Currently only supports .mp4 files.
+            filename (str): Name of the file to which the video will be exported.
             fps (float, optional): Frames per second of the video. Defaults to ``30``.
             n_frames (int, optional): Number of frames before the video stops and saves.
             duration (float, optional): Duration in seconds before the video stops and saves. It will save the last frame
@@ -426,9 +426,9 @@ class MainWindow(QMainWindow):
                 return
 
         basename, extension = os.path.splitext(filename)
-        print(f"started saving {len(pixmaps)} frames to file {basename}.mp4 at {fps} fps")  # maybe other file-extension
-        if extension and extension != '.mp4':
-            print("you can only save to mp4, if you want other filenames, you can request them")
+        if not extension:
+            extension = ".mp4"
+        print(f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
 
         arrs = []
 
@@ -449,14 +449,9 @@ class MainWindow(QMainWindow):
             width, height, _ = arr.shape
         except NameError:
             raise NameError("No frames were captured, error code 1006.")
-        out = cv2.VideoWriter(f"{basename}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (height, width))
 
-        for index, arr in enumerate(arrs):
-            out.write(arr)
-            if not (index % 1000) and index:
-                print(f"{index} frames have been saved.")
+        imageio.mimsave(f"{basename}{extension}", arrs, fps=fps, macro_block_size=1)
 
-        out.release()
         print("Saving finished.")
 
     def start_recording(self, filename: str, fps: float = 30.0, skip_frames: int = 0,
@@ -465,7 +460,7 @@ class MainWindow(QMainWindow):
         the recording.
 
         Args:
-            filename (str): Name of the file to which the video will be exported. Currently only supports .mp4 files.
+            filename (str): Name of the file to which the video will be exported.
             fps (float): Frames per second of the video. Defaults to 30.
             skip_frames (int): number of frames to not save after a frame is saved. Defaults to 0.
             widget (str): The widget to export. The following options are available:
@@ -494,9 +489,9 @@ class MainWindow(QMainWindow):
         def stop_func():
             basename, extension = os.path.splitext(filename)
             print(
-                f"started saving {len(pixmaps)} frames to file {basename}.mp4 at {fps} fps")  # maybe other file-extension
-            if extension and extension != '.mp4':
-                print("you can only save to mp4, if you want other filenames, you can request them")
+                f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
+            if not extension:
+                extension = f".mp4"
 
             arrs = []
 
@@ -517,14 +512,9 @@ class MainWindow(QMainWindow):
                 width, height, _ = arr.shape
             except NameError:
                 raise NameError("No frames were captured, error code 1006.")
-            out = cv2.VideoWriter(f"{basename}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), fps, (height, width))
 
-            for index, arr in enumerate(arrs):
-                out.write(arr)
-                if not (index % 1000) and index:
-                    print(f"{index} frames have been saved.")
+            imageio.mimsave(f"{basename}{extension}", arrs, fps=fps, macro_block_size=1)
 
-            out.release()
             print("Saving finished.")
 
             self.update_funcs.remove(record_func)

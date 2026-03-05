@@ -2,7 +2,7 @@ PySide6
 pyqtgraph
 numpy
 matplotlib
-opencv-python-headless
+imageio
 PyOpenGL
 sphinx==8.2.3
 pydata-sphinx-theme==0.16.1
