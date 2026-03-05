@@ -22,7 +22,7 @@ __all__ = [
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
-    "cmap_to_colors",
+    "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
     "make_3D", "scatter_3D", "add_grid_3D", "add_grids_3D", "set_zoom_rate_3D", "set_camera",
     "align_camera"
 ]
@@ -163,6 +163,14 @@ def enable_autoscale(*args, **kwargs):
 @_copy_docstring(widgets.SubplotWidget.disable_autoscale)
 def disable_autoscale(*args, **kwargs):
     return get_window().fig_widget.plot_widget.disable_autoscale(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.enable_autopan)
+def enable_autopan(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.enable_autopan(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.disable_autopan)
+def disable_autopan(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.disable_autopan(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.legend)
 def legend(*args, **kwargs):

@@ -7,7 +7,7 @@ from inspect import signature
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtGui import QGradient, QCursor
-from pyqtgraph import PlotWidget
+from pyqtgraph import PlotWidget, QtWidgets
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from ..customisation import Font
