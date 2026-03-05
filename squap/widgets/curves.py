@@ -307,14 +307,14 @@ class ErrorbarCurve(ErrorBarItem):
             if "x_err" in kwargs or "y_err" in kwargs:
                 if "x_err" not in kwargs:
                     if self.old_x_err is None:
-                        raise ValueError("`x_err` must be defined at the start.")
+                        kwargs["x_err"] = 0
                     kwargs["x_err"] = self.old_x_err
                 else:
                     x_err = kwargs["x_err"]
                     self.old_x_err = x_err
                 if "y_err" not in kwargs:
                     if self.old_y_err is None:
-                        raise ValueError("`y_err` must be defined at the start.")
+                        kwargs["y_err"] = 0
                     kwargs["y_err"] = self.old_y_err
                 else:
                     y_err = kwargs["y_err"]
@@ -325,29 +325,25 @@ class ErrorbarCurve(ErrorBarItem):
 
             # repeat the same thing for x and y
             if "x_err" in kwargs or "y_err" in kwargs:
-                if is_iter(kwargs["x_err"]) or is_iter(kwargs["y_err"]):
-                    for arg_strings in [["x_err", "left", "right"], ["y_err", "bottom", "top"]]:
-                        kwarg_name = arg_strings[0]
-                        errorbar_kwarg1 = arg_strings[1]
-                        errorbar_kwarg2 = arg_strings[2]
+                for arg_strings in [["x_err", "left", "right"], ["y_err", "bottom", "top"]]:
+                    kwarg_name = arg_strings[0]
+                    errorbar_kwarg1 = arg_strings[1]
+                    errorbar_kwarg2 = arg_strings[2]
 
-                        # is a little vague right now, fill in arg_strings for x to get clearer code.
-                        if kwarg_name in new_kwargs:
-                            if isinstance(new_kwargs[kwarg_name], int) or isinstance(new_kwargs[kwarg_name], float):
-                                if self.old_y_err is None:
-                                    errorbar_kwargs[errorbar_kwarg1] = None
-                                    errorbar_kwargs[errorbar_kwarg2] = None
-                                else:
-                                    errorbar_kwargs[errorbar_kwarg1] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
-                                    errorbar_kwargs[errorbar_kwarg2] = np.full(len(self.old_y_err), new_kwargs[kwarg_name])
-                            elif isinstance(new_kwargs[kwarg_name], Iterable):
-                                kwarg_shape = np.shape(new_kwargs[kwarg_name])
-                                if len(kwarg_shape) == 1 or kwarg_shape[1] == 1:       # if it has only one dimension
-                                    errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name]
-                                    errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name]
-                                elif kwarg_shape[1] == 2:
-                                    errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name][0]
-                                    errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name][1]
+                    # is a little vague right now, fill in arg_strings for x to get clearer code.
+                    if kwarg_name in new_kwargs:
+                        if isinstance(new_kwargs[kwarg_name], int) or isinstance(new_kwargs[kwarg_name], float):
+                            num_points = len(self.parent.xData)
+                            errorbar_kwargs[errorbar_kwarg1] = np.full(num_points, new_kwargs[kwarg_name])
+                            errorbar_kwargs[errorbar_kwarg2] = np.full(num_points, new_kwargs[kwarg_name])
+                        elif isinstance(new_kwargs[kwarg_name], Iterable):
+                            kwarg_shape = np.shape(new_kwargs[kwarg_name])
+                            if len(kwarg_shape) == 1 or kwarg_shape[1] == 1:       # if it has only one dimension
+                                errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name]
+                                errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name]
+                            elif kwarg_shape[1] == 2:
+                                errorbar_kwargs[errorbar_kwarg1] = new_kwargs[kwarg_name][0]
+                                errorbar_kwargs[errorbar_kwarg2] = new_kwargs[kwarg_name][1]
 
             if "beam_size" in new_kwargs:
                 errorbar_kwargs["beam"] = new_kwargs["beam_size"]
