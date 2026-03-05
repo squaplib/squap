@@ -626,8 +626,12 @@ class InputTable(QTableWidget):    # table for all inputs
                     self.valueChanged.connect(func)
 
         def bind(self, func):
-            self.change_funcs.append(func)
-            self.valueChanged.connect(func)
+            # makes sure function is called without argument (removing this breaks examples/all_plot_options.py
+            def new_func():
+                func()
+
+            self.change_funcs.append(new_func)
+            self.valueChanged.connect(new_func)
             return self
 
         def unbind(self, func):
@@ -755,8 +759,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 return False
 
         def bind(self, func):
-            self.change_funcs.append(func)
-            self.stateChanged.connect(func)
+            # makes sure function is called without argument (removing this breaks examples/all_plot_options.py
+            def new_func():
+                func()
+
+            self.change_funcs.append(new_func)
+            self.stateChanged.connect(new_func)
             return self
 
         def unbind(self, func):
@@ -1092,8 +1100,13 @@ class InputTable(QTableWidget):    # table for all inputs
                     self.currentTextChanged.connect(func)
 
         def bind(self, func):
-            self.change_funcs.append(func)
-            self.currentTextChanged.connect(func)
+            # makes sure function is called without argument (removing this breaks examples/all_plot_options.py
+            def new_func():
+                func()
+
+            self.change_funcs.append(new_func)
+            self.currentTextChanged.connect(new_func)
+            return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
