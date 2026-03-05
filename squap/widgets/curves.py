@@ -162,7 +162,7 @@ class PlotCurve(PlotDataItem):
                 Defaults to ``"mean"``.
             auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
                 for less data. Defaults to ``False``.
-            antialias (bool): By default, antialiasing is disabled to improve performance.
+            antialias (bool): Antialiasing can be disabled for a minor performance increase. Default is ``True``.
             skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
                 for ``NaN`` values. If set to ``True``, and ``NaN`` values exist, unpredictable behavior will occur. The data may
                 not be displayed or the plot may take a significant performance hit. Defaults to ``False``.

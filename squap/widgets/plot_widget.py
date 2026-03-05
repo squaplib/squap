@@ -110,7 +110,7 @@ class SubplotWidget(PlotWidget):
     def plot(
             self, *args, color: ColorsType = "y", width: int = 1, dashed: bool = False,
             dash_pattern: Optional[Iterable[int]] = None, connect: str | np.ndarray = "auto",
-            gradient: Optional[QGradient] = None, line_style: Optional[str] = None, antialias: bool=False,
+            gradient: Optional[QGradient] = None, line_style: Optional[str] = None, antialias: bool = True,
             auto_downsample: bool = False, downsample: int = 1, downsample_method: str = "mean",
             skip_finite_check: bool = False, **kwargs
     ) -> 'PlotCurve':
@@ -161,7 +161,7 @@ class SubplotWidget(PlotWidget):
                 Defaults to ``"mean"``.
             auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
                 for less data. Defaults to ``False``.
-            antialias (bool): By default, antialiasing is disabled to improve performance.
+            antialias (bool): Antialiasing can be disabled for a minor performance increase. Default is ``True``.
             skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
                 for :data:`NaN <numpy.nan>` values. If set to ``True``, and :data:`NaN <numpy.nan>` values exist,
                 unpredictable behavior will occur. The data may
@@ -183,7 +183,7 @@ class SubplotWidget(PlotWidget):
     def scatter(
             self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, edge_width: int | Iterable[int] = -1,
             edge_color: ColorsType = "white", pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
-            antialias: bool = False, **kwargs
+            antialias: bool = True, **kwargs
     ) -> 'PlotCurve':
         """
         Creates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
@@ -216,7 +216,7 @@ class SubplotWidget(PlotWidget):
                 Defaults to ``"mean"``.
             auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
                 for less data. Defaults to ``False``.
-            antialias (bool): Antialiasing is disabled by default to improve performance.
+            antialias (bool): Antialiasing can be disabled for a minor performance increase. Default is ``True``.
 
             kwargs: Can contain the following:
                 - ``x``: You can provide ``x`` as keyword argument as well.
@@ -235,7 +235,7 @@ class SubplotWidget(PlotWidget):
     def errorbar(self, *args, x_err=None, y_err=None, color: ColorType = "y",
                  width: int = 1, errorbar_width: int = 1, beam_size: float = 0, dashed: bool = False,
                  dash_pattern: Iterable[int] = None, connect: str = "auto", gradient: Optional[QGradient] = None,
-                 line_style: Optional[str] = None, antialias: bool = False, auto_downsample: bool = False,
+                 line_style: Optional[str] = None, antialias: bool = True, auto_downsample: bool = False,
                  downsample: int = 1, downsample_method: str = "mean", skip_finite_check: bool = False, **kwargs
          ) -> 'PlotCurve':
         """
@@ -301,7 +301,7 @@ class SubplotWidget(PlotWidget):
                 Defaults to ``"mean"``.
             auto_downsample (bool): Can increase performance by not drawing one pixel multiple times, but is slower
                 for less data. Defaults to ``False``.
-            antialias (bool): By default, antialiasing is disabled to improve performance.
+            antialias (bool): Antialiasing can be disabled for a minor performance increase. Default is ``True``.
             skip_finite_check (bool): Optimization flag that can speed up plotting by not checking and compensating
                 for ``NaN`` values. If set to ``True``, and ``NaN`` values exist, unpredictable behavior will occur. The data may
                 not be displayed or the plot may take a significant performance hit. Defaults to ``False``.
