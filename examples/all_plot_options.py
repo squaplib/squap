@@ -31,11 +31,10 @@ def set_err_data():
     curve.set_data(x_err=x_err, y_err=y_err)
 
 
-data_tab = squap.add_input_table("data")
-window = squap.get_window()
-plot_tab = squap.add_input_table("plot")
-scatter_tab = squap.add_input_table("scatter")
-errorbar_tab = squap.add_input_table("errorbar")
+data_tab = squap.add_tab("data")
+plot_tab = squap.add_tab("plot")
+scatter_tab = squap.add_tab("scatter")
+errorbar_tab = squap.add_tab("errorbar")
 squap.set_active_tab("plot")
 
 data_tab.add_inputbox("Nx", 40).bind(set_curve_data)
