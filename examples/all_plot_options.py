@@ -84,10 +84,8 @@ for box in error_func_boxes:
 
 all_boxes = plot_boxes + scatter_boxes + errorbar_boxes
 
-print(all_boxes)
 for box in all_boxes:
     def update_this_box(box_=box):
-        print(box_)
         curve.set_data(**{box_.current_name: box_.value()})
 
     box.bind(update_this_box)
