@@ -20,7 +20,7 @@ __all__ = [
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
     "make_3D", "scatter_3D", "add_grid_3D", "add_grids_3D", "set_zoom_rate_3D", "set_camera",
@@ -63,8 +63,8 @@ def get_window() -> MainWindow:
 def get_input_table() -> InputTable:
     global _input_table
     if _input_table is None:
-        if get_window().table_manager.main_input_widget:     # it is possible to init table widget without this function
-            _input_table = get_window().table_manager.main_input_widget
+        if get_window().table_manager.first_input_table:     # it is possible to init table widget without this function
+            _input_table = get_window().table_manager.first_input_table
         else:
             _input_table = get_window().init_first_tab()
     return _input_table
@@ -263,6 +263,10 @@ def set_active_tab(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.get_all_tabs)
 def get_all_tabs():
     return get_table_manager().get_all_tabs()
+
+@_copy_docstring(widgets.TableManager.on_tab_change)
+def on_tab_change(*args, **kwargs):
+    return get_table_manager().on_tab_change(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.get_all_boxes)
 def get_all_boxes():

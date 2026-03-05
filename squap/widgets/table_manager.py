@@ -1,4 +1,4 @@
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Callable
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
 
 from .input_widget import InputTable, Box            # only for type hinting
@@ -159,6 +159,10 @@ class TableManager:
         else:
             raise ValueError("`set_active_tab` needs an argument. ")
         return self.tab_widget.currentWidget()
+
+    def on_tab_change(self, func: Callable):
+        """Adds function `func` to the functions that are called whenever the current tab is changed. """
+        self.tab_widget.currentChanged.connect(func)
 
     def get_current_row(self) -> int:
         """Return row of the latest placed widget."""
