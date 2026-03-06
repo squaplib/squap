@@ -161,7 +161,7 @@ class TableManager:
         return self.tab_widget.currentWidget()
 
     def on_tab_change(self, func: Callable):
-        """Adds function `func` to the functions that are called whenever the current tab is changed. """
+        """Adds function ``func`` to the functions that are called whenever the current tab is changed. """
         self.tab_widget.currentChanged.connect(func)
 
     def get_current_row(self) -> int:
