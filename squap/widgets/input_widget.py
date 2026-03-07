@@ -28,13 +28,17 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
     def __init__(self, parent: 'InputTable'):    # parent will be the InputWidget
         self.parent = parent
-        self.change_funcs = []  # This is so that they can be reordered later if necessary
+        self.change_funcs = {}  # This is so that they can be reordered later if necessary
         # this is used when print_value is set to True during runtime, as it should still be the first function that is
         # called. So the printing function would be bound and then all other functions would be rebound.
+        # It is a dictionary to allow unbinding functions, since the function passed `box.bind` is sometimes
+        # different from the actual bound function
 
         self.row = None         # For removing it later (should be set inside the function)
         self.textbox = None     # So that you can check if a textbox exists for this box
         self.link_funcs = None  # For linking this box to other boxes, leave at None for unlinkable boxes
+        # when linking, if multiple boxes have `printing_val` `True`, all but one are set to `False`
+        self.printing_val = False
 
     def change_params(self, **kwargs):
         """
@@ -258,157 +262,69 @@ class InputTable(QTableWidget):    # table for all inputs
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
                    print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
-        """Creates a :class:`slider <squap.widgets.input_table.InputTable.Slider>` with the given parameters, and add it to the main
-        :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the slider.
-            init_value (float): The initial value of the slider. If the provided value is not on the slider, it gets set
-                to the closest value.
-            min_value (float): The minimum value of the slider.
-            max_value (float): The maximum value of the slider.
-            n_ticks (int): The number of ticks on the slider. Defaults to ``51``.
-            tick_interval (float, optional): The interval between ticks. If provided, overwrites ``n_ticks``.
-            only_ints (bool): Whether to use whole numbers as ticks. If set to ``True``, ``tick_interval`` is used
-                as spacing between the ticks and ``n_ticks`` is ignored. If ``tick_interval`` is not specified, it defaults
-                to ``1``. Rounds ``tick_interval`` to an integer and changes the variable to always be an integer. Not allowed
-                in combination with ``logscale``. Defaults to ``False``.
-            logscale (bool): Whether to use a logarithmic scale. When ``tick_interval`` is given it serves as a
-                multiplication factor between a point and the previous point (it is rounded to fit ``min_value`` and
-                ``max_value``. Not allowed in combination with ``only_ints``. Defaults to ``False``.
-            custom_arr (:term:`iterable`, optional): Array or list of values, where ``custom_arr[i]`` will be the value (can be
-                any type) of the slider when it is set to position ``i``. Overwrites all other parameters (except
-                ``init_value``). Defaults to ``None``.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
-                be named ``name``.
-            print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the slider is added. Defaults to first empty row.
+        """Creates a :class:`slider <squap.widgets.input_table.InputTable.Slider>` with the given parameters, and adds it to this
+        :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_slider`
+        for initialisation information.
 
         Returns:
-            InputTable.Slider: The :class:`slider widget <squap.widgets.InputTable.Slider>`.
+            InputTable.Slider: The created :class:`slider widget <squap.widgets.InputTable.Slider>`.
         """
         return self.Slider(self, name, init_value, min_value, max_value, n_ticks, tick_interval, only_ints, logscale,
                            custom_arr, var_name, print_value, row)
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
                      print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
-        """Creates a :class:`checkbox <squap.widgets.InputTable.CheckBox>` with the given parameters, and add it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the checkbox.
-            init_value (bool): The initial value of the checkbox. Defaults to ``False`` (not ticked).
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
-                be named ``name``.
-            print_value (bool): Whether to print the value of the checkbox when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the checkbox is added. Defaults to first empty row.
+        """Creates a :class:`checkbox <squap.widgets.InputTable.CheckBox>` with the given parameters, and adds it to this
+        :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_checkbox`
+        for initialisation information.
 
         Returns:
-            InputTable.CheckBox: The :class:`checkbox widget <squap.widgets.InputTable.CheckBox>`.
+            InputTable.CheckBox: The created :class:`checkbox widget <squap.widgets.InputTable.CheckBox>`.
         """
         return self.CheckBox(self, name, init_value, var_name, print_value, row)
 
     def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
                      var_name: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox':
-        """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and add it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the inputbox.
-            init_value (optional): The initial value of the inputbox. Can be any object that can be turned into
-                a string.
-            type_func (:term:`callable`, optional): The function that takes in a string and returns the value as the
-                correct type. Usually, this will default to :func:`ast.literal_eval`, which works for a lot of data
-                types: :class:`str`, :class:`float`, :class:`complex`, :class:`bool`, :class:`tuple`, :class:`list`,
-                :class:`dict`, :class:`set` and :obj:`None`.
-                If ``type_func`` is set to ``None`` (default value), then it will be set to :func:`ast.literal_eval` if
-                ``init_value`` is one of the mentioned data types. If ``init_value`` is a :class:`numpy.ndarray` or a :class:`range`
-                object, this is also handled, but ``type_func`` needs to be explicitly changed to :func:`ast.literal_eval`
-                if the data type is changed during runtime.
-                If you have a different data type that doesn't work with the automatic behavior, a function can be
-                passed to this argument that takes in a string and returns the desired value. Note that
-                :func:`ast.literal_eval` is a lot slower than, for example, ``float``, so if you are sure the input is
-                a float, a minor speedup can be achieved by explicitly setting ``type_func=float``.
-
-                ``type_func`` can also be set to ``int``, so that each value is turned into an ``int``. If ``type_func``
-                is not given, it is automatically determined, which works for the following instances: :class:`str`,
-                :class:`float`, :class:`complex`, :class:`bool`, :class:`range`, and the following iterables:
-                :class:`tuple`, :class:`list`, :class:`dict`, :class:`set` and :class:`numpy.ndarray`.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
-                be named ``name``.
-            print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
+        """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and adds it to
+        this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_inputbox`
+        for initialisation information.
 
         Returns:
-            InputTable.InputBox: The :class:`inputbox widget <squap.widgets.InputTable.InputBox>`.
+            InputTable.InputBox: The created :class:`inputbox widget <squap.widgets.InputTable.InputBox>`.
         """
         return self.InputBox(self, name, init_value, type_func, var_name, print_value, row)
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
-        """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``, and add it to the main
-        :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the button.
-            func (:term:`callable`, optional): The function which is run on button press.
-            row (int, optional): Row to which the button is added. Defaults to first empty row.
+        """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``,
+        and adds it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_button`
+        for initialisation information.
 
         Returns:
-            InputTable.Button: The :class:`button widget <squap.widgets.InputTable.Button>`.
+            InputTable.Button: The created :class:`button widget <squap.widgets.InputTable.Button>`.
         """
         return self.Button(self, name, func, row)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
-        """Creates a :class:`dropdown <squap.widgets.InputTable.Dropdown>` widget with the given parameters, and add
-        it to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the dropwdown.
-            options (Iterable): A :class:`list` of all options the created variable can be, where
-                ``option_names[index]`` is the value given to the variable, if the dropwdown is set to ``index``.
-            init_index (int): The index that the dropwdown is initially set to.
-            option_names (list of str, optional): A :class:`list` of all options shown in the dropwdown menu. If
-                ``option_names`` is not provided it will be set to ``options``.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable
-                will be named ``name``.
-            print_value (bool): Whether to print the value of the dropwdown when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the dropwdown is added. Defaults to first empty row.
+        """Creates a :class:`dropdown <squap.widgets.InputTable.Dropdown>` widget with the given parameters, and adds
+        it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_dropdown` for
+        initialisation information.
 
         Returns:
-            InputTable.Dropdown: The :class:`dropwdown widget <squap.widgets.InputTable.Dropdown>`.
-        """
+            InputTable.Dropdown: The created :class:`dropwdown widget <squap.widgets.InputTable.Dropdown>`."""
         return self.Dropdown(self, name, options, init_index, option_names, var_name, print_value, row)
 
     def add_rate_slider(self, name: str, init_value: float = 1.0, change_rate: float = 10.0, absolute: bool = False,
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
                         var_name: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider':
-        """Creates a :class:`RateSlider <squap.widgets.InputTable.RateSlider>` with the given parameters, and add it
-        to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the rate slider.
-            init_value (float): The initial value of the rate slider.
-            change_rate (float): Change rate to the value of the variable per second. How it changes depends
-                on ``absolute``.
-            absolute (bool): How the value of the variable is changed. If ``absolute`` is ``True``, ``changerate``
-                multiplied by the slider position (which is a value between ``-1`` and ``1`` will be added every second.
-                If it is set to ``False``, the variable
-                will be multiplied by ``changerate`` multiplied by the slider position every second.
-            time_var (str, optional): If set to ``None`` (default), actual time will be used. It can also be set to the name of
-                a variable in :class:`squap.var` as a string. Then that variable will be regarded as time: if it increases by 1,
-                the variable belonging to this box will be changed by ``changerate``.
-            custom_func (Callable, optional): the function that changes the created variable. Overrides ``absolute`` and ``change_rate``. It must
-                take three arguments: ``old_value``, ``dt`` and ``slider_value`` and must return the new value. ``old_value`` is
-                the value of the variable the previous time the function was run, ``dt`` is the change in time since then (takes
-                ``time_var`` into account). ``slider_value`` is a value between ``-1`` and ``1``, dependent on the slider position.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
-                named ``name``.
-            print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the rate slider is added. Defaults to first empty row.
+        """Creates a :class:`RateSlider <squap.widgets.InputTable.RateSlider>` with the given parameters, and adds it
+        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_rate_slider` for
+        initialisation information.
 
         Returns:
-            InputTable.RateSlider: The :class:`rate_slider widget <squap.widgets.InputTable.RateSlider>`.
+            InputTable.RateSlider: The created :class:`rate_slider widget <squap.widgets.InputTable.RateSlider>`.
         """
         return self.RateSlider(
             self, name, init_value, change_rate,
@@ -417,19 +333,12 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
-        """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and add it
-        to the main :class:`input table <squap.widgets.input_widget.InputTable>`.
-
-        Args:
-            name (str): The name in front of the color picker.
-            init_value (:ref:`ColorType`): The initial value of the color picker.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
-                named ``name``.
-            print_value (bool): Whether to print the value of the color picker when it changes. Defaults to ``False``.
-            row (int, optional): Row to which the color picker is added. Defaults to first empty row.
+        """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and adds it
+        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_color_picker` for
+        initialisation information.
 
         Returns:
-            InputTable.ColorPicker: The :class:`color_picker widget <squap.widgets.InputTable.ColorPicker>`.
+            InputTable.ColorPicker: The created :class:`color_picker widget <squap.widgets.InputTable.ColorPicker>`.
         """
         return self.ColorPicker(
             self, name, init_value, var_name, print_value, row
@@ -523,7 +432,6 @@ class InputTable(QTableWidget):    # table for all inputs
             # reconnected in this function
             self.set_value(init_value)
 
-            self.printing_val = False
             if print_value:
                 self.valueChanged.connect(self.print_val)
                 self.printing_val = True
@@ -621,7 +529,7 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.valueChanged.connect(self.print_val)
                 self.printing_val = True
 
-                for func in self.change_funcs:      # reorders change_funcs so that print_val is first
+                for func in self.change_funcs.values():      # reorders change_funcs so that print_val is first
                     self.valueChanged.disconnect(func)
                     self.valueChanged.connect(func)
 
@@ -630,16 +538,19 @@ class InputTable(QTableWidget):    # table for all inputs
             def new_func():
                 func()
 
-            self.change_funcs.append(new_func)
+            self.change_funcs[func] = new_func
             self.valueChanged.connect(new_func)
             return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
                 raise ValueError("Function is not bound to this Box.")
-            self.valueChanged.disconnect(func)
             if func != self._on_change:
-                self.change_funcs.remove(func)
+                self.valueChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
+            else:
+                self.valueChanged.disconnect(self._on_change)
+
             return self
 
         def _on_change(self, val):
@@ -708,7 +619,6 @@ class InputTable(QTableWidget):    # table for all inputs
             parent.setCellWidget(row, col, self)
             # </editor-fold>
             self.current_name = var_name
-            self.printing_val = False
 
             setattr(parent.variables, self.current_name, init_value)
 
@@ -763,16 +673,19 @@ class InputTable(QTableWidget):    # table for all inputs
             def new_func():
                 func()
 
-            self.change_funcs.append(new_func)
+            self.change_funcs[func] = new_func
             self.stateChanged.connect(new_func)
             return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
                 raise ValueError("Function is not bound to this Box.")
-            self.stateChanged.disconnect(func)
             if func != self._on_change:
-                self.change_funcs.remove(func)
+                self.stateChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
+            else:
+                self.stateChanged.disconnect(self._on_change)
+
             return self
 
         def _on_change(self):
@@ -795,8 +708,6 @@ class InputTable(QTableWidget):    # table for all inputs
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             self.var_name = var_name
-            self.actual_change_funcs = []
-            # for being able to unbind functions (bound function is not the passed function)
             self.link_funcs = {}                # for linking this box to others
 
             # <editor-fold desc="add_widget and init name&var_name">
@@ -831,7 +742,6 @@ class InputTable(QTableWidget):    # table for all inputs
                 parent.setItem(row, self.col, QTableWidgetItem(str(init_value)))
 
             self.current_name = var_name
-            self.printing_val = False
 
             if type_func is None:
                 self.type_func = get_type_func(init_value, parent, self.col)
@@ -892,13 +802,12 @@ class InputTable(QTableWidget):    # table for all inputs
                     self.parent.cellChanged.connect(func)
 
         def bind(self, func):
-            def actual_func(row):
+            def new_func(row):
                 if row == self.row:
                     func()
 
-            self.actual_change_funcs.append(actual_func)
-            self.change_funcs.append(func)
-            self.parent.cellChanged.connect(actual_func)
+            self.change_funcs[func] = new_func
+            self.parent.cellChanged.connect(new_func)
             return self
 
         def unbind(self, func):
@@ -906,10 +815,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 raise ValueError("Function is not bound to this Box.")
 
             if func != self._on_change:
-                actual_func = self.actual_change_funcs[self.change_funcs.index(func)]
-                self.parent.cellChanged.disconnect(actual_func)
-                self.change_funcs.remove(func)
-                self.actual_change_funcs.remove(actual_func)
+                self.parent.cellChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
             else:
                 self.parent.cellChanged.disconnect(self._on_change)
 
@@ -970,7 +877,7 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.bind(self.main_func)
 
         def bind(self, func):
-            self.change_funcs.append(func)
+            self.change_funcs[func] = func  # dict is not really necessary for button, but for consistency this is ok.
             self.clicked.connect(func)
             return self
 
@@ -978,6 +885,7 @@ class InputTable(QTableWidget):    # table for all inputs
             if func not in self.change_funcs:
                 raise ValueError("Function is not bound to this Box.")
             self.clicked.disconnect(func)
+            self.change_funcs.pop(func)
             return self
 
         def _on_change(self):
@@ -1035,7 +943,6 @@ class InputTable(QTableWidget):    # table for all inputs
             parent.setCellWidget(row, col, self)
             # </editor-fold>
             self.current_name = var_name
-            self.printing_val = False
 
             self.addItems(option_names)
             self.setCurrentIndex(init_index)
@@ -1104,16 +1011,18 @@ class InputTable(QTableWidget):    # table for all inputs
             def new_func():
                 func()
 
-            self.change_funcs.append(new_func)
+            self.change_funcs[func] = new_func
             self.currentTextChanged.connect(new_func)
             return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
                 raise ValueError("Function is not bound to this Box.")
-            self.currentTextChanged.disconnect(func)
             if func != self._on_change:
-                self.change_funcs.remove(func)
+                self.currentTextChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
+            else:
+                self.currentTextChanged.disconnect(self._on_change)
             return self
 
         def _on_change(self):
@@ -1184,7 +1093,6 @@ class InputTable(QTableWidget):    # table for all inputs
             # </editor-fold>
 
             self.current_name = var_name
-            self.printing_val = False
 
             setattr(parent.variables, self.current_name, init_value)
 
@@ -1365,25 +1273,22 @@ class InputTable(QTableWidget):    # table for all inputs
                     self.parent.cellChanged.connect(func)
 
         def bind(self, func):
-            def actual_func(row, col):
+            def new_func(row, col):
                 if row == self.row and col == self.col:
                     func()
 
-            self.actual_change_funcs.append(actual_func)
-            self.change_funcs.append(func)
-            self.parent.cellChanged.connect(actual_func)
+            self.change_funcs[func] = new_func
+            self.parent.cellChanged.connect(new_func)
             return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
                 raise ValueError("Function is not bound to this Box.")
             if func != self._on_change:
-                actual_func = self.actual_change_funcs[self.change_funcs.index(func)]
-                self.parent.cellChanged.disconnect(actual_func)
-                self.change_funcs.remove(func)
-                self.actual_change_funcs.remove(actual_func)
+                self.parent.cellChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
             else:
-                self.parent.cellChanged.disconnect(func)
+                self.parent.cellChanged.disconnect(self._on_change)
             return self
 
         def _on_change(self, row, col):
@@ -1441,7 +1346,6 @@ class InputTable(QTableWidget):    # table for all inputs
             parent.setCellWidget(row, col, self)
             # </editor-fold>
             self.current_name = var_name
-            self.printing_val = False
 
             if init_value is None:
                 self.set_value((0, 0, 0, 0))
@@ -1491,16 +1395,19 @@ class InputTable(QTableWidget):    # table for all inputs
                     self.parent.cellChanged.connect(func)
 
         def bind(self, func):
-            self.change_funcs.append(func)
+            self.change_funcs[func] = func      # dict is not really necessary for this box, but not a problem either
             self.sigColorChanged.connect(func)
             return self
 
         def unbind(self, func):
             if func not in self.change_funcs and func != self._on_change:
                 raise ValueError("Function is not bound to this Box.")
-            self.sigColorChanged.disconnect(func)
             if func != self._on_change:
-                self.change_funcs.remove(func)
+                self.sigColorChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
+            else:
+                self.sigColorChanged.disconnect(self._on_change)
+
             return self
 
         def _on_change(self, *args):

@@ -204,33 +204,33 @@ def set_interval(*args, **kwargs):
 def is_alive():
     return get_window().is_alive()
 
-@_copy_docstring(widgets.InputTable.add_slider)
+@_copy_docstring(widgets.TableManager.add_slider)
 def add_slider(*args, **kwargs):
-    return get_input_table().add_slider(*args, **kwargs)
+    return get_table_manager().add_slider(*args, **kwargs)
 
-@_copy_docstring(widgets.InputTable.add_checkbox)
+@_copy_docstring(widgets.TableManager.add_checkbox)
 def add_checkbox(*args, **kwargs):
-    return get_input_table().add_checkbox(*args, **kwargs)
+    return get_table_manager().add_checkbox(*args, **kwargs)
 
-@_copy_docstring(widgets.InputTable.add_inputbox)
+@_copy_docstring(widgets.TableManager.add_inputbox)
 def add_inputbox(*args, **kwargs):
-    return get_input_table().add_inputbox(*args, **kwargs)
+    return get_table_manager().add_inputbox(*args, **kwargs)
 
-@_copy_docstring(widgets.input_widget.InputTable.add_button)
+@_copy_docstring(widgets.TableManager.add_button)
 def add_button(*args, **kwargs):
-    return get_input_table().add_button(*args, **kwargs)
+    return get_table_manager().add_button(*args, **kwargs)
 
-@_copy_docstring(widgets.InputTable.add_dropdown)
+@_copy_docstring(widgets.TableManager.add_dropdown)
 def add_dropdown(*args, **kwargs):
-    return get_input_table().add_dropdown(*args, **kwargs)
+    return get_table_manager().add_dropdown(*args, **kwargs)
 
-@_copy_docstring(widgets.InputTable.add_rate_slider)
+@_copy_docstring(widgets.TableManager.add_rate_slider)
 def add_rate_slider(*args, **kwargs):
-    return get_input_table().add_rate_slider(*args, **kwargs)
+    return get_table_manager().add_rate_slider(*args, **kwargs)
 
-@_copy_docstring(widgets.InputTable.add_color_picker)
+@_copy_docstring(widgets.TableManager.add_color_picker)
 def add_color_picker(*args, **kwargs):
-    return get_input_table().add_color_picker(*args, **kwargs)
+    return get_table_manager().add_color_picker(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.on_mouse_click)
 def on_mouse_click(*args, **kwargs):
@@ -381,94 +381,3 @@ def enable_numba(enable: bool = True):
 def on_next_refresh(func: Callable):          # todo: only works in eventloop, not in show_window style.
     """Calls a function upon next refresh only. """
     QTimer.singleShot(0, func)
-
-
-# def init_3D():
-#     window.init_3D()
-#
-#
-# def add_grid(diagonal):
-#     """
-#     :param diagonal: A tuple of two points that span the diagonal of a rectangle that lies on or parallel to the
-#         xy, yz, or zx plane.
-#     :return:
-#     """
-#     if window.plot_style_3D:
-#         window.plot_widget.add_grid(diagonal)
-#     else:
-#         raise RuntimeError("This function only works in 3D. 3D mode needs to be initialised first. (1003)")
-#
-#
-# def add_grids(size=(0.0, 5.0)):
-#     """
-#     Adds square grids on the xy, yz and zx planes, spanning from size[0] to size[1].
-#
-#     :param size: the size of each grid.
-#     """
-#     if window.plot_style_3D:
-#         window.plot_widget.add_grids(size)
-#     else:
-#         raise RuntimeError("This function only works in 3D. 3D mode needs to be initialised first. (1003)")
-#
-#
-# def align_camera():
-#     window.plot_widget.animated = True
-#     current_params = window.plot_widget.cameraParams()
-#     add_rate_slider("distance", current_params["distance"], changerate=2)
-#     row_js_1 = get_current_row()
-#     slider_1 = add_slider("azimuth", current_params["azimuth"], 0, 360, n_ticks=72)
-#     slider_2 = add_slider("elevation", current_params["elevation"], -90, 90, n_ticks=180)
-#     slider_3 = add_slider("fov", current_params["fov"], 0, 180, n_ticks=180)
-#     add_rate_slider("x", 0, absolute=True, changerate=5)       # todo: change init_value to current_params.center.x
-#     row_js_x = get_current_row()
-#     add_rate_slider("y", 0, absolute=True, changerate=5)
-#     row_js_y = get_current_row()
-#     add_rate_slider("z", 0, absolute=True, changerate=5)
-#     row_js_z = get_current_row()
-#
-#     def update_cam_params():
-#         window.plot_widget.setCameraParams(
-#             distance=var.distance,
-#             azimuth=var.azimuth,
-#             elevation=var.elevation,
-#             fov=var.fov
-#         )
-#
-#     def rate_slider_update(row):
-#         if row == row_js_1:
-#             update_cam_params()
-#
-#     def update_cam_pos():
-#         vector = QtGui.QVector3D(
-#             var.x,
-#             var.y,
-#             var.z
-#         )
-#         window.plot_widget.setCameraPosition(
-#             vector
-#         )
-#
-#     def rate_slider_pos_update(row):
-#         if row == row_js_x or row == row_js_y or row == row_js_z:
-#             update_cam_pos()
-#
-#     slider_1.valueChanged.connect(update_cam_params)
-#     slider_2.valueChanged.connect(update_cam_params)
-#     slider_3.valueChanged.connect(update_cam_params)
-#     window.input_widget.cellChanged.connect(rate_slider_update)
-#     window.input_widget.cellChanged.connect(rate_slider_pos_update)
-#     update_cam_params()
-#
-#     def get_params():
-#         print(
-#             f"The following function would get you this camera postition: \n"
-#             f"squap.set_camera(\n"
-#             f"    x={var.x}, y={var.y}, z={var.z}, \n"
-#             f"    distance={var.distance}, azimuth={var.azimuth}, "
-#             f"elevation={var.elevation}, fov={var.fov}\n)"
-#         )
-#
-#     add_button("print camera parameters", get_params)
-#
-#
-
