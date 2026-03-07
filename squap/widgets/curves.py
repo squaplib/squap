@@ -25,7 +25,7 @@ class PlotCurve(PlotDataItem):
         "errorbar_colour": "errorbar_color", "ec": "errorbar_color", "ew": "errorbar_width"
     }   # last line is the ones for scatter only, downsample for both, rest for line. (not completely sure)
     all_pen_kwargs = ["line_color", "width", "dashed", "dash_pattern"]
-    all_symbol_kwargs = ["symbol_color", "symbol_line_width",  "symbol_line_color"]
+    all_symbol_kwargs = ["symbol_color", "symbol_line_width",  "symbol_line_color", "symbol_size"]
     all_errorbar_kwargs = ["x_err", "y_err", "beam_size", "errorbar_color", "errorbar_width"]
 
     all_other_kwargs = [
@@ -267,6 +267,9 @@ class PlotCurve(PlotDataItem):
                     new_kwargs["symbolPen"] = symbol_pen
 
             other_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_other_kwargs if kwarg in new_kwargs}
+            if "symbolSize" in other_kwargs:
+                if other_kwargs["symbolSize"] < 0:
+                    other_kwargs["symbol"] = None
 
         x_is_iter_or_none, y_is_iter_or_none = is_iter(x) or x is None, is_iter(y) or y is None
         if x_is_iter_or_none == y_is_iter_or_none:  # Ensures both are iterables or neither
