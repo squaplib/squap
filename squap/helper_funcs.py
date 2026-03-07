@@ -74,6 +74,8 @@ def update_pen(pen: QPen, **kwargs) -> QPen:
 
     if "width" in kwargs:
         if kwargs["width"] is not None:
+            if kwargs["width"] < 0:
+                return None
             pen.setWidth(kwargs["width"])
 
 

@@ -233,8 +233,10 @@ class PlotCurve(PlotDataItem):
                     self.pen = mkPen()
                     self.pen.stored_dash_pattern = None
 
-                update_pen(self.pen, **pen_kwargs)
-                self.setPen(self.pen)
+                if update_pen(self.pen, **pen_kwargs) is not None:
+                    self.setPen(self.pen)
+                else:
+                    self.setPen(None)
             symbol_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_symbol_kwargs if kwarg in new_kwargs}
             if symbol_kwargs:
                 if "symbol_color" in symbol_kwargs:
