@@ -240,7 +240,7 @@ class TableManager:
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
                    print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider | list[InputTable.Slider]':
-        """Adds a :class:`slider <squap.widgets.input_table.InputTable.Slider>` to the main input widget, or to all
+        """Adds a :class:`slider <squap.widgets.InputTable.Slider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
 
@@ -287,7 +287,7 @@ class TableManager:
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
                      print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox | list[InputTable.CheckBox]':
-        """Adds a :class:`checkbox <squap.widgets.input_table.InputTable.CheckBox>` to the main input widget, or to all
+        """Adds a :class:`checkbox <squap.widgets.InputTable.CheckBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
@@ -320,7 +320,7 @@ class TableManager:
     def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
                      var_name: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox | list[InputTable.InputBox]':
-        """Adds a :class:`inputbox <squap.widgets.input_table.InputTable.InputBox>` to the main input widget, or to all
+        """Adds a :class:`inputbox <squap.widgets.InputTable.InputBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
@@ -370,7 +370,7 @@ class TableManager:
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None
                    ) -> 'InputTable.Button | list[InputTable.Button]':
-        """Adds a :class:`button <squap.widgets.input_table.InputTable.Button>` to the main input widget, or to all
+        """Adds a :class:`button <squap.widgets.InputTable.Button>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
@@ -400,7 +400,7 @@ class TableManager:
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                      ) -> 'InputTable.Dropdown | list[InputTable.Dropdown]':
-        """Adds a :class:`dropdown <squap.widgets.input_table.InputTable.DropDown>` to the main input widget, or to all
+        """Adds a :class:`dropdown <squap.widgets.InputTable.DropDown>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
@@ -438,7 +438,7 @@ class TableManager:
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
                         var_name: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider | list[InputTable.RateSlider]':
-        """Adds a :class:`rate slider <squap.widgets.input_table.InputTable.RateSlider>` to the main input widget, or to all
+        """Adds a :class:`rate slider <squap.widgets.InputTable.RateSlider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
@@ -484,7 +484,7 @@ class TableManager:
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          print_value: bool = False, row: Optional[int] = None
                          ) -> 'InputTable.ColorPicker | list[InputTable.ColorPicker]':
-        """Adds a :class:`color picker <squap.widgets.input_table.InputTable.ColorPicker>` to the main input widget, or to all
+        """Adds a :class:`color picker <squap.widgets.InputTable.ColorPicker>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
 

@@ -262,8 +262,8 @@ class InputTable(QTableWidget):    # table for all inputs
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
                    print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
-        """Creates a :class:`slider <squap.widgets.input_table.InputTable.Slider>` with the given parameters, and adds it to this
-        :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_slider`
+        """Creates a :class:`slider <squap.widgets.InputTable.Slider>` with the given parameters, and adds it to this
+        :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_slider`
         for initialisation information.
 
         Returns:
@@ -275,7 +275,7 @@ class InputTable(QTableWidget):    # table for all inputs
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
                      print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
         """Creates a :class:`checkbox <squap.widgets.InputTable.CheckBox>` with the given parameters, and adds it to this
-        :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_checkbox`
+        :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_checkbox`
         for initialisation information.
 
         Returns:
@@ -287,7 +287,7 @@ class InputTable(QTableWidget):    # table for all inputs
                      var_name: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox':
         """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and adds it to
-        this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_inputbox`
+        this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_inputbox`
         for initialisation information.
 
         Returns:
@@ -297,7 +297,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
         """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``,
-        and adds it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_button`
+        and adds it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_button`
         for initialisation information.
 
         Returns:
@@ -308,7 +308,7 @@ class InputTable(QTableWidget):    # table for all inputs
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
         """Creates a :class:`dropdown <squap.widgets.InputTable.Dropdown>` widget with the given parameters, and adds
-        it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_dropdown` for
+        it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_dropdown` for
         initialisation information.
 
         Returns:
@@ -320,7 +320,7 @@ class InputTable(QTableWidget):    # table for all inputs
                         var_name: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider':
         """Creates a :class:`RateSlider <squap.widgets.InputTable.RateSlider>` with the given parameters, and adds it
-        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_rate_slider` for
+        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_rate_slider` for
         initialisation information.
 
         Returns:
@@ -334,7 +334,7 @@ class InputTable(QTableWidget):    # table for all inputs
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
         """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and adds it
-        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See func:`squap.add_color_picker` for
+        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_color_picker` for
         initialisation information.
 
         Returns:
