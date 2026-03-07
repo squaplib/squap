@@ -268,7 +268,7 @@ class PlotCurve(PlotDataItem):
 
             other_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_other_kwargs if kwarg in new_kwargs}
             if "symbolSize" in other_kwargs:
-                if other_kwargs["symbolSize"] < 0:
+                if other_kwargs["symbolSize"] <= 0:
                     other_kwargs["symbol"] = None
 
         x_is_iter_or_none, y_is_iter_or_none = is_iter(x) or x is None, is_iter(y) or y is None
