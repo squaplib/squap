@@ -260,6 +260,10 @@ def rename_tab(*args, **kwargs):
 def set_active_tab(*args, **kwargs):
     return get_table_manager().set_active_tab(*args, **kwargs)
 
+@_copy_docstring(widgets.TableManager.get_active_tab)
+def get_active_tab(*args, **kwargs):
+    return get_table_manager().get_active_tab(*args, **kwargs)
+
 @_copy_docstring(widgets.TableManager.get_all_tabs)
 def get_all_tabs():
     return get_table_manager().get_all_tabs()

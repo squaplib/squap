@@ -161,6 +161,14 @@ class TableManager:
             raise ValueError("`set_active_tab` needs an argument. ")
         return self.tab_widget.currentWidget()
 
+    def get_active_tab(self) -> InputTable:
+        """Get active tab.
+
+        Returns:
+            InputTable: The :class:`InputTable <squap.widgets.input_widget.InputTable>` belonging to the selected tab.
+        """
+        return self.tab_widget.currentWidget()
+
     def on_tab_change(self, func: Callable):
         """Adds function ``func`` to the functions that are called whenever the current tab is changed. """
         self.tab_widget.currentChanged.connect(func)
@@ -198,6 +206,9 @@ class TableManager:
 
         one_box_printing = False        # if multiple boxes are printing, all but one is turned off.
         for i, box_ in enumerate(boxes):
+            if box_.link_funcs is None:
+                raise TypeError(f"Linking boxes is not possible with a {type(box_)}. ")
+            
             # only_update_boxes enables linking box1 and box2 and box2 and box3 without
             # linking box1 and box3
             if box_ in only_update_boxes:

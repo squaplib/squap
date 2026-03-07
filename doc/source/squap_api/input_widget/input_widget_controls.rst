@@ -6,6 +6,7 @@ Multiple tabs can be added using :func:`squap.add_input_table`.
 
 .. autofunction:: squap.add_tab
 .. autofunction:: squap.set_active_tab
+.. autofunction:: squap.get_active_tab
 .. autofunction:: squap.on_tab_change
 .. autofunction:: squap.set_input_partition
 .. autofunction:: squap.set_input_width
