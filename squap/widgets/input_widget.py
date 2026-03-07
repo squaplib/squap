@@ -1,4 +1,4 @@
-from ..helper_funcs import textify, get_type_func, ColorType
+from ..helper_funcs import textify, get_type_func, ColorType, get_single_color
 
 import numpy as np
 from typing import Any, Callable, Optional, Iterable
@@ -1411,8 +1411,8 @@ class InputTable(QTableWidget):    # table for all inputs
         def _on_change(self, *args):
             setattr(self.parent.variables, self.current_name, self.value())
 
-        def set_value(self, value):
-            self.setColor(value)
+        def set_value(self, value: ColorType):
+            self.setColor(get_single_color(value))
 
         def value(self):
             return self.color(mode="float")
