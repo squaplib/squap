@@ -432,7 +432,7 @@ class MainWindow(QMainWindow):
 
         arrs = []
 
-        for index, pixmap in enumerate(pixmaps):  # see chatgpt once it works again
+        for index, pixmap in enumerate(pixmaps):
             qimg = pixmap.toImage()
 
             img_size = qimg.size()
@@ -495,7 +495,7 @@ class MainWindow(QMainWindow):
 
             arrs = []
 
-            for index, pixmap in enumerate(pixmaps):  # see chatgpt once it works again
+            for index, pixmap in enumerate(pixmaps):
                 qimg = pixmap.toImage()
 
                 img_size = qimg.size()
