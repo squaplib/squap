@@ -36,7 +36,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
         self.row = None         # For removing it later (should be set inside the function)
         self.textbox = None     # So that you can check if a textbox exists for this box
-        self.link_funcs = None  # For linking this box to other boxes, leave at None for unlinkable boxes
+        self.link_funcs = {}    # For linking this box to other boxes, change to `None` for unlinkable boxes
         # when linking, if multiple boxes have `printing_val` `True`, all but one are set to `False`
         self.printing_val = False
 
@@ -354,7 +354,6 @@ class InputTable(QTableWidget):    # table for all inputs
                      print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QSlider.__init__(self, parent=parent, orientation=Qt.Orientation.Horizontal)
-            self.link_funcs = {}            # for linking this box to others
 
             (self.min_value, self.max_value, self.var_name, self.only_ints, self.logscale, self.custom_arr,
              self.n_ticks, self.tick_interval) = (min_value, max_value, var_name, only_ints, logscale, custom_arr,
@@ -708,7 +707,6 @@ class InputTable(QTableWidget):    # table for all inputs
                      var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             self.var_name = var_name
-            self.link_funcs = {}                # for linking this box to others
 
             # <editor-fold desc="add_widget and init name&var_name">
             if name == "":
@@ -850,6 +848,7 @@ class InputTable(QTableWidget):    # table for all inputs
         def __init__(self, parent: 'InputTable', name: str, func: Optional[Callable] = None, row: Optional[int] = None):
             Box.__init__(self, parent)
             QPushButton.__init__(self, parent=parent, text=name)
+            self.link_funcs = None
 
             row = parent.add_widget(row=row, box_row=(self, ))
             self.row = row
@@ -1060,7 +1059,6 @@ class InputTable(QTableWidget):    # table for all inputs
             QSlider.__init__(self)
             self.slider = QSlider(Qt.Orientation.Horizontal, parent)    # done here so it can be added to parent.boxes
             self.actual_change_funcs = []       # for being able to unbind functions
-            self.link_funcs = {}                # for linking this box to others
 
             (self.var_name, self.change_rate, self.absolute, self.time_var,
              self.custom_func) = var_name, change_rate, absolute, time_var, custom_func
