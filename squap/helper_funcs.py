@@ -209,8 +209,3 @@ def transform_kwargs(kwargs, mapping):
             result[mapping.get(k, k)] = v
 
     return result
-
-
-def test_print(*args, **kwargs):
-    print(f"filename={os.path.basename(__file__)}: ", end="")
-    print(*args, **kwargs)

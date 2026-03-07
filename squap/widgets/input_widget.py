@@ -1419,7 +1419,3 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")
-
-def test_print(*args, **kwargs):
-    print(f"filename={os.path.basename(__file__)}: ", end="")
-    print(*args, **kwargs)

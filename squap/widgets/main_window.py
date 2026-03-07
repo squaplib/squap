@@ -725,9 +725,3 @@ class MainWindow(QMainWindow):
             )
 
         tab.add_button("print camera parameters", get_params)
-
-
-
-def test_print(*args, **kwargs):
-    print(f"filename={os.path.basename(__file__)}: ", end="")
-    print(*args, **kwargs)

@@ -745,10 +745,3 @@ class SubplotWidget(PlotWidget):
             return pos.toTuple()
         else:
             return self.getViewBox().mapSceneToView(pos).toTuple()
-
-
-
-
-def test_print(*args, **kwargs):
-    print(f"filename={os.path.basename(__file__)}: ", end="")
-    print(*args, **kwargs)
