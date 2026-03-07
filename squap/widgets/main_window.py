@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         """Returns the size of the window as a :class:`tuple` (width, height). Can be unreliable when called before the window is shown. """
         return super().size().toTuple()
 
-    def set_input_width_ratio(self, fraction: float = 1 / 2):
+    def set_input_width(self, fraction: float = 1/3):
         """
         Set the relative size of the input window compared to the plot window. A fraction of 1/2 (default value) means that
         the plot window is 2 times wider than the input window.
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
         if not self.table_manager.first_input_table:
             self.init_first_tab(width_ratio=fraction)
         else:
-            width, height = self.window_size()
+            width, height = self.size()
             self.splitter.width_ratio = fraction
             self.table_manager.main_input_widget.resize(int(fraction * width / (fraction + 1)), height)
             self.fig_widget.resize(int(width / (fraction + 1)), height)
