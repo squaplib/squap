@@ -328,7 +328,7 @@ class MainWindow(QMainWindow):
                     Defaults to ``"window"``.
 
         """
-        widget_map = {"window": self, "plot": self.fig_widget.fig_widget, "input": self.table_manager.table_container}
+        widget_map = {"window": self, "plot": self.fig_widget.plot_widget, "input": self.table_manager.table_container}
         widget_name = widget
         widget = widget_map[widget_name]
         pixmap = widget.grab()
