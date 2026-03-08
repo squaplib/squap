@@ -87,14 +87,15 @@ class MainWindow(QMainWindow):
             self.table_manager.add_table(new_table)
             return new_table
 
-    def init_first_tab(self, width_ratio: float = 0.5, name: Optional[str] = None) -> InputTable:
+    def init_first_tab(self, width_fraction: float = 1/3, name: Optional[str] = None) -> InputTable:
         """
         Initialises the first tab and adds it to a widget so that it can be moved into a QTabWidget later. For the first
         tab we do not yet use a QTabWidget.
 
         Args:
-            width_ratio (float): width=width_ratio*fig_widget.width. By default, width_ratio=0.5, probably meaning that
-                fig_widget will be width 640, input_widget width 320, and window width 964. Note that width_ratio is a
+            width_fraction (float): total width is ``3/2*normal width``, input widget size is ``width*width_fraction``.
+                By default, width_fraction=0.5, probably meaning that
+                fig_widget will be width 640, input_widget width 320, and window width 964. Note that width_fraction is a
                 ratio not a fraction.
             name (str, optional): Name of the tab, only visible when multiple input tables are added.
         """
@@ -105,9 +106,10 @@ class MainWindow(QMainWindow):
             name = f"tab{len(self.table_manager.input_tables)+1}"
 
         self.splitter = QSplitter()
-        self.splitter.width_ratio = width_ratio
+        self.table_manager.width_fraction = width_fraction
 
-        self.table_manager.width = int(self.width()*width_ratio)
+        # new_w = old_w*3/2
+        self.table_manager.width = int(self.width()*3/2*width_fraction)
         table = InputTable(self.table_manager.width, self.table_manager.height, name, self)
         _, table_container = self.table_manager.create_first_table(table)
 
@@ -179,33 +181,39 @@ class MainWindow(QMainWindow):
         #     window.fig_widget.resize(width, height)
 
         if self.table_manager.main_input_widget:
-            ratio = self.splitter.width_ratio
-            self.table_manager.main_input_widget.resize(int(ratio * width / (ratio + 1)), height)
-            self.fig_widget.resize(int(width / (ratio + 1)), height)
+            fraction = self.table_manager.width_fraction
+            self.table_manager.main_input_widget.resize(int(fraction*width), height)
+            self.fig_widget.resize(int((1-fraction)*width), height)
             self.splitter.resize(width, height)
             self.table_manager.resized = True
 
     def size(self) -> tuple:
-        """Returns the size of the window as a :class:`tuple` (width, height). Can be unreliable when called before the window is shown. """
+        """Returns the size of the window as a :class:`tuple` (width, height). Can be unreliable when called before
+        the window is shown. """
         return super().size().toTuple()
 
     def set_input_width(self, fraction: float = 1/3):
         """
-        Set the relative size of the input window compared to the plot window. A fraction of 1/2 (default value) means that
-        the plot window is 2 times wider than the input window.
-        todo: should be changed to be 1/3 of total size. Can't set input width to full width rn.
+        Set the fraction of the window taken up by the input widget.
 
         Args:
-            fraction (float, optional): value between ``0`` and ``1``, specifying the size of the input widget in comparison to
-                the plot widget. Starts off at 1/2.
+            fraction (float, optional): value between ``0`` and ``1``, specifying the fraction of the window taken up by
+                the input widget. Starts off at 1/3.
         """
         if not self.table_manager.first_input_table:
-            self.init_first_tab(width_ratio=fraction)
+            self.init_first_tab(width_fraction=fraction)
+        elif self.isVisible():
+            width, height = self.size()
+            self.table_manager.width_fraction = fraction
+            self.table_manager.main_input_widget.resize(int(fraction * width), height)
+            self.fig_widget.resize(int((1-fraction) * width), height)
+            self.splitter.resize(width, height)
         else:
             width, height = self.size()
-            self.splitter.width_ratio = fraction
-            self.table_manager.main_input_widget.resize(int(fraction * width / (fraction + 1)), height)
-            self.fig_widget.resize(int(width / (fraction + 1)), height)
+            width *= 3/2
+            self.table_manager.width_fraction = fraction
+            self.table_manager.main_input_widget.resize(int(fraction * width), height)
+            self.fig_widget.resize(int((1-fraction) * width), height)
             self.splitter.resize(width, height)
 
     def refresh(self, wait_interval: bool = True, call_update_funcs: bool = True):
@@ -239,9 +247,8 @@ class MainWindow(QMainWindow):
         if self.table_manager.main_input_widget:
             if self.resized:
                 if not self.table_manager.resized:
-                    x = self.splitter.width_ratio  # calculates width of the input_widget given x and total w
-                    fig_width = self.width() / (1 + x)
-                    self.table_manager.width = fig_width * x
+                    fig_width = self.width() * (1-self.table_manager.width_fraction)
+                    self.table_manager.width = fig_width * self.table_manager.width_fraction
                 else:
                     fig_width = self.width() - self.table_manager.width - 4
                 self.splitter.setSizes([self.table_manager.width, fig_width])
@@ -285,9 +292,8 @@ class MainWindow(QMainWindow):
         if self.table_manager.main_input_widget:
             if self.resized:
                 if not self.table_manager.resized:
-                    x = self.splitter.width_ratio  # calculates width of the input_widget given x and total w
-                    fig_width = self.width() / (1 + x)
-                    self.table_manager.width = fig_width * x
+                    fig_width = self.width() * (1-self.table_manager.width_fraction)
+                    self.table_manager.width = fig_width * self.table_manager.width_fraction
                 else:
                     fig_width = self.width() - self.table_manager.width - 4
                 self.splitter.setSizes([self.table_manager.width, fig_width])

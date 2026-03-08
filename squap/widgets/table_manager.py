@@ -11,6 +11,7 @@ class TableManager:
     def __init__(self, height):
         self.width = 0
         self.height = height
+        self.width_fraction = 0
 
         self.input_tables = []              # the input_widget, or all input tables in the QTabWidget if multiple tabs
         # are added
@@ -366,7 +367,6 @@ class TableManager:
             return boxes
         else:
             return self.input_tables[0].add_inputbox(**new_kwargs)
-
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None
                    ) -> 'InputTable.Button | list[InputTable.Button]':

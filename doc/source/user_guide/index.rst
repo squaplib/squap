@@ -11,3 +11,4 @@ or the :ref:`API reference <api-label>` instead.
     var
     custom_types
     optimisation
+    faq

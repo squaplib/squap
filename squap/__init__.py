@@ -296,9 +296,9 @@ def resize(*args, **kwargs):
 def size():
     return get_window().size()
 
-@_copy_docstring(widgets.MainWindow.set_input_width_ratio)
+@_copy_docstring(widgets.MainWindow.set_input_width)
 def set_input_width(*args, **kwargs):
-    return get_window().set_input_width_ratio(*args, **kwargs)
+    return get_window().set_input_width(*args, **kwargs)
 
 @_copy_docstring(widgets.MainWindow.display_fps)
 def display_fps(*args, **kwargs):
