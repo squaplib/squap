@@ -11,7 +11,7 @@ from os import path
 project = 'squap'
 copyright = '2026, R. Mulder'
 author = 'R. Mulder'
-release = '0.0.5'
+release = '0.0.6'
 
 sys.path.append(path.abspath(r"../../"))
 # -- General configuration ---------------------------------------------------
