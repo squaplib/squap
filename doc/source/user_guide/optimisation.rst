@@ -1,7 +1,8 @@
 Optimisation
 ============
 
-This is a short guide on how to speed up slow plots. First and foremost,
+This is a short guide on how to speed up slow plots. See :ref:`sphx_glr_auto_examples_optimisation.py` for an example that
+illustrates some of these options.
 
 Be Explicit
 -----------

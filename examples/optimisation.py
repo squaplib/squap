@@ -1,8 +1,8 @@
 """
-Balls In A Well
-===============
+Optimisation
+============
 
-A nice looking video of balls in a gravity well.
+A way to experiment with the different optimisation options.
 """
 import squap
 from squap import var
