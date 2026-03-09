@@ -4,19 +4,19 @@ import re
 from squap import (plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
     get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, plot_text, merge_plots, set_interval, on_refresh,
     on_mouse_click, on_mouse_move, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
-    add_dropdown, add_rate_slider, link_boxes, add_input_table, set_active_tab, rename_tab, get_all_boxes, display_fps,
+    add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
-    set_zoom_rate_3D, set_camera, align_camera)
+    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, align_camera)
 
 proxied = [
     plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
     get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, plot_text, merge_plots, set_interval, on_refresh,
     on_mouse_click, on_mouse_move, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
-    add_dropdown, add_rate_slider, link_boxes, add_input_table, set_active_tab, rename_tab, get_all_boxes, display_fps,
+    add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
-    set_zoom_rate_3D, set_camera, align_camera
+    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, align_camera
 ]  # all "functions" that are actually methods
 
 all = [
@@ -24,9 +24,9 @@ all = [
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_input_table", "set_active_tab", "rename_tab", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
-    "ColorType", "ColorsType", "cmap_to_colors"
+    "ColorType", "ColorsType", "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
 ]
 
 
