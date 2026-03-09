@@ -98,7 +98,16 @@ class FigWidget(QTableWidget):
                 self.plot_widget = new_plot_widget
 
             self.setCellWidget(row, col, new_plot_widget)
-            self.axs[row, col] = new_plot_widget
+            if 1 in self.shape:
+                if self.shape[0] == 1 and self.shape[1] == 1:
+                    self.axs = new_plot_widget
+                elif self.shape[0] == 1:
+                    self.axs[col] = new_plot_widget
+                else:
+                    self.axs[row] = new_plot_widget
+
+            else:
+                self.axs[row, col] = new_plot_widget
 
             return new_plot_widget
         elif isinstance(plot, SubplotWidget3D):
