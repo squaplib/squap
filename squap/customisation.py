@@ -241,7 +241,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             indices = np.array(np.searchsorted(keys, i_arr))  # index of first item that is bigger than i.
 
             lower_bound = indices == 0
-            upper_bound = indices == max(keys)
+            upper_bound = indices == len(keys)
 
             result = np.zeros((len(i_arr), 4))
             result[lower_bound] = values[0]

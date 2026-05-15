@@ -550,8 +550,11 @@ class ImageCurve(ImageItem):
         self.data_shape = data.shape if data is not None else None
         self.data = data            # for when cmap is given and data is not changed.
         self.cmap = None            # for when data is given and cmap is not changed
-        self.set_data(data=data, location=location, cmap=cmap, auto_levels=auto_levels, levels=levels,
-                      axis_order=axis_order, border_color=border_color, **kwargs)
+
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["location", "cmap"],
+                                    exclude_args=["self", "args", "kwargs"])
+        self.set_data(**new_kwargs, **kwargs)
 
     def set_data(self, data=None, **kwargs):
         """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""

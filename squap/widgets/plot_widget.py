@@ -99,7 +99,7 @@ class SubplotWidget(PlotWidget):
             ImageCurve: The created image curve.
         """
         new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=["location"],
+                                    none_kwargs=["location", "cmap"],
                                     exclude_args=["self", "args", "kwargs"])
 
         img = ImageCurve(**new_kwargs, **kwargs)
