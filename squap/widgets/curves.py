@@ -539,7 +539,8 @@ class InfLine(InfiniteLine):
 
 class ImageCurve(ImageItem):
     kwarg_mapping = {
-        "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color"
+        "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color",
+        "autolevels": "auto_levels"
     }
 
     def __init__(self, data=None, location=None, cmap=None, auto_levels=False, levels=None, axis_order="row-major",
