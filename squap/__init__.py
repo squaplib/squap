@@ -23,8 +23,8 @@ __all__ = [
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
-    "make_3D", "scatter_3D", "add_grid_3D", "add_grids_3D", "set_zoom_rate_3D", "set_camera",
-    "align_camera"
+    "make_3D", "scatter_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "add_grid_3D", "add_grids_3D",
+    "set_zoom_rate_3D", "set_camera", "align_camera"
 ]
 
 _window = None
@@ -363,6 +363,18 @@ def add_grids_3D(*args, **kwargs):
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.scatter)
 def scatter_3D(*args, **kwargs):
     return get_plot_3D().scatter(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.mesh)
+def mesh_3D(*args, **kwargs):
+    return get_plot_3D().mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.sphere_mesh)
+def sphere_mesh_3D(*args, **kwargs):
+    return get_plot_3D().sphere_mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.cube_mesh)
+def cube_mesh_3D(*args, **kwargs):
+    return get_plot_3D().cube_mesh(*args, **kwargs)
 
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.set_camera)
 def set_camera(*args, **kwargs):
