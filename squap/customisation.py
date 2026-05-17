@@ -221,6 +221,9 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             return colormap.get(data, source).map(i)
 
     elif isinstance(data, dict):
+        for key in data.keys():
+            if key < 0 or key > 1:
+                raise ValueError("The keys must be values between 0 and 1.")
         for key, value in data.items():
             data[key] = np.array(mkcol_to_arr(get_single_color(value)))
         keys, values = map(np.array, zip(*sorted(data.items())))
@@ -269,7 +272,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             #     v_1, v_2, x_1, x_2 = values[index - 1], values[index], keys[index - 1], keys[index]
             #     result[ii] = v_1 + (v_2 - v_1) / (x_2 - x_1) * (i[ii] - x_1)
     else:
-        raise TypeError("cmap is of incorrect type. Must be str, list or dict.")
+        raise TypeError(f"cmap is of incorrect type. Must be str, list or dict. Data is of type {type(data)}.")
 
     cmap_func.data = data
 
