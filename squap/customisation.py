@@ -5,6 +5,7 @@ from PySide6.QtCore import QPointF
 from matplotlib import colors
 from pyqtgraph import colormap
 import numpy as np
+from numpy.typing import NDArray
 
 
 class Font(QFont):
@@ -291,7 +292,7 @@ def cmap_to_gradient(cmap, gradient):
     return gradient
 
 
-def cmap_to_colors(cmap: Callable, N_points: int) -> np.ndarray:       # todo: temporary, make this better
+def cmap_to_colors(cmap: Callable, N_points: int) -> NDArray:       # todo: temporary, make this better
     """
     Transform a cmap into N equally spaced colors.
 
