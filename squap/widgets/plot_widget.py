@@ -12,6 +12,7 @@ from pyqtgraph import PlotWidget, QtWidgets
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from ..customisation import Font
 from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve
+from numpy.typing import NDArray
 
 
 class SubplotWidget(PlotWidget):
@@ -109,7 +110,7 @@ class SubplotWidget(PlotWidget):
 
     def plot(
             self, *args, color: ColorsType = "y", width: int = 1, dashed: bool = False,
-            dash_pattern: Optional[Iterable[int]] = None, connect: str | np.ndarray = "auto",
+            dash_pattern: Optional[Iterable[int]] = None, connect: str | NDArray = "auto",
             gradient: Optional[QGradient] = None, line_style: Optional[str] = None, antialias: bool = True,
             auto_downsample: bool = False, downsample: int = 1, downsample_method: str = "mean",
             skip_finite_check: bool = False, **kwargs
@@ -458,7 +459,6 @@ class SubplotWidget(PlotWidget):
         self.addItem(grid)
         self.curves.append(grid)
         return grid
-
 
     def lock_zoom(self, curves: 'Iterable[PlotCurve]'):
         """
