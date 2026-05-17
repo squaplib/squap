@@ -7,7 +7,7 @@ from pyqtgraph import PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageIte
     getConfigOption, ErrorBarItem
 
 from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
-    transform_kwargs, ColorType
+    transform_kwargs, ColorType, get_new_kwargs
 from ..customisation import cmap_to_gradient, get_cmap, Font
 
 
