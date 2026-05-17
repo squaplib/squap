@@ -5,8 +5,9 @@ from PySide6.QtGui import QVector3D
 import numpy as np
 from typing import Iterable, Optional
 
-from ..helper_funcs import get_new_kwargs, ColorsType
-from .curves_3D import ScatterCurve3D
+from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
+from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh
+from numpy.typing import NDArray
 
 
 class SubplotWidget3D(GLViewWidget):
@@ -81,7 +82,6 @@ class SubplotWidget3D(GLViewWidget):
         """
         self.zoom_rate = new_rate
 
-
     def add_grid(self, diagonal: tuple[float], spacing: float = 1) -> GLGridItem:
         """
         Adds a grid that lies on or parallel to one of the planes.
@@ -145,7 +145,7 @@ class SubplotWidget3D(GLViewWidget):
         return grids
 
     def scatter(self, x: Optional[Iterable] = None, y: Optional[Iterable] = None, z: Optional[Iterable] = None,
-                pos: Optional[np.ndarray] = None, color: ColorsType = "y", size: int | Iterable[int] = 4,
+                pos: Optional[NDArray] = None, color: ColorsType = "y", size: int | Iterable[int] = 4,
                 pixel_mode: bool = True, **kwargs):
         """
         Creates a new scatter plot item. Use either ``x``, ``y`` and ``z`` or ``pos`` to set the coordinates of the
@@ -172,5 +172,110 @@ class SubplotWidget3D(GLViewWidget):
 
         curve = ScatterCurve3D()
         curve.set_data(**new_kwargs, **kwargs)
+        self.add_curve(curve)
+        return curve
+
+    def mesh(self, vertexes: Optional[NDArray] = None, faces: Optional[NDArray] = None,
+             color: ColorType = (1, 1, 1, 0.1), draw_edges: bool = False, draw_faces: bool = True,
+             shader: Optional[str] = None, smooth: bool = False,
+             vertex_colors: Optional[ColorsType] = None, face_colors: Optional[ColorsType] = None,
+             compute_normals: bool = True, **kwargs):
+        """
+        Draws a mesh. Use ``data`` to draw a predetermined shape
+
+        Args:
+            vertexes (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nv, 3)`` array of vertex coordinates. If
+                faces is not specified, then this will instead be interpreted as ``(Nf, 3, 3)`` array of coordinates.
+            faces: (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nf, 3)`` array of indexes into the vertex array.
+            color: Default face color used if no vertex or face colors  are specified.
+            draw_edges (bool): Whether to draw edges. Defaults to ``False``.
+            draw_faces (bool): Whether to draw faces. Defaults to ``True``.
+            shader (bool): Name of shader program to use when drawing faces. Defaults to ``None``, meaning no shader.
+                todo: explain options
+            smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
+                Defaults to ``False``.
+            vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
+            face_colors (:class:`numpy.ndarray <numpy.ndarray>`): Face colors. Defaults to ``None``.
+            compute_normals (bool): If ``False``, then computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = Mesh()
+        curve.set_data(**new_kwargs)
+        self.add_curve(curve)
+        return curve
+
+    def sphere_mesh(self, radius: float = 1., nrows: int = 20, ncols: int = 20,
+                    vertexes: Optional[NDArray] = None, faces: Optional[NDArray] = None,
+                    color: ColorType = (1, 1, 1, 0.1), draw_edges: bool = False, draw_faces: bool = True,
+                    shader: Optional[str] = None, smooth: bool = False,
+                    vertex_colors: Optional[ColorsType] = None, face_colors: Optional[ColorsType] = None,
+                    compute_normals: bool = True, **kwargs):
+        """
+        Draws a mesh. Use ``data`` to draw a predetermined shape
+
+        Args:
+            radius (float): Radius of the sphere.
+            nrows (int): Number of rows in the mesh. Defaults to ``10``.
+            ncols (int): Number of columns in the mesh. Defaults to ``10``.
+            vertexes (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nv, 3)`` array of vertex coordinates. If
+                faces is not specified, then this will instead be interpreted as ``(Nf, 3, 3)`` array of coordinates.
+            faces: (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nf, 3)`` array of indexes into the vertex array.
+            color: Default face color used if no vertex or face colors  are specified.
+            draw_edges (bool): Whether to draw edges. Defaults to ``False``.
+            draw_faces (bool): Whether to draw faces. Defaults to ``True``.
+            shader (bool): Name of shader program to use when drawing faces. Defaults to ``None``, meaning no shader.
+                todo: explain options
+            smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
+                Defaults to ``False``.
+            vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
+            face_colors (:class:`numpy.ndarray <numpy.ndarray>`): Face colors. Defaults to ``None``.
+            compute_normals (bool): If ``False``, then computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = SphereMesh(radius, nrows, ncols)
+        curve.set_data(**new_kwargs)
+        self.add_curve(curve)
+        return curve
+
+    def cube_mesh(self, side_length: float = 1.,
+                  vertexes: Optional[NDArray] = None, faces: Optional[NDArray] = None,
+                  color: ColorType = (1, 1, 1, 0.1), draw_edges: bool = False, draw_faces: bool = True,
+                  shader: Optional[str] = None, smooth: bool = False,
+                  vertex_colors: Optional[ColorsType] = None, face_colors: Optional[ColorsType] = None,
+                  compute_normals: bool = True, **kwargs):
+        """
+        Draws a mesh. Use ``data`` to draw a predetermined shape
+
+        Args:
+            side_length (float): Side length of the cube. Defaults to ``1``.
+            vertexes (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nv, 3)`` array of vertex coordinates. If
+                faces is not specified, then this will instead be interpreted as ``(Nf, 3, 3)`` array of coordinates.
+            faces: (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nf, 3)`` array of indexes into the vertex array.
+            color: Default face color used if no vertex or face colors  are specified.
+            draw_edges (bool): Whether to draw edges. Defaults to ``False``.
+            draw_faces (bool): Whether to draw faces. Defaults to ``True``.
+            shader (bool): Name of shader program to use when drawing faces. Defaults to ``None``, meaning no shader.
+                todo: explain options
+            smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
+                Defaults to ``False``.
+            vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
+            face_colors (:class:`numpy.ndarray <numpy.ndarray>`): Face colors. Defaults to ``None``.
+            compute_normals (bool): If ``False``, then computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = CubeMesh(side_length)
+        curve.set_data(**new_kwargs)
         self.add_curve(curve)
         return curve
