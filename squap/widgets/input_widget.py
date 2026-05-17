@@ -124,7 +124,6 @@ class InputTable(QTableWidget):    # table for all inputs
 
         self.current_row = -1       # row of the last placed widget (so total amount of rows - 1)
         self.variables = window.variables
-        self.update_funcs = window.update_funcs
         self.window = window        # necessary for renaming tabs
         self.input_varnames = []    # the names of every variable indexed by row for stuff like linking and rate_slider
         self.boxes = []             # for removing them later (and a nice overview)
@@ -1177,7 +1176,7 @@ class InputTable(QTableWidget):    # table for all inputs
                     parent.setItem(self.row, self.col, QTableWidgetItem(textify(val)))
             # </editor-fold>
 
-            self.parent.update_funcs.append(update_func)
+            self.parent.window.on_refresh(update_func)
 
             if print_value:
                 def print_func(row, col):
