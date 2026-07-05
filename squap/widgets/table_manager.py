@@ -392,7 +392,6 @@ class TableManager:
             for table in self.input_tables:
                 boxes.append(table.add_button(**new_kwargs))
 
-            self.link_boxes(boxes)
             return boxes
         else:
             return self.input_tables[0].add_button(**new_kwargs)
