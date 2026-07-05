@@ -18,8 +18,8 @@ from PySide6.QtCore import QTimer
 __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
-    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
+    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "merge_plots", "set_interval",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
@@ -115,6 +115,14 @@ def inf_vline(*args, **kwargs):
 @_copy_docstring(widgets.SubplotWidget.grid)
 def grid(*args, **kwargs):
     return get_window().fig_widget.plot_widget.grid(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.arrow)
+def arrow(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.arrow(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.vector_field)
+def vector_field(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.vector_field(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.plot_text)
 def plot_text(*args, **kwargs):
@@ -239,6 +247,10 @@ def on_mouse_click(*args, **kwargs):
 @_copy_docstring(widgets.SubplotWidget.on_mouse_move)
 def on_mouse_move(*args, **kwargs):
     return get_window().fig_widget.plot_widget.on_mouse_move(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.on_mouse_leave)
+def on_mouse_leave(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.on_mouse_leave(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.get_mouse_pos)
 def get_mouse_pos(*args, **kwargs):

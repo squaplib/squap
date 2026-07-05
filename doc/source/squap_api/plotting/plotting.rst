@@ -7,4 +7,5 @@ All the customisation options for a curve generated from :func:`squap.plot`, :fu
 .. autofunction:: squap.scatter
 .. autofunction:: squap.errorbar
 .. autofunction:: squap.imshow
-
+.. autofunction:: squap.arrow
+.. autofunction:: squap.vector_field

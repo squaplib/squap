@@ -11,7 +11,7 @@ from pyqtgraph import PlotWidget, QtWidgets
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from ..customisation import Font
-from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve
+from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowCurve, VectorFieldCurve
 from numpy.typing import NDArray
 
 
@@ -466,6 +466,136 @@ class SubplotWidget(PlotWidget):
         self.addItem(grid)
         self.curves.append(grid)
         return grid
+
+    def arrow(self, angle: float = 0., size: float = 1., position: tuple[float, float] = (0., 0.),
+              fill_color: ColorType = "white", border_color: ColorType = "blue", border_width: float = -1,
+              origin: str = "tip", pixel_mode: bool = True, head_length: float = 20,
+              head_width: Optional[float] = None, tip_angle: float = 60., base_angle: float = 0.,
+              tail_length: Optional[float] = 50., tail_width: float = 6., length: float = 1., **kwargs):
+        """
+        Creates a new :class:`arrow object <squap.widgets.plot_widget.ArrowCurve>`, and calls
+        :meth:`set_data <squap.widgets.plot_widget.ArrowCurve.set_data>` with the other (keyword) arguments.
+        To add a vector field see :meth:`squap.vector_field`, and for an arrow
+        pointing to a location on a curve see (Not implemented yet).
+
+        Args:
+            angle (float): Orientation of the arrow in degrees. Default is 0.; arrow pointing to the left.
+            size (float): Relative size of the arrow. Change to proportionally scale all relevant parameters. Use
+                :meth:`arrow.get_data <squap.widgets.plot_widget.ArrowCurve.get_data>` to see the values of
+                these parameters.
+            position (tuple of float): Position of the arrow in coordinates. Defaults to ``(0, 0)``. Which part of the
+                arrow is placed at this position is controlled by ``origin``.
+            fill_color (:ref:`ColorType`): The color of the arrow. Defaults to ``"white"``.
+            border_color (:ref:`ColorType`): The color of the border around the arrow. Defaults to ``"blue"``
+                (but the border is not visible by default).
+            border_width (float): The width of the border around the arrow. Defaults to ``-1`` meaning it is disabled.
+
+            origin (str): Which part of the arrow is placed at ``location``; this point also acts as the
+                arrow's center of rotation. One of:
+
+                - ``"tip"``: the tip of the arrow.
+                - ``"center"``: the center of the arrow.
+                - ``"tail"``: the tail of the arrow.
+
+                Defaults to ``"tip"``. Is only implemented for pxMode=False.
+
+            pixel_mode (bool): If ``True``, parameters are specified in pixels. If ``False``, parameters are
+                specified in data coordinates. Defaults to ``True``.
+            head_length (float): Length of the arrow head, from tip to base. Default is ``20``.
+            head_width (float, optional): Width of the arrow head at its base. If `head_width` is specified, it
+                overrides ``tip_angle``.
+            tip_angle (float): Angle of the tip of the arrow in degrees. Smaller values make a ‘sharper’ arrow.
+                Default is ``60``.
+            base_angle (float): Angle of the base of the arrow head. Default is ``0``, which means that the base of the
+                arrow head is perpendicular to the arrow tail.
+            tail_length (float, optional): Length of the arrow tail, measured from the base of the arrow head to the
+                end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
+            tail_width (float): Width of the tail. Default is ``6``.
+            length (float): Relative length of the arrow. Change to proportionally scale all relevant parameters. Use
+                :meth:`arrow.get_data <squap.widgets.plot_widget.ArrowCurve.get_data>` to see the values of these
+                parameters.
+
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["head_width"],
+                                    exclude_args=["self", "kwargs"])
+
+        arrow = ArrowCurve(view_box=self.getPlotItem().getViewBox(), **new_kwargs, **kwargs)
+
+        self.addItem(arrow)
+        self.curves.append(arrow)       # I am not sure if this should also happen if it is part of a vector field.
+        return arrow
+
+    def vector_field(self, data: np.ndarray, pos_x: Optional[np.ndarray] = None, pos_y: Optional[np.ndarray] = None,
+                     scale_type: Optional[str] = None, size: float = 1., pixel_mode: bool = True,
+                     fill_color: ColorsType = "yellow", border_color: ColorsType = "blue",
+                     border_width: float | list[float] = -1, cmap: Optional[Any] = None, absolute: bool = False,
+                     head_length: float = 4., head_width: Optional[float] = None, tip_angle: float = 60.,
+                     base_angle: float = 0., tail_length: Optional[float] = 10., tail_width: float = 1.2,
+                     **kwargs):
+        """
+        Creates a vector field of arrows. Accepts most arguments accepted by arrow, that form a basis arrow. All arrows
+        are based on this basis arrow, and scaled due to the size of the vector field according to ``scale_type``.s
+        Creates a new :class:`vector field <squap.widgets.plot_widget.VectorFieldCurve>`, and calls
+        :meth:`set_data <squap.widgets.plot_widget.VectorFieldCurve.set_data>` with the other (keyword) arguments.
+        To add a single arrow see :meth:`squap.arrow`, and for an arrow pointing to a location on a curve
+        see (Not implemented yet).
+
+        Args:
+            data (:class:`np.ndarray <numpy.ndarray>`): The vector field which is displayed. It should be
+                shape ``(Ny, Nx, 2)``.
+            pos_x (:class:`np.ndarray <numpy.ndarray>`, optional): The x-positions at which each vector is shown.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :meth:`np.meshgrid <numpy.meshgrid>`.
+                Defaults to evenly spaced points between 0 and 1.
+            pos_y (:class:`np.ndarray <numpy.ndarray>`, optional): The y-positions at which each vector is shown.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :meth:`np.meshgrid <numpy.meshgrid>`.
+                Defaults to evenly spaced points between 0 and 1.
+            scale_type (str): How the amplitude of the vector field is shown.
+                It should be one of the following:
+
+                - ``None`` or ``"None"``: The amplitude of the vector field has no visual effect.
+                - ``"length"``: The amplitude of the vector field changes the length of the arrows, but not the width.
+                - ``"size"``: The amplitude changes the length and width of the arrows.
+                - ``"color"``: The amplitude changes the color according to the given ``cmap``.
+
+                Defaults to ``"length"``.
+            size (float): Increases or decreases the size of all arrows. Defaults to ``1``.
+            pixel_mode (bool): If ``True``, parameters are specified in pixels. If ``False``, parameters are
+                specified in data coordinates. Defaults to ``True``.
+
+            fill_color (:ref:`ColorType`): The color of the arrow. Defaults to ``"white"``.
+            border_color (:ref:`ColorType`): The color of the border around the arrow. Defaults to ``"blue"``
+                (but the border is not visible by default).
+            border_width (float): The width of the border around the arrow. Defaults to ``-1`` meaning it is disabled.
+
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`, which
+                is used if scale_type is set to ``"color"``.
+            absolute (bool): If ``False`` normalizes the amplitude of the field. If ``True``, uses the absolute value.
+                When set to ``False``, for ``scale_type = "color"`` the amplitudes are scaled so that the maximum value
+                is 1, for ``length`` and ``"size"`` the amplitudes are scaled so that the maximum amplitude
+                is 2. Has no affect when ``scale_type`` is set to ``None``. Defaults to ``False``.
+                Setting ``absolute`` to ``True`` can cause unexpected behaviour when ``scale_type`` is set
+                to ``"color"``.
+
+            head_length (float): Length of the arrow head, from tip to base. Default is ``20``.
+            head_width (float, optional): Width of the arrow head at its base. If `head_width` is specified, it
+                overrides ``tip_angle``.
+            tip_angle (float): Angle of the tip of the arrow in degrees. Smaller values make a ‘sharper’ arrow.
+                Default is ``60``.
+            base_angle (float): Angle of the base of the arrow head. Default is ``0``, which means that the base of the
+                arrow head is perpendicular to the arrow tail.
+            tail_length (float, optional): Length of the arrow tail, measured from the base of the arrow head to the
+                end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
+            tail_width (float): Width of the tail. Default is ``6``.
+
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["pos_x", "pos_y", "cmap"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = VectorFieldCurve(self, **new_kwargs, **kwargs)
+        self.curves.append(curve)
+        return curve
 
     def lock_zoom(self, curves: 'Iterable[PlotCurve]'):
         """

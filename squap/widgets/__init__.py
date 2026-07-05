@@ -3,7 +3,7 @@ from .plot_manager import FigWidget
 from .table_manager import TableManager
 from .plot_widget import SubplotWidget
 from .input_widget import InputTable, Box
-from .curves import PlotCurve, ErrorbarCurve, TextCurve, InfLine, ImageCurve, GridCurve
+from .curves import PlotCurve, ErrorbarCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowCurve, VectorFieldCurve
 
 from .plot_widget_3D import SubplotWidget3D
 from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh
@@ -11,6 +11,6 @@ from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh
 
 __all__ = [
     "MainWindow", "FigWidget", "TableManager", "SubplotWidget", "InputTable", "Box",
-    "PlotCurve", "ErrorbarCurve", "TextCurve", "InfLine", "ImageCurve", "GridCurve",
+    "PlotCurve", "ErrorbarCurve", "TextCurve", "InfLine", "ImageCurve", "GridCurve", "ArrowCurve", "VectorFieldCurve",
     "SubplotWidget3D", "ScatterCurve3D", "Mesh", "SphereMesh", "CubeMesh",
 ]
