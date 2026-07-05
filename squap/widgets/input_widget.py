@@ -169,7 +169,7 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         return [box_row[-1] for box_row in self.boxes]
 
-    def add_widget(self, row: None | int, box_row: tuple[Box]) -> int:     # if row is specified and row is in empty_rows it is added there
+    def add_widget(self, row: None | int, box_row: tuple[Box, ...]) -> int:     # if row is specified and row is in empty_rows it is added there
         """
         Handles all internal stuff that is required when a :class:`box <squap.widgets.Box>` is added to a
         specified row. The row can be the next row or any empty row.
@@ -447,10 +447,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change(self.value())   # when var_name or name changes, call self._on_change to update var.name
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change(self.value())
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
@@ -638,10 +640,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change()
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change()
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
@@ -767,10 +771,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change(self.row)
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change(self.row)
 
             if "type_func" in kwargs:
                 if kwargs["type_func"] is None:
@@ -963,10 +969,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change()
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change()
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
@@ -1198,10 +1206,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change(self.row, self.col)
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change(self.row, self.col)
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
@@ -1366,10 +1376,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
+                self._on_change()
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
+                self._on_change()
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
