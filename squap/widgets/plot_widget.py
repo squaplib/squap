@@ -27,6 +27,12 @@ class SubplotWidget(PlotWidget):
         self.row = row          # for merging subplots
         self.col = col
         self.curves = []        # for clearing curves
+        self.mouse_leave_funcs = []
+
+    def leaveEvent(self, event):        # allows adding function calls when the mouse leaves the widget
+        super().leaveEvent(event)
+        for func in self.mouse_leave_funcs:
+            func()
 
     def base_plot(self, curve_type: str, *args, **kwargs):
         if len(args) == 1:
@@ -50,7 +56,8 @@ class SubplotWidget(PlotWidget):
         Args:
             text (str): The text to be displayed.
             pos (tuple): The position of the text in coordinates on the 2D plane.
-            color (:ref:`ColorType`, optional): Color of the text. Defaults to gray.
+            color (:ref:`ColorType`): Color of the text. Defaults to gray.
+            border color and fill color?
             angle (float, optional): Angle at which the text is placed in degrees. Defaults to ``0``.
             font (str or Font, optional): The font of the text. Defaults to Segoe UI.
             font_size (int, optional): if set to 0 or negative, system default fontsize is used (usually 12)
@@ -328,7 +335,7 @@ class SubplotWidget(PlotWidget):
 
         return self.base_plot("plot", *args, **new_kwargs, **kwargs)
 
-    def inf_dline(self, pos: float | tuple[float], angle: float = 45, color: ColorType = "y", width: int = 1,
+    def inf_dline(self, pos: float | tuple[float, float], angle: float = 45, color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -386,7 +393,7 @@ class SubplotWidget(PlotWidget):
         self.curves.append(line)
         return line
 
-    def inf_hline(self, pos: float | tuple[float], color: ColorType = "y", width: int = 1,
+    def inf_hline(self, pos: float | tuple[float, float], color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -408,7 +415,7 @@ class SubplotWidget(PlotWidget):
         self.curves.append(line)
         return line
 
-    def inf_vline(self, pos: float | tuple[float], color: ColorType = "y", width: int = 1,
+    def inf_vline(self, pos: float | tuple[float, float], color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -652,7 +659,6 @@ class SubplotWidget(PlotWidget):
         """Removes an item from the plot, usually a curve."""
         self.removeItem(curve)
 
-
     def on_mouse_click(self, func: Callable, pixel_mode: bool = False):
         """
         Bind function to run on mouse click. As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
@@ -729,6 +735,10 @@ class SubplotWidget(PlotWidget):
                     func(plot_pos)
 
         self.scene().sigMouseMoved.connect(mouse_func)
+
+    def on_mouse_leave(self, func: Callable):
+        """Calls the function ``func`` when the mouse leaves the widget."""
+        self.mouse_leave_funcs.append(func)
 
     def get_mouse_pos(self, pixel_mode=False) -> tuple:
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
