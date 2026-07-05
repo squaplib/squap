@@ -27,6 +27,14 @@ All the customisation options for a PlotCurve are shown in :ref:`sphx_glr_auto_e
 
     .. automethod:: set_data
 
+.. autoclass:: ArrowCurve
+
+    .. automethod:: set_data
+
+.. autoclass:: VectorFieldCurve
+
+    .. automethod:: set_data
+
 .. autoclass:: GridCurve
 
     .. automethod:: set_data
