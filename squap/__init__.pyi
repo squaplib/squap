@@ -7,7 +7,6 @@ import numpy
 
 import PySide6
 import pyqtgraph
-from pyqtgraph import mkColor
 import matplotlib.colors
 
 from .variables import Variables
