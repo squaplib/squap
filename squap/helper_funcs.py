@@ -1,5 +1,4 @@
 import ast
-import os.path
 import json
 from typing import TypeAlias, Union, Iterable, Optional
 
@@ -7,10 +6,10 @@ import numpy as np
 from PySide6.QtGui import QGradient, Qt, QColor, QPen
 
 from PySide6.QtWidgets import QTableWidgetItem
-from pyqtgraph import mkPen, mkColor
+from pyqtgraph import mkColor
 
 
-ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[float], float]
+ColorType: TypeAlias = Union[QColor, str, Iterable[float], float]
 ColorsType: TypeAlias = Union[ColorType, Iterable["ColorsType"]]        # allows arbitrary nesting
 
 # def map_color(color_name):
@@ -75,9 +74,10 @@ def update_pen(pen: QPen, **kwargs) -> QPen:
     if "width" in kwargs:
         if kwargs["width"] is not None:
             if kwargs["width"] <= 0:
-                return None
+                pen.setStyle(Qt.NoPen)
+            elif pen.style() == Qt.NoPen:
+                pen.setStyle(Qt.SolidLine)
             pen.setWidth(kwargs["width"])
-
 
     if "dashed" in kwargs:
         if kwargs["dashed"]:
