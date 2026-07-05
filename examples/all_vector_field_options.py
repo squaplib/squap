@@ -1,6 +1,6 @@
 """
 Vector Field Customisation
-==================
+==========================
 
 Shows all vector field customisation options.
 Not thoroughly tested.

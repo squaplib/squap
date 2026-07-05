@@ -1,6 +1,6 @@
 """
 Arrow Customisation
-==================
+===================
 
 Shows all arrow customisation options.
 """
