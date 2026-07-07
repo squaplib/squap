@@ -823,6 +823,8 @@ class VectorFieldCurve:
         self.set_data(data, **kwargs)
 
     def set_data(self, data: Optional[np.ndarray] = None, **kwargs):
+        """Updates an existing vector field object. Takes the same arguments and keyword arguments as
+        :func:`squap.vector_field`."""
         # The following handles pos_x and pos_y. If one of them is passed, just that one is changed. If one of them is
         # passed and the shape is different from what it was, the other becomes linspace between 0 and 1 of the same
         # shape. If both are passed, and the shapes mismatch, an error is thrown. If both are passed correctly
