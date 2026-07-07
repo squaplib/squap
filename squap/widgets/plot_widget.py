@@ -51,7 +51,7 @@ class SubplotWidget(PlotWidget):
     def plot_text(self, text: str, pos: Iterable[float], color: ColorType = (0.8, 0.8, 0.8), angle: float = 0,
                   font: Optional[str | Font] = None, font_size: Optional[int] = None, html: Optional[str] = None,
                   text_width: Optional[int] = None, **kwargs):
-        """ Displays a :class:`text object <squap.widgets.plot_widget.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
+        """ Displays a :class:`text object <squap.widgets.curves.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
 
         Args:
             text (str): The text to be displayed.
@@ -65,7 +65,7 @@ class SubplotWidget(PlotWidget):
             text_width (int, optional): The width of the text. Todo: check how it works
 
         Returns:
-            TextCurve: The created :class:`text object <squap.widgets.plot_widget.TextCurve>`.
+            TextCurve: The created :class:`text object <squap.widgets.curves.TextCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["text_width", "font", "font_size", "html"],
@@ -80,7 +80,7 @@ class SubplotWidget(PlotWidget):
                auto_levels: bool = False, levels=None, axis_order="row-major",
                border_color: ColorType | None = None, **kwargs):      # **kwargs for aliases
         """
-        Creates an :py:class:`image <squap.widgets.plot_widget.ImageCurve>` at location ``location``. This image consists
+        Creates an :py:class:`image <squap.widgets.curves.ImageCurve>` at location ``location``. This image consists
         of equally spaced pixels, colored according to ``data`` and ``cmap``.
         This function hasn't been tested thoroughly
 
@@ -123,8 +123,8 @@ class SubplotWidget(PlotWidget):
             skip_finite_check: bool = False, **kwargs
     ) -> 'PlotCurve':
         """
-        Creates a new :class:`plot curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`plot curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other (keyword) arguments.
 
         Args:
             *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
@@ -153,7 +153,7 @@ class SubplotWidget(PlotWidget):
                 gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
                 When ``style`` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or ``"radial"`` without providing
                 ``position``, the bounds of the gradient will be automatically determined when
-                :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
+                :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
                 optimal performance. Default is ``None``.
             line_style (optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
@@ -179,7 +179,7 @@ class SubplotWidget(PlotWidget):
                 - ``y``: You can provide ``y`` as keyword argument as well.
 
         Returns:
-            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+            :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["dash_pattern", "gradient", "line_style"],
@@ -194,8 +194,8 @@ class SubplotWidget(PlotWidget):
             antialias: bool = True, **kwargs
     ) -> 'PlotCurve':
         """
-        Creates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other arguments.
+        Creates a new :class:`scatter curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other arguments.
         If both ``x`` and ``y`` are provided, you can set them together using ``scatter(x, y, ...)``.
         If only ``y`` is provided using ``scatter(y, ...)``,
         ``x`` is set as the index of ``y``. ``x`` and ``y`` can also be passed as keyword arguments by doing ``scatter(x=x, ...)``,
@@ -231,7 +231,7 @@ class SubplotWidget(PlotWidget):
                 - ``y``: You can provide ``y`` as keyword argument as well.
 
         Returns:
-            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+            :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=[],
@@ -247,8 +247,8 @@ class SubplotWidget(PlotWidget):
                  downsample: int = 1, downsample_method: str = "mean", skip_finite_check: bool = False, **kwargs
          ) -> 'PlotCurve':
         """
-        Creates a new :class:`errorbar curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`errorbar curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other (keyword) arguments.
 
 
         Args:
@@ -323,9 +323,9 @@ class SubplotWidget(PlotWidget):
                 - `error_width`: For seperating errorbar and line width.
 
         Returns:
-             :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve. The errorbar curve is
-             technically located at :class:`ErrorbarCurve <squap.widgets.plot_widget.ErrorbarCurve>`, but everything
-             can be set with just :meth:`PlotCurve.set_data() <squap.widgets.plot_widget.PlotCurve.set_data>`.
+             :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve. The errorbar curve is
+             technically located at :class:`ErrorbarCurve <squap.widgets.curves.ErrorbarCurve>`, but everything
+             can be set with just :meth:`PlotCurve.set_data() <squap.widgets.curves.PlotCurve.set_data>`.
         """
 
         new_kwargs = get_new_kwargs(locals(),
@@ -440,7 +440,7 @@ class SubplotWidget(PlotWidget):
     def grid(self, tick_spacing: Optional[tuple | float] = None, color: Optional[ColorType] = None, width: int = 1,
              **kwargs):
         """
-        This function is used to create a :class:`grid <squap.widgets.plot_widget.GridCurve>` and add it to view. Todo: improve
+        This function is used to create a :class:`grid <squap.widgets.curves.GridCurve>` and add it to view. Todo: improve
         Use :func:`squap.show_grid` for simple use-cases.
 
         Args:
@@ -455,7 +455,7 @@ class SubplotWidget(PlotWidget):
             **kwargs: Some aliases are allowed.
 
         Returns:
-            GridCurve: The generated :class:`grid <squap.widgets.plot_widget.GridCurve>`.
+            GridCurve: The generated :class:`grid <squap.widgets.curves.GridCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=[],
@@ -473,15 +473,15 @@ class SubplotWidget(PlotWidget):
               head_width: Optional[float] = None, tip_angle: float = 60., base_angle: float = 0.,
               tail_length: Optional[float] = 50., tail_width: float = 6., length: float = 1., **kwargs):
         """
-        Creates a new :class:`arrow object <squap.widgets.plot_widget.ArrowCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.ArrowCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`arrow object <squap.widgets.curves.ArrowCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.ArrowCurve.set_data>` with the other (keyword) arguments.
         To add a vector field see :meth:`squap.vector_field`, and for an arrow
         pointing to a location on a curve see (Not implemented yet).
 
         Args:
             angle (float): Orientation of the arrow in degrees. Default is 0.; arrow pointing to the left.
             size (float): Relative size of the arrow. Change to proportionally scale all relevant parameters. Use
-                :meth:`arrow.get_data <squap.widgets.plot_widget.ArrowCurve.get_data>` to see the values of
+                :meth:`arrow.get_data <squap.widgets.curves.ArrowCurve.get_data>` to see the values of
                 these parameters.
             position (tuple of float): Position of the arrow in coordinates. Defaults to ``(0, 0)``. Which part of the
                 arrow is placed at this position is controlled by ``origin``.
@@ -512,7 +512,7 @@ class SubplotWidget(PlotWidget):
                 end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
             tail_width (float): Width of the tail. Default is ``6``.
             length (float): Relative length of the arrow. Change to proportionally scale all relevant parameters. Use
-                :meth:`arrow.get_data <squap.widgets.plot_widget.ArrowCurve.get_data>` to see the values of these
+                :meth:`arrow.get_data <squap.widgets.curves.ArrowCurve.get_data>` to see the values of these
                 parameters.
 
         """
@@ -534,10 +534,10 @@ class SubplotWidget(PlotWidget):
                      base_angle: float = 0., tail_length: Optional[float] = 10., tail_width: float = 1.2,
                      **kwargs):
         """
-        Creates a vector field of arrows. Accepts most arguments accepted by arrow, that form a basis arrow. All arrows
-        are based on this basis arrow, and scaled due to the size of the vector field according to ``scale_type``.s
-        Creates a new :class:`vector field <squap.widgets.plot_widget.VectorFieldCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.VectorFieldCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`vector field <squap.widgets.curves.VectorFieldCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.VectorFieldCurve.set_data>` with the other (keyword) arguments.
+        Accepts most arguments accepted by :meth:`squap.arrow`, that form a basis arrow. All arrows
+        are based on this basis arrow, and scaled due to the size of the vector field according to ``scale_type``.
         To add a single arrow see :meth:`squap.arrow`, and for an arrow pointing to a location on a curve
         see (Not implemented yet).
 
@@ -545,10 +545,10 @@ class SubplotWidget(PlotWidget):
             data (:class:`np.ndarray <numpy.ndarray>`): The vector field which is displayed. It should be
                 shape ``(Ny, Nx, 2)``.
             pos_x (:class:`np.ndarray <numpy.ndarray>`, optional): The x-positions at which each vector is shown.
-                Shape should be ``(Ny, Nx)``,  for example obtained from :meth:`np.meshgrid <numpy.meshgrid>`.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :func:`np.meshgrid <numpy.meshgrid>`.
                 Defaults to evenly spaced points between 0 and 1.
             pos_y (:class:`np.ndarray <numpy.ndarray>`, optional): The y-positions at which each vector is shown.
-                Shape should be ``(Ny, Nx)``,  for example obtained from :meth:`np.meshgrid <numpy.meshgrid>`.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :func:`np.meshgrid <numpy.meshgrid>`.
                 Defaults to evenly spaced points between 0 and 1.
             scale_type (str): How the amplitude of the vector field is shown.
                 It should be one of the following:
@@ -599,12 +599,12 @@ class SubplotWidget(PlotWidget):
 
     def lock_zoom(self, curves: 'Iterable[PlotCurve]'):
         """
-        Locks zoom onto current range of specified :class:`curves <squap.widgets.plot_widget.PlotCurve>`. Works only
-        if they are normal :class:`curves <squap.widgets.plot_widget.PlotCurve>` with x- and y- data.
+        Locks zoom onto current range of specified :class:`curves <squap.widgets.curves.PlotCurve>`. Works only
+        if they are normal :class:`curves <squap.widgets.curves.PlotCurve>` with x- and y- data.
 
         Args:
-            curves (list of :class:`curves <squap.widgets.plot_widget.PlotCurve>`):
-                :class:`curves <squap.widgets.plot_widget.PlotCurve>` on which the zoom should lock
+            curves (list of :class:`curves <squap.widgets.curves.PlotCurve>`):
+                :class:`curves <squap.widgets.curves.PlotCurve>` on which the zoom should lock
 
         """
         x_min, x_max, y_min, y_max = [], [], [], []
