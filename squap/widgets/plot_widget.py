@@ -781,10 +781,6 @@ class SubplotWidget(PlotWidget):
         """
         self.setTitle(text)
 
-    # def clear(self):          # pyqtgraph implementation is probably better
-    #     for curve in self.curves:
-    #         curve.clear()
-
     def remove_curve(self, curve: QWidget):
         """Removes an item from the plot, usually a curve."""
         self.removeItem(curve)
