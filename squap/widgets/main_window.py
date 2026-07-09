@@ -69,6 +69,26 @@ class MainWindow(QMainWindow):
         if event:
             event.accept()
 
+    def clear(self):
+        """Clear everything. Todo: check"""
+        self.resize(640, 480)
+        for update_func in self.update_funcs:
+            self.timer.timeout.disconnect(update_func)
+
+        self.update_funcs = []
+
+        self.fig_widget.clear()
+        self.fig_widget = FigWidget(self)
+        self.setCentralWidget(self.fig_widget)
+
+        self.table_manager.clear()
+        self.table_manager = TableManager(self.height())
+        self.resized = False
+        self.splitter = None
+        self.exit_when_closed = False       # whether to exit the entire program when window is closed
+        self.close_funcs = []
+        self.on_key_press_funcs = []
+
     def add_table(self, name: Optional[str] = None) -> InputTable:
         """
         Adds a new table as a tab with name ``name``.
