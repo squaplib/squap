@@ -542,16 +542,15 @@ class ImageCurve(ImageItem):
         "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color"
     }
 
-    def __init__(self, data=None, location=None, cmap=None, auto_levels=False, levels=None, axis_order="row-major",
-                 border_color=None, **kwargs):        # **kwargs for aliases
+    def __init__(self, data=None, **kwargs):        # **kwargs for aliases
         super().__init__(axisOrder="row-major")
         self.auto_levels = None         # will be updated before first usage, initial value is irrelevant.
         self.rect = None
         self.data_shape = data.shape if data is not None else None
-        self.data = data            # for when cmap is given and data is not changed.
-        self.cmap = None            # for when data is given and cmap is not changed
-        self.set_data(data=data, location=location, cmap=cmap, auto_levels=auto_levels, levels=levels,
-                      axis_order=axis_order, border_color=border_color, **kwargs)
+        self.data = data            # Needs to be stored for when cmap is given and data is not changed.
+        self.cmap = None            # Needs to be stored for when data is given and cmap is not changed
+
+        self.set_data(**kwargs)
 
     def set_data(self, data=None, **kwargs):
         """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""
