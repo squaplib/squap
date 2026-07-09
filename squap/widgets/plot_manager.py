@@ -6,6 +6,7 @@ from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 
 from .plot_widget import SubplotWidget
 from .plot_widget_3D import SubplotWidget3D
+from ..helper_funcs import is_iter
 
 
 class FigWidget(QTableWidget):
@@ -67,18 +68,42 @@ class FigWidget(QTableWidget):
                 raise IndexError(f"No widget found at ({row}, {col}).")
 
 
-    def make_3D(self, row: int = 0, col: int = 0) -> SubplotWidget3D:
+    def make_3D(self, *args) -> SubplotWidget3D:
         """
         Removes the current plot widget at row ``row`` and column ``col`` and adds a 3D plot widget. When you aren't
-        making use of subplots, the defaults replace the main widget.
+        making use of subplots, passing no arguments replaces the main widget.
 
         Args:
-            row (int, optional): Row of the replaced widget. Defaults to 0.
-            col (int, optional): Column of the replaced widget. Defaults to 0.
+            args: Can be any of the following:
+
+                - row (int), col (int): Row and column of the replaced widget.
+                - SubplotWidget: The widget that should be replaced.
+                - None: Replaces the most top left widget.
 
         Returns:
             SubplotWidget3D: The created 3D plot widget.
         """
+        if not args:
+            row = 0
+            col = 0
+        elif isinstance(args[0], SubplotWidget):
+            row = args[0].row
+            col = args[0].col
+        elif isinstance(args[0], int):
+            if len(args) == 1:      # if one argument, the plots are probably 1D
+                if len(self.axs.shape) == 1:
+                    plot = self.axs[args[0]]
+                    row = plot.row
+                    col = plot.col
+                else:
+                    raise ValueError("If one integer is given, the number of rows and columns in the subplot must both "
+                                     "be more than one.")
+            else:
+                row = args[0]
+                col = args[1]
+
+        else:
+            raise ValueError("Expected arguments of type int")
 
         plot = self.get_plot_widget(row, col)
         if isinstance(plot, SubplotWidget):
@@ -99,7 +124,7 @@ class FigWidget(QTableWidget):
                     self.axs[row] = new_plot_widget
 
             else:
-                self.axs[row, col] = new_plot_widget
+                self.axs[self.axs == self.axs[row, col]] = new_plot_widget  # replace any instance of self.axs[row, col]
 
             return new_plot_widget
         elif isinstance(plot, SubplotWidget3D):
