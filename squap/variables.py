@@ -1,7 +1,8 @@
 class Variables:
     def __init__(self):
         super().__setattr__("_variables", {})
-        self.hidden_variables = {}
+        super().__setattr__("_callbacks", [])   # For detecting any change to a variable
+        # might need to become a dict for multiple _callbacks per variable.
 
     def __getattr__(self, name):
         if name in self._variables:
@@ -13,16 +14,26 @@ class Variables:
         return self.__getattr__(key)
 
     def __setattr__(self, name, value):
-        if name != '_variables':
-            self._variables[name] = value
-        else:
-            raise ValueError(f"'_variables' is a reserved name and cannot be used")
+        if name in ('_variables', '_callbacks'):
+            raise ValueError(f"'{name}' is a reserved name and cannot be used")
+
+        sentinel = object()
+        old_value = self._variables.get(name, sentinel)
+        self._variables[name] = value
+
+        if old_value is sentinel or old_value != value:
+            for callback in self._callbacks:
+                callback(name, old_value if old_value is not sentinel else None, value)
 
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
 
     def __delitem__(self, key):
         del self._variables[key]
+
+    def on_change(self, callback):
+        """callback(name, old_value, new_value)"""
+        self._callbacks.append(callback)
 
     def __repr__(self):
         result = "Variables:\n"
@@ -31,6 +42,4 @@ class Variables:
                 result += f"    {key} = {self._variables[key]}"
             else:
                 result += f"    {key} = {self._variables[key]}\n"
-
         return result
-
