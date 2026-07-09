@@ -294,6 +294,17 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         return self.InputBox(self, name, init_value, type_func, var_name, print_value, row)
 
+    def add_displaybox(self, name: str, var_name: Optional[str] = None,
+                       print_value: bool = False, row: Optional[int] = None) -> 'InputTable.DisplayBox':
+        """Creates an :class:`inputbox <squap.widgets.InputTable.DisplayBox>` with the given parameters, and adds it to
+        this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_displaybox`
+        for initialisation information.
+
+        Returns:
+            InputTable.DisplayBox: The created :class:`inputbox widget <squap.widgets.InputTable.DisplayBox>`.
+        """
+        return self.DisplayBox(self, name, var_name, print_value, row)
+
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
         """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``,
         and adds it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_button`
@@ -845,6 +856,102 @@ class InputTable(QTableWidget):    # table for all inputs
             """Updates the type function so that ``value`` would parse successfully."""
             self.type_func = get_type_func(value, self.parent, self.col)        # is not explained anywhere
             return self
+
+    class DisplayBox(Box):
+        def __init__(self, parent: 'InputTable', name: str, var_name: Optional[str] = None,
+                     print_value: bool = False, row: Optional[int] = None):
+            Box.__init__(self, parent)
+            self.var_name = var_name
+
+            # <editor-fold desc="add_widget and init name&var_name">
+            if name == "":
+                box_row = (self,)
+            else:
+                box_row = (self.textbox, self)
+            row = parent.add_widget(row=row, box_row=box_row)
+            self.row = row
+
+            if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
+                self.col = 0
+                parent.setSpan(row, 0, 1, 3)
+
+                if var_name is None:
+                    raise ValueError("name can only be empty if var_name is specified")  # #1004
+            else:
+                self.col = 1
+                parent.setSpan(row, 1, 1, 2)
+                self.textbox = QLabel(name)
+                parent.setCellWidget(row, 0, self.textbox)
+
+                if var_name is None:
+                    var_name = name
+
+            parent.input_varnames.append(var_name)
+            # </editor-fold>
+
+            self.current_name = var_name
+
+            if self.current_name not in self.parent.variables._variables:       # fix?
+                setattr(parent.variables, self.current_name, 0)
+
+            parent.variables.on_change(self.current_name,
+                                       lambda: self.set_value(getattr(self.parent.variables, self.current_name)))
+
+            if print_value:
+                def print_func(row):
+                    if row == self.row:
+                        self.print_val()
+
+                self.parent.cellChanged.connect(print_func)
+                self.printing_val = True
+
+        def change_params(self, **kwargs):
+            """
+            Changes the parameters of the displaybox. Only keyword arguments are accepted, and takes all arguments that
+            :func:`squap.add_displaybox` accepts, except ``row``.
+            """
+            turn_on_print_func = False
+
+            if "name" in kwargs:
+                self.textbox.setText(kwargs["name"])
+            if "var_name" in kwargs:
+                self.current_name = kwargs["var_name"]
+                self._on_change(self.row)
+            elif self.var_name is not None:
+                self.current_name = self.var_name
+            elif "name" in kwargs:
+                self.current_name = kwargs["name"]
+                self._on_change(self.row)
+
+            if "print_value" in kwargs:
+                if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
+                    if self.printing_val:
+                        # if print_func already exists (and is not None), remove it and set it to None
+                        self.parent.cellChanged.disconnect(self.print_val)
+                        self.printing_val = False
+                elif not self.printing_val:  # or if it does exist but is set to None at the moment
+                    turn_on_print_func = True
+            if turn_on_print_func:
+                def print_func(row):
+                    if row == self.row:
+                        self.print_val()
+
+                self.parent.cellChanged.connect(print_func)
+                self.printing_val = True
+
+                for func in self.change_funcs:      # reorders change_funcs so that print_val is first
+                    self.parent.cellChanged.disconnect(func)
+                    self.parent.cellChanged.connect(func)
+
+        def set_value(self, value):
+            if isinstance(value, str):
+                self.parent.setItem(self.row, self.col, QTableWidgetItem('"' + value + '"'))
+            else:
+                self.parent.setItem(self.row, self.col, QTableWidgetItem(str(value)))
+
+        def print_val(self):
+            print(f"{self.current_name} = {self.value()}")
+
 
     class Button(Box, QPushButton):
         """
