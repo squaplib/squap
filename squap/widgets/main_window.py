@@ -10,9 +10,8 @@ import numpy as np
 from typing import Callable, Optional
 
 from PySide6.QtWidgets import QMainWindow, QSplitter, QApplication
-from PySide6.QtGui import QGuiApplication, QVector3D
-from PySide6.QtCore import QTimer
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import QTimer, Qt
 
 from .plot_manager import FigWidget
 from .table_manager import TableManager
@@ -41,6 +40,7 @@ class MainWindow(QMainWindow):
         self.refresh_timer = None
         self.timer = None                   # for disconnecting update_funcs
 
+        self._updating = False              # flag that prevents recursion in align_camera
         self.resized = False                # if it has been resized already, the input_widget mustn't make it bigger
         self.splitter = None                # stuff that can be initialised later is set to None
         self.exit_when_closed = False       # whether to exit the entire program when window is closed
@@ -724,7 +724,7 @@ class MainWindow(QMainWindow):
         def update_cam():
             ax.set_camera(
                 distance=var.distance, azimuth=var.azimuth, elevation=var.elevation, fov=var.fov,
-                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset
+                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset, _emit_camera_changed=False
             )
 
         boxes = [
@@ -751,3 +751,13 @@ class MainWindow(QMainWindow):
             )
 
         tab.add_button("print camera parameters", get_params)
+
+        def _do_update():
+            current_params_ = ax.cameraParams()
+            current_pos_ = current_params_["center"].toTuple()
+            box_values = [current_params_["distance"], current_params_["azimuth"]%360, current_params_["elevation"],
+                          current_params_["fov"], *current_pos_]
+            for i, (box_, box_value) in enumerate(zip(boxes, box_values)):
+                box_.set_value(box_value)
+
+        ax.cameraChanged.connect(_do_update)
