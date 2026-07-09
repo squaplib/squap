@@ -17,13 +17,11 @@ class Variables:
         if name in ('_variables', '_callbacks'):
             raise ValueError(f"'{name}' is a reserved name and cannot be used")
 
-        sentinel = object()
-        old_value = self._variables.get(name, sentinel)
         self._variables[name] = value
 
-        if old_value is sentinel or old_value != value:
-            for callback in self._callbacks:
-                callback(name, old_value if old_value is not sentinel else None, value)
+        if name in self._callbacks:
+            for callback in self._callbacks[name]:
+                callback()
 
     def __setitem__(self, key, value):
         self.__setattr__(key, value)
@@ -31,9 +29,11 @@ class Variables:
     def __delitem__(self, key):
         del self._variables[key]
 
-    def on_change(self, callback):
-        """callback(name, old_value, new_value)"""
-        self._callbacks.append(callback)
+    def on_change(self, name, callback):
+        if name in self._callbacks:
+            self._callbacks[name].append(callback)
+        else:
+            self._callbacks[name] = [callback]
 
     def __repr__(self):
         result = "Variables:\n"
