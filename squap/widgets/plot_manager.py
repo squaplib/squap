@@ -41,14 +41,6 @@ class FigWidget(QTableWidget):
             for curve in self.axs.curves:
                 self.axs.removeItem(curve)
 
-        self.plot_widget = SubplotWidget(0, 0)
-        self.axs = self.plot_widget                     # when there are no subplots, axs is the main plot widget
-        self.shape = (1, 1)
-        self.setRowCount(1)
-        self.setColumnCount(1)
-
-        self.widthratios = None                 # for subplots
-        self.heightratios = None
         super().clear()
 
     def get_plot_widget(self, row: int = 0, col: int = 0):
@@ -225,7 +217,10 @@ class FigWidget(QTableWidget):
             for pw in self.axs.flatten():
                 if item in pw.curves:
                     pw.removeItem(item)
-            return
+                    return
+            else:
+                raise ValueError("Item has not been found")
+
         else:
             if item in self.axs.curves:
                 self.axs.removeItem(item)
