@@ -27,6 +27,12 @@ class TableManager:
 
         self.n_links = 0            # number of links between boxes
 
+    def clear(self):
+        for input_table in self.input_tables:
+            input_table.clear()
+        if self.tab_widget is not None:
+            self.tab_widget.clear()
+
     def set_input_partition(self, fraction: float = 1/3):
         """Set the position of the partition between the 2 columns of all :class:`input tables <squap.widgets.input_widget.InputTable>`, and
         any newly created ones. Use :meth:`table.set_partition <squap.widgets.input_widget.InputTable.set_partition>` to set different

@@ -21,7 +21,7 @@ __all__ = [
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
-    "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
+    "plot_3D", "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
     "make_3D", "scatter_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "add_grid_3D", "add_grids_3D",
     "set_zoom_rate_3D", "set_camera", "align_camera"
@@ -381,6 +381,10 @@ def add_grids_3D(*args, **kwargs):
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.scatter)
 def scatter_3D(*args, **kwargs):
     return get_plot_3D().scatter(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.plot)
+def plot_3D(*args, **kwargs):
+    return get_plot_3D().plot(*args, **kwargs)
 
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.mesh)
 def mesh_3D(*args, **kwargs):

@@ -52,6 +52,68 @@ class ScatterCurve3D(GLScatterPlotItem):
             self.setData(pos=pos, **new_kwargs)
 
 
+class LineCurve3D(GLLinePlotItem):
+    kwarg_mapping = {"c": "color", "colour": "color", "data": "pos", "w": "width"}
+
+    def set_data(self, x: Optional[Iterable] = None, y: Optional[Iterable] = None, z: Optional[Iterable] = None,
+                 **kwargs):
+        """
+        Sets the data of the scatter plot item after it has been created. Use either ``x``, ``y`` and ``z`` or ``pos`` to set the coordinates of the
+        points.
+
+        Args:
+            x: New x-locations of each point. Defaults to ``None``, meaning the previous value of ``x``.
+            y: New y-locations of each point. Defaults to ``None``, meaning the previous value of ``y``.
+            z: New z-locations of each point. Defaults to ``None``, meaning the previous value of ``z``.
+
+        Keyword Args:
+            pos (:class:`np.ndarray <numpy.ndarray>`): Shape ``(N, 3)`` (:class:`array <numpy.ndarray>`) of floats
+                specifying point locations. Can be used instead of ``x``, ``y`` and ``z``.
+            color (:ref:`ColorsType`): Changes the color of the line. See :ref:`ColorsType`
+                for allowed values.
+            width (int): float specifying line width.
+            antialias (bool): Enables smooth line drawing. Defaults to ``False``.
+            connect (str): Can be one of the following options:
+
+                - ``"all"``: Connects all points.
+                - ``"pairs"``: Generates lines between every other point.
+
+                Defaults to ``"all"``.
+
+        """
+        new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+
+        if "color" in new_kwargs:
+            color = new_kwargs["color"]
+            if is_multiple_colors(color):
+                color = [get_single_color(col_i) for col_i in color]
+            else:
+                color = get_single_color(color)
+            new_kwargs["color"] = color
+
+        if "connect" in new_kwargs:
+            if new_kwargs["connect"] == "all":
+                new_kwargs["mode"] = "line_strip"
+            elif new_kwargs["connect"] == "pairs":
+                new_kwargs["mode"] = "lines"
+            else:
+                ValueError(f'The option connect={new_kwargs["connect"]} is not allowed.')
+
+            del new_kwargs["connect"]
+
+        if x is None and y is None and z is None:
+            self.setData(**new_kwargs)
+        else:
+            if x is None:
+                x = self.pos[:, 0]
+            if y is None:
+                y = self.pos[:, 1]
+            if z is None:
+                z = self.pos[:, 2]
+            pos = np.array((x, y, z)).T         # faster than columnstack
+            self.setData(pos=pos, **new_kwargs)
+
+
 class Mesh(GLMeshItem):
     kwarg_mapping = {"c": "color", "colour": "color", }
 
