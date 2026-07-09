@@ -19,7 +19,7 @@ __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "plot_3D", "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
@@ -233,6 +233,10 @@ def add_checkbox(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.add_inputbox)
 def add_inputbox(*args, **kwargs):
     return get_table_manager().add_inputbox(*args, **kwargs)
+
+@_copy_docstring(widgets.TableManager.add_displaybox)
+def add_displaybox(*args, **kwargs):
+    return get_table_manager().add_displaybox(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.add_button)
 def add_button(*args, **kwargs):

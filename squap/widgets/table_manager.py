@@ -374,6 +374,37 @@ class TableManager:
         else:
             return self.input_tables[0].add_inputbox(**new_kwargs)
 
+    def add_displaybox(self, name: str, var_name: Optional[str] = None, print_value: bool = False,
+                       row: Optional[int] = None):
+        """Adds a :class:`displaybox <squap.widgets.InputTable.DisplayBox>` to the main input widget, or to all
+        :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more. This box shows the current
+        value of a variable in :class:`squap.var`.
+
+        Args:
+            name (str): The name in front of the inputbox.
+            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
+                be named ``name``.
+            print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
+            row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
+
+        Returns:
+            InputTable.DisplayBox or list of InputTable.DisplayBox: The created
+            :class:`displaybox widget(s) <squap.widgets.InputTable.DisplayBox>`.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        if len(self.input_tables) > 1:
+            boxes = []
+            for table in self.input_tables:
+                boxes.append(table.add_displaybox(**new_kwargs))
+
+            self.link_boxes(boxes)
+            return boxes
+        else:
+            return self.input_tables[0].add_displaybox(**new_kwargs)
+
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None
                    ) -> 'InputTable.Button | list[InputTable.Button]':
         """Adds a :class:`button <squap.widgets.InputTable.Button>` to the main input widget, or to all
