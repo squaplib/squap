@@ -242,10 +242,16 @@ class FigWidget(QTableWidget):
         """
         # hrs = list(np.cumsum(window.heightratios))
         # wrs = list(np.cumsum(window.widthratios))
+        if len(self.axs.shape) < 2:
+            raise RuntimeError("Can only merge plots when plots are initialised in a 2D grid with `squap.subplots`.")
 
         coordinates = []  # coordinates of plots, integer starting from 0, not accounting width and heights.
         for index, plt in enumerate(plots):
-            coordinates.append((plt.row, plt.col))
+            if is_iter(plt):        # if plt is a row instead of a single plot
+                for plot in plt:
+                    coordinates.append((plot.row, plot.col))
+            else:
+                coordinates.append((plt.row, plt.col))
 
         co_arr = np.array(coordinates)
         min_row, max_row = min(co_arr[:, 0]), max(co_arr[:, 0])
@@ -264,6 +270,8 @@ class FigWidget(QTableWidget):
         new_plot = SubplotWidget(min_row, min_col)
 
         self.setCellWidget(min_row, min_col, new_plot)
+        self.axs[min_row:max_row+1, min_col:max_col+1] = new_plot
+
         return new_plot
 
 
