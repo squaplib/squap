@@ -7,7 +7,7 @@ from pyqtgraph import (PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageIt
                        GridItem, getConfigOption, ErrorBarItem, ArrowItem)
 
 from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
-    transform_kwargs, ColorType, get_new_kwargs
+    transform_kwargs, ColorType
 from ..customisation import cmap_to_gradient, get_cmap, Font
 
 
@@ -539,23 +539,18 @@ class InfLine(InfiniteLine):
 
 class ImageCurve(ImageItem):
     kwarg_mapping = {
-        "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color",
-        "autolevels": "auto_levels"
+        "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color"
     }
 
-    def __init__(self, data=None, location=None, cmap=None, auto_levels=False, levels=None, axis_order="row-major",
-                 border_color=None, **kwargs):        # **kwargs for aliases
+    def __init__(self, data=None, **kwargs):        # **kwargs for aliases
         super().__init__(axisOrder="row-major")
         self.auto_levels = None         # will be updated before first usage, initial value is irrelevant.
         self.rect = None
         self.data_shape = data.shape if data is not None else None
-        self.data = data            # for when cmap is given and data is not changed.
-        self.cmap = None            # for when data is given and cmap is not changed
+        self.data = data            # Needs to be stored for when cmap is given and data is not changed.
+        self.cmap = None            # Needs to be stored for when data is given and cmap is not changed
 
-        new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=["location", "cmap"],
-                                    exclude_args=["self", "args", "kwargs"])
-        self.set_data(**new_kwargs, **kwargs)
+        self.set_data(**kwargs)
 
     def set_data(self, data=None, **kwargs):
         """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""
