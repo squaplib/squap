@@ -331,14 +331,6 @@ class MainWindow(QMainWindow):
 
         self.app.exec()
 
-    def clear(self):
-        """Clear everything. Todo: check"""
-        for update_func in self.update_funcs:
-            self.timer.timeout.disconnect(update_func)
-
-        self.update_funcs = []
-        self.fig_widget.clear()
-
     def export(self, filename: str, widget: str = "window"):
         """Saves the current window as an image to file ``filename``.
 
