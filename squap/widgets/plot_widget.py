@@ -95,7 +95,8 @@ class SubplotWidget(PlotWidget):
 
             location (tuple, optional): Location of the image. ``(location[0], location[1])`` is the bottom left coordinate, and
                 ``(location[2], location[3])`` is the top right coordinate.
-            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`.
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`. If
+                no cmap is given, ``data`` will be interpreted as colors.
             auto_levels (bool, optional): todo: describe
             levels (optional): todo: describe
             axis_order (bool, optional): Whether the ordering of the pixels listed in ``data`` is ``"row-major"`` or
@@ -107,7 +108,7 @@ class SubplotWidget(PlotWidget):
             ImageCurve: The created image curve.
         """
         new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=["location"],
+                                    none_kwargs=["location", "cmap"],
                                     exclude_args=["self", "args", "kwargs"])
 
         img = ImageCurve(**new_kwargs, **kwargs)
