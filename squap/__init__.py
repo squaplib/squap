@@ -87,6 +87,16 @@ def get_plot_3D():
     return _plot_widget_3D
 
 
+def clear():
+    """Clear everything. Not quite sure if this works in all cases."""
+    global _table_manager
+    global _input_table
+    _table_manager = None
+    _input_table = None
+    return get_window().clear()
+
+
+
 # <editor-fold desc="wrapped functions">
 @_copy_docstring(widgets.SubplotWidget.plot)
 def plot(*args, **kwargs):
@@ -339,10 +349,6 @@ def show():
 def close_window():
     """Closes the window."""
     return get_window().close()
-
-@_copy_docstring(widgets.MainWindow.clear)
-def clear():
-    return get_window().clear()
 
 @_copy_docstring(widgets.MainWindow.export)
 def export(*args, **kwargs):
