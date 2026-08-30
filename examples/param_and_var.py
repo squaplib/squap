@@ -1,5 +1,5 @@
 """
-Customisable PLot
+Customisable Plot
 =================
 
 Customisable curve displaying all boxes (except color picker box). Also shows :func:`squap.link_boxes`.
