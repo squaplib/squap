@@ -29,7 +29,7 @@ class SubplotWidget(PlotWidget):
         self.curves = []        # for clearing curves
         self.mouse_leave_funcs = []
 
-        self.disable_flicker()      # slows down plotting a tiny bit but makes sure no flickering occurs.
+        self.enable_flicker(False)      # slows down plotting a tiny bit but makes sure no flickering occurs.
 
     def leaveEvent(self, event):        # allows adding function calls when the mouse leaves the widget
         super().leaveEvent(event)
@@ -695,11 +695,10 @@ class SubplotWidget(PlotWidget):
         """
         self.showGrid(x, y, alpha)
 
-    def disable_flicker(self, disable=True):
-        """This function can be called to disable the flickering that sometimes occur with fast updating plots.
-        It does slow down plotting.
+    def enable_flicker(self, enable=True):
+        """This function can be called to optimise plotting, but can cause flickering at high framerate.
         """
-        if disable:
+        if not enable:
             self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         else:
             self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
