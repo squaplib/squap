@@ -77,7 +77,10 @@ class MainWindow(QMainWindow):
 
     def clear(self):
         """Clear everything. Todo: check"""
-        self.resize(640, 480)
+        to_move = (np.array(self.size()) - np.array(self.fig_widget.size().toTuple()))/2
+        self.move(*(self.pos() + to_move))
+        self.resize(self.fig_widget.size())
+
         for update_func in self.update_funcs:
             self.timer.timeout.disconnect(update_func)
 
