@@ -266,7 +266,6 @@ class FigWidget(QTableWidget):
             :class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`: One new
             :class:`plot object <squap.widgets.plot_widget.SubplotWidget>` in place of the merged plots.
 
-        todo: adjust for QTableWidget
         """
         # hrs = list(np.cumsum(window.heightratios))
         # wrs = list(np.cumsum(window.widthratios))
