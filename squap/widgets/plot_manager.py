@@ -44,6 +44,9 @@ class FigWidget(QTableWidget):
 
         super().clear()
 
+    def size(self):
+        return np.array(super().size().toTuple())
+
     def get_plot_widget(self, row: int = 0, col: int = 0):
         """Gets plot widget at row ``row`` and column ``col``."""
         if self.shape == (1, 1):
