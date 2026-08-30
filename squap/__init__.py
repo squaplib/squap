@@ -169,9 +169,9 @@ def set_ylabel(*args, **kwargs):
 def show_grid(*args, **kwargs):
     return get_window().fig_widget.plot_widget.show_grid(*args, **kwargs)
 
-@_copy_docstring(widgets.SubplotWidget.disable_flicker)
-def disable_flicker(*args, **kwargs):
-    return get_window().fig_widget.plot_widget.disable_flicker(*args, **kwargs)
+@_copy_docstring(widgets.SubplotWidget.enable_flicker)
+def enable_flicker(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.enable_flicker(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.enable_autoscale)
 def enable_autoscale(*args, **kwargs):
