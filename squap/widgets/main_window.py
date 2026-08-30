@@ -71,6 +71,10 @@ class MainWindow(QMainWindow):
         if event:
             event.accept()
 
+    def pos(self):
+        """Returns the position of the top-left of the window as numpy array in pixels."""
+        return np.array(super().pos().toTuple())
+
     def clear(self):
         """Clear everything. Todo: check"""
         self.resize(640, 480)
@@ -147,7 +151,7 @@ class MainWindow(QMainWindow):
             self.resize(self.width() + self.table_manager.width + 4, height)
             # +4 extra for space between plot_widget and input_widget
 
-            pos = self.pos().toTuple()
+            pos = self.pos()
             self.move(int(pos[0] - 0.5 * (self.table_manager.width+4)), pos[1])
 
         return table
