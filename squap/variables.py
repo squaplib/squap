@@ -1,8 +1,7 @@
 class Variables:
     def __init__(self):
         super().__setattr__("_variables", {})
-        super().__setattr__("_callbacks", [])   # For detecting any change to a variable
-        # might need to become a dict for multiple _callbacks per variable.
+        super().__setattr__("_callbacks", {})   # For detecting any change to a variable
 
     def __getattr__(self, name):
         if name in self._variables:
