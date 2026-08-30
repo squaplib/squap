@@ -29,9 +29,10 @@ class Variables:
     def __delitem__(self, key):
         del self._variables[key]
 
-    def on_change(self, name, callback):
-        if name in self._callbacks:
-            self._callbacks[name].append(callback)
+    def on_change(self, var_name, func):
+        """When the variable with name ``var_name`` is changed, the function ``func`` is called."""
+        if var_name in self._callbacks:
+            self._callbacks[var_name].append(func)
         else:
             self._callbacks[name] = [callback]
 
