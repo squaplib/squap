@@ -294,8 +294,8 @@ def get_active_tab(*args, **kwargs):
     return get_table_manager().get_active_tab(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.get_all_tabs)
-def get_all_tabs():
-    return get_table_manager().get_all_tabs()
+def get_all_tabs(*args, **kwargs):
+    return get_table_manager().get_all_tabs(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.on_tab_change)
 def on_tab_change(*args, **kwargs):
