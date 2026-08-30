@@ -126,6 +126,8 @@ class MainWindow(QMainWindow):
             name = f"tab{len(self.table_manager.input_tables)+1}"
 
         self.splitter = QSplitter()
+        self.splitter.splitterMoved.connect(lambda: self.resizeEvent(None))     # sometimes when moving the split point,
+        # the plot gets cut off. This is fixed here.
         self.table_manager.width_fraction = width_fraction
 
         # new_w = old_w*3/2
