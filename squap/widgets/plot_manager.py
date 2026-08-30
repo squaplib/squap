@@ -165,7 +165,7 @@ class FigWidget(QTableWidget):
             self, nrows: int = 1, ncols: int = 1, heightratios: Optional[list[int]] = None,
             widthratios: Optional[list[int]] = None) -> list:
         """
-        Initialises a subplot window and gives a 1D or 2D list of :class:`PlotWidgets <squap.widgets.plot_widget.PlotWidget>`.
+        Initialises a subplot window and gives a 1D or 2D list of :class:`subplots <squap.widgets.plot_widget.SubplotWidget>`.
 
         Args:
             nrows (int): number of rows.
@@ -176,8 +176,8 @@ class FigWidget(QTableWidget):
                 integer values allowed. Not working yet!(?)
 
         Returns:
-            list of :class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`: Possibly nested list of
-            :class:`plot widgets <squap.widgets.plot_widget.PlotWidget>` on which different plots can be drawn.
+            list of :class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`: Possibly nested list of
+            :class:`subplots <squap.widgets.plot_widget.SubplotWidget>` on which different plots can be drawn.
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
