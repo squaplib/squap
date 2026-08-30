@@ -58,12 +58,13 @@ class MainWindow(QMainWindow):
         if self.exit_when_closed:       # not sure if there should be an else
             sys.exit("Application has been closed (code 1008)")
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         self.fig_widget.update_size(event)
         self.table_manager.height = self.height()
-        event.accept()
+        if event:
+            event.accept()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event=None):
         for func in self.on_key_press_funcs:
             func(event)
 
