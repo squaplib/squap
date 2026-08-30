@@ -515,7 +515,7 @@ class SubplotWidget(PlotWidget):
                 end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
             tail_width (float): Width of the tail. Default is ``6``.
             length (float): Relative length of the arrow. Change to proportionally scale all relevant parameters. Use
-                :meth:`arrow.get_data <squap.widgets.curves.ArrowCurve.get_data>` to see the values of these
+                :meth:`arrow.get_data() <squap.widgets.curves.ArrowCurve.get_data>` to see the values of these
                 parameters.
 
         """
