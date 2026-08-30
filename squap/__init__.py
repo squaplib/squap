@@ -96,7 +96,6 @@ def clear():
     return get_window().clear()
 
 
-
 # <editor-fold desc="wrapped functions">
 @_copy_docstring(widgets.SubplotWidget.plot)
 def plot(*args, **kwargs):

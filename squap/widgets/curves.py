@@ -281,6 +281,9 @@ class PlotCurve(PlotDataItem):
                             f"Currently, `x` is {'not ' if not is_iter(x) else ''}iterable "
                             f"and `y` is {'not ' if not is_iter(y) else ''}iterable.")
 
+    def clear(self):    # normal clear doesn't do much
+        self.set_data(x=[], y=[])
+
 
 class ErrorbarCurve(ErrorBarItem):
     """Is added to PlotCurve as attribute when an errorbar curve is initialised. Users probably will not interact with this object."""
@@ -369,6 +372,9 @@ class ErrorbarCurve(ErrorBarItem):
                 errorbar_kwargs["pen"] = self.pen
 
             self.setData(**errorbar_kwargs)
+
+    def clear(self):    # normal clear doesn't do much
+        self.set_data(x=[], y=[], x_err=[], y_err=[])
 
 
 class TextCurve(TextItem):
