@@ -443,8 +443,9 @@ class SubplotWidget(PlotWidget):
     def grid(self, tick_spacing: Optional[tuple | float] = None, color: Optional[ColorType] = None, width: int = 1,
              **kwargs):
         """
-        This function is used to create a :class:`grid <squap.widgets.curves.GridCurve>` and add it to view. Todo: improve
-        Use :func:`squap.show_grid` for simple use-cases.
+        This function is used to create a :class:`grid <squap.widgets.curves.GridCurve>` and add it to view.
+        Use :func:`squap.show_grid` for completely automatic grids, where it is possible to disable the lines along
+        the x- or y-axis.
 
         Args:
             tick_spacing(tuple or float, optional): Set the grid spacing. When set to ``None`` grid line distance is
