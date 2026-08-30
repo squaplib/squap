@@ -153,6 +153,7 @@ class MainWindow(QMainWindow):
         if self.isVisible():
             self.resize(self.width() + self.table_manager.width + 4, height)
             # +4 extra for space between plot_widget and input_widget
+            self.splitter.setSizes([self.table_manager.width, self.fig_widget.width()])
 
             pos = self.pos()
             self.move(int(pos[0] - 0.5 * (self.table_manager.width+4)), pos[1])
