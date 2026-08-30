@@ -514,7 +514,8 @@ class MainWindow(QMainWindow):
                 buffer=buffer,
                 dtype=np.uint8
             )
-            arrs.append(arr[:, :, :3])  # only include RGB, not A
+            arr = arr[:, :, [2, 1, 0]]  # only include RGB, not A, and numpy uses different order than imageio
+            arrs.append(arr)
 
         try:
             width, height, _ = arr.shape
@@ -577,7 +578,8 @@ class MainWindow(QMainWindow):
                     buffer=buffer,
                     dtype=np.uint8
                 )
-                arrs.append(arr[:, :, :3])  # only include RGB, not A
+                arr = arr[:, :, [2, 1, 0]]  # only include RGB, not A, and numpy uses different order than imageio
+                arrs.append(arr)
 
             try:
                 width, height, _ = arr.shape
