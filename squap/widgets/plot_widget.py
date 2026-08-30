@@ -448,7 +448,7 @@ class SubplotWidget(PlotWidget):
 
         Args:
             tick_spacing(tuple or float, optional): Set the grid spacing. When set to ``None`` grid line distance is
-                chosen automatically. When an iterable is given, give x- and y-spacing. When 1 value is given, this value
+                chosen automatically. When an iterable is given, give x- and y-spacing. When one value is given, this value
                 is used for both x and y. For more complex scaling you can set the x- and y-spacing on different scales.
                 Eg. passing ``([1, 100], None)`` will mean x-spacing is automatically determined to be either 1 or 100,
                 and y-spacing is completely automatic. Replacing ``[1, 100]`` by ``[1, 100, None]`` will mean it can be 1 or
@@ -484,7 +484,7 @@ class SubplotWidget(PlotWidget):
         Args:
             angle (float): Orientation of the arrow in degrees. Default is 0.; arrow pointing to the left.
             size (float): Relative size of the arrow. Change to proportionally scale all relevant parameters. Use
-                :meth:`arrow.get_data <squap.widgets.curves.ArrowCurve.get_data>` to see the values of
+                :meth:`arrow.get_data() <squap.widgets.curves.ArrowCurve.get_data>` to see the values of
                 these parameters.
             position (tuple of float): Position of the arrow in coordinates. Defaults to ``(0, 0)``. Which part of the
                 arrow is placed at this position is controlled by ``origin``.
