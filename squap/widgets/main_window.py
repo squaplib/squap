@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         self.fps_timer = None
         self.refresh_timer = None
         self.timer = None                   # for disconnecting update_funcs
+        self.location = "left"
 
         self._updating = False              # flag that prevents recursion in align_camera
         self.resized = False                # if it has been resized already, the input_widget mustn't make it bigger
