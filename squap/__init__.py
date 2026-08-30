@@ -23,8 +23,8 @@ __all__ = [
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
-    "make_3D", "scatter_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "add_grid_3D", "add_grids_3D",
-    "set_zoom_rate_3D", "set_camera", "align_camera"
+    "make_3D", "scatter_3D", "plot_3D", "surface_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "cylinder_mesh_3D", "add_grid_3D", "add_grids_3D",
+    "set_zoom_rate_3D", "set_camera", "align_camera", "on_var_change"
 ]
 
 _window = None
@@ -416,6 +416,9 @@ def align_camera(*args, **kwargs):
     get_input_table()       # make sure input tab exists
     return get_window().align_camera(*args, **kwargs)
 
+@_copy_docstring(var.on_change)
+def on_var_change(*args, **kwargs):
+    var.on_change(*args, **kwargs)
 # </editor-fold>
 
 
