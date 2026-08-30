@@ -19,7 +19,7 @@ Plot Widget
     .. automethod:: set_ylim
     .. automethod:: xlim
     .. automethod:: ylim
-    .. automethod:: disable_flicker
+    .. automethod:: enable_flicker
 
 
 
