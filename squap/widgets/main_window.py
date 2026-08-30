@@ -560,8 +560,11 @@ class MainWindow(QMainWindow):
 
         def stop_func():
             basename, extension = os.path.splitext(filename)
-            print(
-                f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
+            if not pixmaps:
+                raise ValueError("No frames were captured, error code 1006.")
+            else:
+                print(
+                    f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
             if not extension:
                 extension = f".mp4"
 
@@ -581,10 +584,8 @@ class MainWindow(QMainWindow):
                 arr = arr[:, :, [2, 1, 0]]  # only include RGB, not A, and numpy uses different order than imageio
                 arrs.append(arr)
 
-            try:
-                width, height, _ = arr.shape
-            except NameError:
-                raise NameError("No frames were captured, error code 1006.")
+            else:
+                width, height, _ = arrs[0].shape
 
             imageio.mimsave(f"{basename}{extension}", arrs, fps=fps, macro_block_size=1)
 
@@ -592,7 +593,7 @@ class MainWindow(QMainWindow):
 
             self.update_funcs.remove(record_func)
 
-        self.update_funcs.append(record_func)
+        self.on_refresh(record_func)
 
         return stop_func
 
