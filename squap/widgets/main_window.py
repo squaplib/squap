@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self._updating = False              # flag that prevents recursion in align_camera
         self.resized = False                # if it has been resized already, the input_widget mustn't make it bigger
         self.splitter = None                # stuff that can be initialised later is set to None
+        self.table_container = None         # For self.set_table_location
         self.exit_when_closed = False       # whether to exit the entire program when window is closed
         # (above is mainly useful for `while True: squap.refresh`)
         self.close_funcs = []
@@ -50,7 +51,7 @@ class MainWindow(QMainWindow):
 
         self.resize(width, height)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event=None):
         # Window is being closed
         for func in self.close_funcs:
             func()
@@ -133,9 +134,10 @@ class MainWindow(QMainWindow):
         # new_w = old_w*3/2
         self.table_manager.width = int(self.width()*3/2*width_fraction)
         table = InputTable(self.table_manager.width, self.table_manager.height, name, self)
-        _, table_container = self.table_manager.create_first_table(table)
+        _, self.table_container = self.table_manager.create_first_table(table)
+        # table container is stored for self.set_table_location
 
-        self.splitter.addWidget(table_container)
+        self.splitter.addWidget(self.table_container)
         self.splitter.addWidget(self.fig_widget)
         self.setCentralWidget(self.splitter)
 
