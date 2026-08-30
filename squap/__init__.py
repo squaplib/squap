@@ -273,6 +273,14 @@ def get_mouse_pos(*args, **kwargs):
 def on_key_press(*args, **kwargs):
     return get_window().on_key_press(*args, **kwargs)
 
+@_copy_docstring(widgets.MainWindow.resize_window)
+def resize(*args, **kwargs):
+    return get_window().resize_window(*args, **kwargs)
+
+@_copy_docstring(widgets.MainWindow.size)
+def size():
+    return get_window().size()
+
 @_copy_docstring(widgets.MainWindow.add_table)
 def add_tab(*args, **kwargs):
     return get_window().add_table(*args, **kwargs)
@@ -316,14 +324,6 @@ def link_boxes(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.set_input_partition)
 def set_input_partition(*args, **kwargs):
     return get_table_manager().set_input_partition(*args, **kwargs)
-
-@_copy_docstring(widgets.MainWindow.resize_window)
-def resize(*args, **kwargs):
-    return get_window().resize_window(*args, **kwargs)
-
-@_copy_docstring(widgets.MainWindow.size)
-def size():
-    return get_window().size()
 
 @_copy_docstring(widgets.MainWindow.set_input_width)
 def set_input_width(*args, **kwargs):
