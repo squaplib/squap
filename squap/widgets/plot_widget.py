@@ -29,6 +29,8 @@ class SubplotWidget(PlotWidget):
         self.curves = []        # for clearing curves
         self.mouse_leave_funcs = []
 
+        self.disable_flicker()      # slows down plotting a tiny bit but makes sure no flickering occurs.
+
     def leaveEvent(self, event):        # allows adding function calls when the mouse leaves the widget
         super().leaveEvent(event)
         for func in self.mouse_leave_funcs:
