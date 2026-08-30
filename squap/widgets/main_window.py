@@ -160,6 +160,46 @@ class MainWindow(QMainWindow):
 
         return table
 
+    def set_table_location(self, location: str = "left"):
+        """
+        Changes the side of the window on which the table is placed.
+
+        Args:
+            location: Which side the :class:`table <squap.widgets.input_widget.InputTable>` is placed on. Choose from
+                ``"left"``, ``"right"``, ``"top"`` and ``"bottom"``. Defaults to ``"left"``
+
+        """
+        if self.table_manager.main_input_widget is None:
+            self.init_first_tab()
+
+        was_horizontal = self.location == "left" or self.location == "right"
+        is_horizontal = location == "left" or location == "right"
+        if was_horizontal and not is_horizontal:
+            self.splitter.setOrientation(Qt.Orientation.Vertical)
+            old_size = np.array(self.size())
+            new_size = (old_size - np.array([4, 0]))*np.array([2/3, 3/2]) + np.array([0, 4])
+            # self.splitter.setSizes()
+            self.move(*(self.pos() + (old_size - new_size) / 2))
+            self.resize(*new_size)
+        elif not was_horizontal and is_horizontal:
+            old_size = np.array(self.size())
+            new_size = (old_size - np.array([0, 4]))*np.array([3/2, 2/3]) + np.array([4, 0])
+            self.resize(*new_size)
+            self.move(*(self.pos() + (old_size - new_size) / 2))
+            self.splitter.setOrientation(Qt.Orientation.Horizontal)
+
+        was_reversed = self.location == "right" or self.location == "bottom"
+        is_reversed = location == "right" or location == "bottom"
+        if not was_reversed and is_reversed:
+            self.splitter.insertWidget(0, self.fig_widget)
+            self.splitter.insertWidget(1, self.table_container)
+        elif was_reversed and not is_reversed:
+            self.splitter.insertWidget(0, self.table_container)
+            self.splitter.insertWidget(1, self.fig_widget)
+        self.location = location
+        self.resizeEvent(None)
+
+
     # def init_3D(self):
     #     self.plot_style_3D = True
     #     self.plot_widget = PlotWidget3D(
