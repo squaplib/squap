@@ -222,6 +222,8 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             return colormap.get(data, source).map(i)
 
     elif isinstance(data, dict):
+        if not (isinstance(list(data.keys())[0], float) or isinstance(list(data.keys())[0], int)):
+            raise TypeError(f"The keys of the dictionary should be floats between 0 and 1, not of type {type(list(data.keys())[0])}")
         for key, value in data.items():
             data[key] = np.array(mkcol_to_arr(get_single_color(value)))
         keys, values = map(np.array, zip(*sorted(data.items())))
@@ -279,7 +281,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
 def cmap_to_gradient(cmap, gradient):
     """
-    cmap must be from get_cmap, or accepted by get_cmap, and the gradient must be from get_gradient
+    `cmap` must be from `get_cmap`, or accepted by `get_cmap`, and the gradient must be from `get_gradient`.
     """
     cmap = get_cmap(cmap)
     if isinstance(cmap.data, str):
