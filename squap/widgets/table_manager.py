@@ -9,8 +9,8 @@ class TableManager:
     """Stores the table/tab widgets so that not everything is located inside the main window. The main
     window is only a window. """
     def __init__(self, height):
-        self.width = 0
-        self.height = height
+        self.width = 0                      # is not always up to date
+        self.height = height                # is not always up to date
         self.width_fraction = 0
 
         self.input_tables = []              # the input_widget, or all input tables in the QTabWidget if multiple tabs
@@ -32,6 +32,9 @@ class TableManager:
             input_table.clear()
         if self.tab_widget is not None:
             self.tab_widget.clear()
+    #
+    # def size(self):
+    #     return self.width, self.height
 
     def set_input_partition(self, fraction: float = 1/3):
         """Set the position of the partition between the 2 columns of all :class:`input tables <squap.widgets.input_widget.InputTable>`, and

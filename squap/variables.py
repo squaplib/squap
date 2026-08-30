@@ -34,7 +34,7 @@ class Variables:
         if var_name in self._callbacks:
             self._callbacks[var_name].append(func)
         else:
-            self._callbacks[name] = [callback]
+            self._callbacks[var_name] = [func]
 
     def __repr__(self):
         result = "Variables:\n"
