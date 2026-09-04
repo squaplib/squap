@@ -726,6 +726,10 @@ class ArrowCurve(ArrowItem):
             self.tip_angle = kwargs["tip_angle"]
             self.tip_type = "angle"
 
+        if "head_width" in kwargs:
+            self.head_width = kwargs["head_width"]
+            self.tip_type = "head_width"
+
         if "position" in kwargs:
             self.position = np.array(kwargs["position"])
 
