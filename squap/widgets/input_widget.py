@@ -989,7 +989,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def bind(self, func):
             self.change_funcs[func] = func  # dict is not really necessary for button, but for consistency this is ok.
-            self.clicked.connect(func)
+            self.clicked.connect(lambda: func())
             return self
 
         def unbind(self, func):
