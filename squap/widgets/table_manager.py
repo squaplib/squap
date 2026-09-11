@@ -385,7 +385,7 @@ class TableManager:
 
         Args:
             name (str): The name in front of the inputbox.
-            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
+            var_name (str, optional): The name of the (created) variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
             print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
