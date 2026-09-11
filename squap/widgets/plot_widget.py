@@ -827,7 +827,6 @@ class SubplotWidget(PlotWidget):
             def mouse_func(event):
                 pos = event.scenePos()
                 plot_pos = self.getViewBox().mapSceneToView(pos).toTuple()
-                print(event, pos, plot_pos)
                 args = ([plot_pos, event][i] for i in range(n_args))  # handles 0, 1 or 2 n_args
                 func(*args)
 
