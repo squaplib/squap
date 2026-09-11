@@ -766,7 +766,6 @@ class SubplotWidget(PlotWidget):
         if y is not None:
             kwargs["y"] = y
 
-        print(kwargs)
         self.setAutoPan(**kwargs)
 
     def disable_autopan(self, axis: Optional[str] = None, x: Optional[bool] = None,
