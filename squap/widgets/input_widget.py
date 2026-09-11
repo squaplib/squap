@@ -301,7 +301,7 @@ class InputTable(QTableWidget):    # table for all inputs
         for initialisation information.
 
         Returns:
-            InputTable.DisplayBox: The created :class:`inputbox widget <squap.widgets.InputTable.DisplayBox>`.
+            InputTable.DisplayBox: The created :class:`displaybox widget <squap.widgets.InputTable.DisplayBox>`.
         """
         return self.DisplayBox(self, name, var_name, print_value, row)
 
