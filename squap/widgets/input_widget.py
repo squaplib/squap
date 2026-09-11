@@ -9,7 +9,7 @@ from pyqtgraph import ColorButton
 
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem,
-    QLabel, QSlider, QCheckBox, QPushButton, QComboBox
+    QLabel, QSlider, QCheckBox, QPushButton, QComboBox, QLineEdit
 )
 from PySide6.QtCore import Qt
 
@@ -283,7 +283,7 @@ class InputTable(QTableWidget):    # table for all inputs
         return self.CheckBox(self, name, init_value, var_name, print_value, row)
 
     def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
-                     var_name: Optional[str] = None, print_value: bool = False,
+                     live_update: bool = False, var_name: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox':
         """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and adds it to
         this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_inputbox`
@@ -292,7 +292,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             InputTable.InputBox: The created :class:`inputbox widget <squap.widgets.InputTable.InputBox>`.
         """
-        return self.InputBox(self, name, init_value, type_func, var_name, print_value, row)
+        return self.InputBox(self, name, init_value, type_func, live_update, var_name, print_value, row)
 
     def add_displaybox(self, name: str, var_name: Optional[str] = None,
                        print_value: bool = False, row: Optional[int] = None) -> 'InputTable.DisplayBox':
@@ -713,14 +713,17 @@ class InputTable(QTableWidget):    # table for all inputs
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")
 
-    class InputBox(Box):
+    class InputBox(Box, QLineEdit):
         """
         Class for the inputbox widget. See :func:`squap.add_inputbox` for initialisation information.
         """
         def __init__(self, parent: 'InputTable', name: str, init_value: Any, type_func: Optional[Callable] = None,
-                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
+                     live_update: bool = False, var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
+            QLineEdit.__init__(self)
+
             self.var_name = var_name
+            self.live_update = live_update
 
             # <editor-fold desc="add_widget and init name&var_name">
             if name == "":
@@ -728,16 +731,15 @@ class InputTable(QTableWidget):    # table for all inputs
             else:
                 box_row = (self.textbox, self)
             row = parent.add_widget(row=row, box_row=box_row)
-            self.row = row
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
-                self.col = 0
+                col = 0
                 parent.setSpan(row, 0, 1, 3)
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
-                self.col = 1
+                col = 1
                 parent.setSpan(row, 1, 1, 2)
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
@@ -746,29 +748,25 @@ class InputTable(QTableWidget):    # table for all inputs
                     var_name = name
 
             parent.input_varnames.append(var_name)
+            parent.setCellWidget(row, col, self)
             # </editor-fold>
-
-            if isinstance(init_value, str):
-                parent.setItem(row, self.col, QTableWidgetItem('"' + init_value + '"'))
-            else:
-                parent.setItem(row, self.col, QTableWidgetItem(str(init_value)))
 
             self.current_name = var_name
 
+            self.set_value(init_value)
+
+            setattr(parent.variables, self.current_name, init_value)
+
             if type_func is None:
-                self.type_func = get_type_func(init_value, parent, self.col)
+                self.type_func = get_type_func(init_value, self)
             else:
                 self.type_func = type_func
 
-            setattr(parent.variables, self.current_name, init_value)
-            self.parent.cellChanged.connect(self._on_change)
+            self._connect(self._on_change)
+            self.returnPressed.connect(self.clearFocus)     # Deselects box when user presses enter
 
             if print_value:
-                def print_func(row):
-                    if row == self.row:
-                        self.print_val()
-
-                self.parent.cellChanged.connect(print_func)
+                self._connect(self.print_val())
                 self.printing_val = True
 
         def change_params(self, **kwargs):
@@ -782,46 +780,53 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
                 self.current_name = kwargs["var_name"]
-                self._on_change(self.row)
+                self._on_change()
             elif self.var_name is not None:
                 self.current_name = self.var_name
             elif "name" in kwargs:
                 self.current_name = kwargs["name"]
-                self._on_change(self.row)
+                self._on_change()
 
             if "type_func" in kwargs:
                 if kwargs["type_func"] is None:
-                    self.type_func = get_type_func(self.value(), self.parent, self.col)
+                    self.type_func = get_type_func(self.value(), self)
                 else:
                     self.type_func = kwargs["type_func"]
+
+            if "live_update" in kwargs:
+                if kwargs["live_update"] != self.live_update:
+                    functions = [self._on_change] + list(self.change_funcs.values())
+                    if self.printing_val:
+                        functions.append(self.print_val)
+                    for func in functions:      # not efficient but doesn't have to be
+                        self._disconnect(func)
+                    self.live_update = kwargs["live_update"]
+                    for func in functions:      # not efficient but doesn't have to be
+                        self._connect(func)
 
             if "print_value" in kwargs:
                 if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
                     if self.printing_val:
                         # if print_func already exists (and is not None), remove it and set it to None
-                        self.parent.cellChanged.disconnect(self.print_val)
+                        self._disconnect(self.print_val)
                         self.printing_val = False
                 elif not self.printing_val:  # or if it does exist but is set to None at the moment
                     turn_on_print_func = True
             if turn_on_print_func:
-                def print_func(row):
-                    if row == self.row:
-                        self.print_val()
-
-                self.parent.cellChanged.connect(print_func)
+                self._connect(self.print_val)
                 self.printing_val = True
 
                 for func in self.change_funcs:      # reorders change_funcs so that print_val is first
-                    self.parent.cellChanged.disconnect(func)
-                    self.parent.cellChanged.connect(func)
+                    self._disconnect(func)
+                    self._connect(func)
 
         def bind(self, func):
-            def new_func(row):
-                if row == self.row:
-                    func()
+            # makes sure function is called without argument
+            def new_func():
+                func()
 
             self.change_funcs[func] = new_func
-            self.parent.cellChanged.connect(new_func)
+            self._connect(new_func)
             return self
 
         def unbind(self, func):
@@ -829,32 +834,41 @@ class InputTable(QTableWidget):    # table for all inputs
                 raise ValueError("Function is not bound to this Box.")
 
             if func != self._on_change:
-                self.parent.cellChanged.disconnect(self.change_funcs[func])
+                self._disconnect(self.change_funcs[func])
                 self.change_funcs.pop(func)
             else:
-                self.parent.cellChanged.disconnect(self._on_change)
+                self._disconnect(self._on_change)
 
             return self
 
-        def _on_change(self, row):
-            if row == self.row:
-                setattr(self.parent.variables, self.current_name, self.type_func(self.parent.item(self.row, self.col).text()))
+        def _connect(self, func):
+            if self.live_update:
+                self.textChanged.connect(func)
+            self.editingFinished.connect(func)
+
+        def _disconnect(self, func):
+            if self.live_update:
+                self.textChanged.disconnect(func)
+            self.editingFinished.disconnect(func)
+
+        def _on_change(self):
+            setattr(self.parent.variables, self.current_name, self.type_func(self.text()))
 
         def value(self):
             return getattr(self.parent.variables, self.current_name)
 
         def set_value(self, value):
             if isinstance(value, str):
-                self.parent.setItem(self.row, self.col, QTableWidgetItem('"' + value + '"'))
+                self.setText('"' + value + '"')
             else:
-                self.parent.setItem(self.row, self.col, QTableWidgetItem(str(value)))
+                self.setText(str(value))
 
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")
 
         def refresh_type_func(self, value: Any):         # Extra function for when type_func must be changed during runtime,
             """Updates the type function so that ``value`` would parse successfully."""
-            self.type_func = get_type_func(value, self.parent, self.col)        # is not explained anywhere
+            self.type_func = get_type_func(value, self)        # is not explained anywhere
             return self
 
     class DisplayBox(Box):
