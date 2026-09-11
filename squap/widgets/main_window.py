@@ -625,6 +625,22 @@ class MainWindow(QMainWindow):
         self.fps_timer = current_time()
         skip = Namespace(total=0, count=0)  # Namespace used for function variables that need to carry over
         # the fps is updated
+        if displaybox is True or (isinstance(ax, SubplotWidget3D) and displaybox is not False):
+            if self.table_manager.first_input_table is None:
+                self.init_first_tab()
+            displaybox = self.table_manager.add_displaybox("fps")
+
+        def set_fps(fps):
+            if isinstance(ax, SubplotWidget3D):
+                if displaybox or get_fps:
+                    setattr(self.variables, "fps", fps)
+                if not displaybox:
+                    print(f"{fps = }")
+            else:
+                if displaybox or get_fps:
+                    setattr(self.variables, "fps", fps)
+                if not displaybox:
+                    ax.set_title(f"fps = {fps}")
 
         if optimized:
             def func():
@@ -635,12 +651,7 @@ class MainWindow(QMainWindow):
                         self.fps_timer = now
                         fps = (skip.total + 1) / elapsed
                         fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                        if get_fps:
-                            setattr(self.variables, "fps", fps)
-                        if self.fig_widget.plot_style_3D:
-                            print(f"{fps = }")
-                        else:
-                            ax.set_title(f"fps = {fps}")
+                        set_fps(fps)
 
                         skip.total = int(update_speed * fps)
                         skip.count = skip.total
@@ -654,14 +665,11 @@ class MainWindow(QMainWindow):
                     self.fps_timer = current_time()
                     fps = skip.count / elapsed
                     fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                    if isinstance(ax, SubplotWidget3D):
-                        print(f"{fps = }")
-                    else:
-                        ax.set_title(f"fps = {fps}")
+                    set_fps(fps)
                     skip.count = 0
 
-        self.update_funcs.append(func)  # both so that it works for both styles
-
+        self.update_funcs.append(func)
+    
     def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
         """Run the program until it is closed and then report the total frames and fps.
 
