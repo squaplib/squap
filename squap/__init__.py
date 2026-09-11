@@ -74,8 +74,8 @@ def get_table_manager():
     """Makes sure that when a function from table_manager is called, the input table is initialised."""
     global _table_manager
     if _table_manager is None:
-        get_input_table()
         _table_manager = get_window().table_manager
+        get_input_table()
     return _table_manager
 
 
