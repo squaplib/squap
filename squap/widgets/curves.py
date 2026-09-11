@@ -710,8 +710,6 @@ class ArrowCurve(ArrowItem):
             update_pen(self.border_pen, **border_pen_kwargs)
             self.setPen(self.border_pen)  # Changing it via setStyle doesn't trigger a redraw.
 
-        self.head_width = self.get_data()["head_width"]
-
         if "origin" in kwargs:
             self.origin = kwargs["origin"]
 
@@ -725,10 +723,12 @@ class ArrowCurve(ArrowItem):
         if "tip_angle" in kwargs:
             self.tip_angle = kwargs["tip_angle"]
             self.tip_type = "angle"
+            self.head_width = self.get_data()["head_width"]
 
-        if "head_width" in kwargs:
-            self.head_width = kwargs["head_width"]
-            self.tip_type = "head_width"
+        if "width" in kwargs:
+            self.head_width = kwargs["width"]
+            self.tip_type = "width"
+            self.tip_angle = self.get_data()["tip_angle"]
 
         if "position" in kwargs:
             self.position = np.array(kwargs["position"])
