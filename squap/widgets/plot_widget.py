@@ -870,11 +870,18 @@ class SubplotWidget(PlotWidget):
 
         self.scene().sigMouseMoved.connect(mouse_func)
 
-    def on_mouse_leave(self, func: Callable):
-        """Calls the function ``func`` when the mouse leaves the widget."""
+    def on_mouse_leave(self, func: Callable, enter: bool = False):
+        """Calls the function ``func`` when the mouse leaves the widget. Set ``enter`` to ``True`` to also call ``func``
+        when the mouse enters the widget."""
         self.mouse_leave_funcs.append(func)
+        if enter:
+            self.mouse_enter_funcs.append(func)
 
-    def get_mouse_pos(self, pixel_mode=False) -> tuple:
+    def on_mouse_enter(self, func: Callable):
+        """Calls the function ``func`` when the mouse enters the widget."""
+        self.mouse_enter_funcs.append(func)
+
+    def get_mouse_position(self, pixel_mode=False) -> tuple:
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
 
         Args:
@@ -889,3 +896,7 @@ class SubplotWidget(PlotWidget):
             return pos.toTuple()
         else:
             return self.getViewBox().mapSceneToView(pos).toTuple()
+
+    def mouse_on_screen(self):
+        """Returns ``True`` if the mouse is on the screen, otherwise returns ``False``."""
+        return self.underMouse()
