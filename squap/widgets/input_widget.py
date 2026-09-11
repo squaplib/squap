@@ -28,7 +28,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
 
     def __init__(self, parent: 'InputTable'):    # parent will be the InputWidget
         self.parent = parent
-        self.change_funcs = {}  # This is so that they can be reordered later if necessary
+        self.change_funcs = {}  # This is so that bound functions can be reordered later if necessary
         # this is used when print_value is set to True during runtime, as it should still be the first function that is
         # called. So the printing function would be bound and then all other functions would be rebound.
         # It is a dictionary to allow unbinding functions, since the function passed `box.bind` is sometimes
