@@ -537,6 +537,9 @@ class InputTable(QTableWidget):    # table for all inputs
             update_arr = False                  # if any parameters are changed such that self.arr changes
             arr_kwargs = ["min_value", "max_value", "n_ticks", "tick_interval", "only_ints", "logscale", "custom_arr"]
 
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
+
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
@@ -737,6 +740,9 @@ class InputTable(QTableWidget):    # table for all inputs
             """
             turn_on_print_func = False
 
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
+
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
@@ -872,6 +878,9 @@ class InputTable(QTableWidget):    # table for all inputs
             :func:`squap.add_inputbox` accepts, except ``init_value`` and ``row``.
             """
             turn_on_print_func = False
+
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
 
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
@@ -1029,6 +1038,9 @@ class InputTable(QTableWidget):    # table for all inputs
             :func:`squap.add_displaybox` accepts, except ``row``.
             """
             turn_on_print_func = False
+
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
 
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
@@ -1197,6 +1209,10 @@ class InputTable(QTableWidget):    # table for all inputs
             :func:`squap.add_dropdown` accepts, except ``init_value`` and ``row``.
             """
             turn_on_print_func = False
+
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
+
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
@@ -1441,6 +1457,9 @@ class InputTable(QTableWidget):    # table for all inputs
             turn_on_print_func = False
             update_new_calc = False
 
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
+
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
             if "var_name" in kwargs:
@@ -1617,6 +1636,9 @@ class InputTable(QTableWidget):    # table for all inputs
             that :func:`squap.add_color_picker` accepts, except ``init_value`` and ``row``.
             """
             turn_on_print_func = False
+
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
 
             if "name" in kwargs:
                 self.textbox.setText(kwargs["name"])
