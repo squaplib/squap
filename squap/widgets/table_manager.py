@@ -274,6 +274,8 @@ class TableManager:
                 ``init_value``). Defaults to ``None``.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
             row (int, optional): Row to which the slider is added. Defaults to first empty row.
 
@@ -305,6 +307,8 @@ class TableManager:
             init_value (bool): The initial value of the checkbox. Defaults to ``False`` (not ticked).
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the checkbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the checkbox is added. Defaults to first empty row.
 
@@ -358,6 +362,8 @@ class TableManager:
                 only updates when the user presses enter or clicks away. Defaults to ``False``.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
 
@@ -389,6 +395,8 @@ class TableManager:
             name (str): The name in front of the inputbox.
             var_name (str, optional): The name of the (created) variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
 
@@ -451,6 +459,8 @@ class TableManager:
             init_index (int): The index that the dropwdown is initially set to.
             option_names (list of str, optional): A :class:`list` of all options shown in the dropwdown menu. If
                 ``option_names`` is not provided it will be set to ``options``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable
                 will be named ``name``.
             print_value (bool): Whether to print the value of the dropwdown when it changes. Defaults to ``False``.
@@ -498,6 +508,8 @@ class TableManager:
                 take three arguments: ``old_value``, ``dt`` and ``slider_value`` and must return the new value. ``old_value`` is
                 the value of the variable the previous time the function was run, ``dt`` is the change in time since then (takes
                 ``time_var`` into account). ``slider_value`` is a value between ``-1`` and ``1``, dependent on the slider position.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
                 named ``name``.
             print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
@@ -532,6 +544,8 @@ class TableManager:
         Args:
             name (str): The name in front of the color picker.
             init_value (:ref:`ColorType`): The initial value of the color picker.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
                 named ``name``.
             print_value (bool): Whether to print the value of the color picker when it changes. Defaults to ``False``.
