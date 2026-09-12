@@ -249,7 +249,7 @@ class TableManager:
     def add_slider(self, name: str, init_value: float = 1.0, min_value: float = 0.0, max_value: float = 10.0,
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
-                   print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider | list[InputTable.Slider]':
+                   tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider | list[InputTable.Slider]':
         """Adds a :class:`slider <squap.widgets.InputTable.Slider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
@@ -296,7 +296,7 @@ class TableManager:
             return self.input_tables[0].add_slider(**new_kwargs)
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox | list[InputTable.CheckBox]':
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox | list[InputTable.CheckBox]':
         """Adds a :class:`checkbox <squap.widgets.InputTable.CheckBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
@@ -327,8 +327,8 @@ class TableManager:
         else:
             return self.input_tables[0].add_checkbox(**new_kwargs)
 
-    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
-                     var_name: Optional[str] = None, print_value: bool = False,
+    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None, live_update: bool = False,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox | list[InputTable.InputBox]':
         """Adds a :class:`inputbox <squap.widgets.InputTable.InputBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -354,6 +354,8 @@ class TableManager:
                 is not given, it is automatically determined, which works for the following instances: :class:`str`,
                 :class:`float`, :class:`complex`, :class:`bool`, :class:`range`, and the following iterables:
                 :class:`tuple`, :class:`list`, :class:`dict`, :class:`set` and :class:`numpy.ndarray`.
+            live_update (bool): If set to ``True``, the variable will be updated anytime the user types, if set to ``False``,
+                only updates when the user presses enter or clicks away. Defaults to ``False``.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
             print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
@@ -377,7 +379,7 @@ class TableManager:
         else:
             return self.input_tables[0].add_inputbox(**new_kwargs)
 
-    def add_displaybox(self, name: str, var_name: Optional[str] = None, print_value: bool = False,
+    def add_displaybox(self, name: str, var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
                        row: Optional[int] = None):
         """Adds a :class:`displaybox <squap.widgets.InputTable.DisplayBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more. This box shows the current
@@ -437,7 +439,7 @@ class TableManager:
             return self.input_tables[0].add_button(**new_kwargs)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
-                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                      ) -> 'InputTable.Dropdown | list[InputTable.Dropdown]':
         """Adds a :class:`dropdown <squap.widgets.InputTable.DropDown>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -475,7 +477,7 @@ class TableManager:
 
     def add_rate_slider(self, name: str, init_value: float = 1.0, change_rate: float = 10.0, absolute: bool = False,
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
-                        var_name: Optional[str] = None, print_value: bool = False,
+                        var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider | list[InputTable.RateSlider]':
         """Adds a :class:`rate slider <squap.widgets.InputTable.RateSlider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -521,7 +523,7 @@ class TableManager:
             return self.input_tables[0].add_rate_slider(**new_kwargs)
 
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
-                         print_value: bool = False, row: Optional[int] = None
+                         tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                          ) -> 'InputTable.ColorPicker | list[InputTable.ColorPicker]':
         """Adds a :class:`color picker <squap.widgets.InputTable.ColorPicker>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
