@@ -1023,6 +1023,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
             parent.variables.on_change(self.current_name,
                                        lambda: self.set_value(getattr(self.parent.variables, self.current_name)))
+            self.set_value(getattr(self.parent.variables, self.current_name))
 
             if print_value:
                 def print_func(row):
