@@ -155,7 +155,7 @@ def normalise_arr(arr):
     return arr
 
 
-def get_type_func(value, parent, col):
+def get_type_func(value, box):
     # this for-loop is essentially get_instance(value) and then assigns type_func
     if value is None:
         type_func = ast.literal_eval
@@ -170,8 +170,7 @@ def get_type_func(value, parent, col):
                     int(i) for i in string.replace(" ", "").replace(")", "").split("(")[1].split(",")))
 
             elif instance is np.ndarray:
-                parent.setItem(parent.current_row, col, QTableWidgetItem(
-                    json.dumps(value.tolist())))
+                box.setText(json.dumps(value.tolist()))
                 type_func = lambda string: np.array(json.loads(string))
             else:
                 raise AssertionError("This should never run.")
