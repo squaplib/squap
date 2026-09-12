@@ -598,16 +598,21 @@ class MainWindow(QMainWindow):
 
         return stop_func
 
-    def display_fps(self, update_speed: float = 0.2, get_fps: bool = False, optimized: bool = False,
-                    ax: Optional[SubplotWidget] = None):
+    def display_fps(self, update_speed: float = 0.2, displaybox: Optional[bool] = None, get_fps: Optional[bool] = None,
+                    optimized: bool = False, ax: Optional[SubplotWidget] = None):
         """
         Display frames per second (fps) at the top of the :class:`plot widget <squap.widgets.plot_widget.SubplotWidget>`.
 
         Args:
             update_speed (float): The update speed for fps calculation. Defaults to ``0.2`` seconds.
-            get_fps (bool): Whether to store the fps. If set to ``True``, the fps will be saved to
-                :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
-            optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
+            displaybox (bool, optional): Shows the current fps in a :class:`displaybox widget <squap.widgets.InputTable.DisplayBox>`.
+                For a 2D plot, if it is set to ``False`` the fps will be shown as the title of the plot. For a 3D plot,
+                the current fps will be printed when this is set to ``False``. Defaults to ``False`` for
+                2D plots and defaults to ``True`` for 3D plots.
+            get_fps (bool, optional): Whether to store the fps. If set to ``True``, the fps will be saved to
+                :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``. If display_box is set to ``True``,
+                this will be overwritten to be ``True`` as well.
+            optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a little bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
             ax (:class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`, optional): Which window to set the title to the fps. Defaults to top-left.
 
@@ -669,7 +674,7 @@ class MainWindow(QMainWindow):
                     skip.count = 0
 
         self.update_funcs.append(func)
-    
+
     def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
         """Run the program until it is closed and then report the total frames and fps.
 
