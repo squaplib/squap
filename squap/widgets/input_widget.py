@@ -3,15 +3,79 @@ from ..helper_funcs import textify, get_type_func, ColorType, get_single_color
 import numpy as np
 from typing import Any, Callable, Optional, Iterable
 from time import time as current_time
-import os.path
 
 from pyqtgraph import ColorButton
 
 from PySide6.QtWidgets import (
-    QTableWidget, QTableWidgetItem,
+    QTableWidget, QTableWidgetItem, QWidget, QGridLayout,
     QLabel, QSlider, QCheckBox, QPushButton, QComboBox, QLineEdit
 )
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QPainter, QColor, QFont, QFontMetricsF
+from PySide6.QtCore import Qt, QRectF, QPointF
+
+
+class InfoBadge(QWidget):
+    """A small circular 'i' info icon with a tooltip."""
+
+    def __init__(self, tooltip_text: str, diameter: int = 24, parent=None):
+        super().__init__(parent)
+        self.setToolTip(tooltip_text)
+        self.setFixedSize(diameter, diameter)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+
+        self._diameter = diameter
+        self._hovered = False
+
+        # Colors
+        self._fill_normal = QColor("#1c1c1e")
+        self._fill_hover = QColor("#333335")
+        self._glyph_color = QColor("#f5f5f5")
+
+    def enterEvent(self, event):
+        self._hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._hovered = False
+        self.update()
+        super().leaveEvent(event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        rect = QRectF(0.5, 0.5, self._diameter - 1, self._diameter - 1)
+
+        # circle — no border, just a clean filled disc
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self._fill_hover if self._hovered else self._fill_normal)
+        painter.drawEllipse(rect)
+
+        # glyph — serif italic "i" reads as a proper "info" symbol,
+        # rather than a generic bold sans letter
+        font = QFont("Georgia")
+        if not font.exactMatch():
+            font = QFont("Times New Roman")
+        font.setItalic(True)
+        font.setBold(True)
+        font.setPixelSize(round(self._diameter * 0.72))
+
+        painter.setFont(font)
+        painter.setPen(self._glyph_color)
+
+        # Manual centering: drawText's AlignCenter uses the font's full
+        # bounding box, which for an italic "i" tends to sit a hair
+        # off-center. Centering on the tight glyph bounds looks better.
+        metrics = QFontMetricsF(font)
+        glyph_rect = metrics.tightBoundingRect("i")
+        center = rect.center()
+        baseline = QPointF(
+            center.x() - glyph_rect.width() / 2 - glyph_rect.x(),
+            center.y() - glyph_rect.height() / 2 - glyph_rect.y(),
+        )
+        painter.drawText(baseline, "i")
 
 
 class Box:              # I am not sure if this is required, but I feel like it helps the IDE and is better organized
@@ -109,16 +173,18 @@ class InputTable(QTableWidget):    # table for all inputs
         self.resize(width, height)
 
         self.setRowCount(0)
-        self.setColumnCount(3)
+        self.setColumnCount(4)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
 
         self.col_partition = 1/3                # where is the partition between col 0 & col 1, should be between 0&1
         self.rate_slider_space = 60             # pixels of space a rate_slider gets
 
+        row_height = self.verticalHeader().defaultSectionSize()
         self.setColumnWidth(0, int(width * self.col_partition))
         self.setColumnWidth(1, int(self.rate_slider_space))
-        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space)
+        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - row_height)
+        self.setColumnWidth(3, row_height)
 
         # this cell is split in 2 for the rate_slider
 
@@ -133,17 +199,27 @@ class InputTable(QTableWidget):    # table for all inputs
     def resizeEvent(self, *args) -> None:       # event is not used since every necessary parameter is in self
         width = self.width()
         height = self.height()
+        row_height = self.verticalHeader().defaultSectionSize()
 
         self.setGeometry(0, 0, width, height)
 
-        if self.rowHeight(0)*(self.current_row+1)+26 <= height:
+        if row_height*(self.current_row+1)+26 <= height:
             width -= 2
         else:
             width -= 18
 
         self.setColumnWidth(0, int(width * self.col_partition))
         self.setColumnWidth(1, int(self.rate_slider_space))
-        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space)
+        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - row_height)
+        self.setColumnWidth(3, row_height)
+
+    def _get_tooltip(self, text):
+        info_box = InfoBadge(text, diameter=int(self.verticalHeader().defaultSectionSize()*0.85))
+        container = QWidget()
+        layout = QGridLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(info_box, 0, 0, Qt.AlignmentFlag.AlignCenter)
+        return container
 
     def rename(self, name: str):
         """Renames the table. The name is only visible when multiple tabs are present."""
@@ -260,7 +336,7 @@ class InputTable(QTableWidget):    # table for all inputs
     def add_slider(self, name: str, init_value: float = 1.0, min_value: float = 0.0, max_value: float = 10.0,
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
-                   print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
+                   tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider':
         """Creates a :class:`slider <squap.widgets.InputTable.Slider>` with the given parameters, and adds it to this
         :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_slider`
         for initialisation information.
@@ -269,10 +345,10 @@ class InputTable(QTableWidget):    # table for all inputs
             InputTable.Slider: The created :class:`slider widget <squap.widgets.InputTable.Slider>`.
         """
         return self.Slider(self, name, init_value, min_value, max_value, n_ticks, tick_interval, only_ints, logscale,
-                           custom_arr, var_name, print_value, row)
+                           custom_arr, var_name, tooltip, print_value, row)
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox':
         """Creates a :class:`checkbox <squap.widgets.InputTable.CheckBox>` with the given parameters, and adds it to this
         :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_checkbox`
         for initialisation information.
@@ -280,10 +356,10 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             InputTable.CheckBox: The created :class:`checkbox widget <squap.widgets.InputTable.CheckBox>`.
         """
-        return self.CheckBox(self, name, init_value, var_name, print_value, row)
+        return self.CheckBox(self, name, init_value, var_name, tooltip, print_value, row)
 
     def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
-                     live_update: bool = False, var_name: Optional[str] = None, print_value: bool = False,
+                     live_update: bool = False, var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,  
                      row: Optional[int] = None) -> 'InputTable.InputBox':
         """Creates an :class:`inputbox <squap.widgets.InputTable.InputBox>` with the given parameters, and adds it to
         this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_inputbox`
@@ -292,10 +368,10 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             InputTable.InputBox: The created :class:`inputbox widget <squap.widgets.InputTable.InputBox>`.
         """
-        return self.InputBox(self, name, init_value, type_func, live_update, var_name, print_value, row)
+        return self.InputBox(self, name, init_value, type_func, live_update, var_name, tooltip, print_value, row)
 
     def add_displaybox(self, name: str, var_name: Optional[str] = None,
-                       print_value: bool = False, row: Optional[int] = None) -> 'InputTable.DisplayBox':
+                       tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.DisplayBox':
         """Creates an :class:`inputbox <squap.widgets.InputTable.DisplayBox>` with the given parameters, and adds it to
         this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_displaybox`
         for initialisation information.
@@ -303,7 +379,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             InputTable.DisplayBox: The created :class:`displaybox widget <squap.widgets.InputTable.DisplayBox>`.
         """
-        return self.DisplayBox(self, name, var_name, print_value, row)
+        return self.DisplayBox(self, name, var_name, tooltip, print_value, row)
 
     def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
         """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``,
@@ -316,18 +392,18 @@ class InputTable(QTableWidget):    # table for all inputs
         return self.Button(self, name, func, row)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
-                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
         """Creates a :class:`dropdown <squap.widgets.InputTable.Dropdown>` widget with the given parameters, and adds
         it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_dropdown` for
         initialisation information.
 
         Returns:
             InputTable.Dropdown: The created :class:`dropwdown widget <squap.widgets.InputTable.Dropdown>`."""
-        return self.Dropdown(self, name, options, init_index, option_names, var_name, print_value, row)
+        return self.Dropdown(self, name, options, init_index, option_names, var_name, tooltip, print_value, row)
 
     def add_rate_slider(self, name: str, init_value: float = 1.0, change_rate: float = 10.0, absolute: bool = False,
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
-                        var_name: Optional[str] = None, print_value: bool = False,
+                        var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, 
                         row: Optional[int] = None) -> 'InputTable.RateSlider':
         """Creates a :class:`RateSlider <squap.widgets.InputTable.RateSlider>` with the given parameters, and adds it
         to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_rate_slider` for
@@ -338,11 +414,11 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         return self.RateSlider(
             self, name, init_value, change_rate,
-            absolute, time_var, custom_func, var_name, print_value, row
+            absolute, time_var, custom_func, var_name, tooltip, print_value, row
         )
 
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
-                         print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
+                         tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
         """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and adds it
         to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_color_picker` for
         initialisation information.
@@ -351,7 +427,7 @@ class InputTable(QTableWidget):    # table for all inputs
             InputTable.ColorPicker: The created :class:`color_picker widget <squap.widgets.InputTable.ColorPicker>`.
         """
         return self.ColorPicker(
-            self, name, init_value, var_name, print_value, row
+            self, name, init_value, var_name, tooltip, print_value, row
         )
 
     class Slider(Box, QSlider):
@@ -361,7 +437,7 @@ class InputTable(QTableWidget):    # table for all inputs
         def __init__(self, parent: 'InputTable', name: str, init_value: float, min_value: float, max_value: float,
                      n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                      logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None):
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QSlider.__init__(self, parent=parent, orientation=Qt.Orientation.Horizontal)
 
@@ -379,18 +455,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 col = 0
-                parent.setSpan(row, 0, 1, 3)
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 col = 1
-                parent.setSpan(row, 1, 1, 2)
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             parent.setCellWidget(row, col, self)
@@ -597,7 +680,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Class for the checkbox widget. See :func:`squap.add_checkbox` for initialisation information.
         """
         def __init__(self, parent: 'InputTable', name: str, init_value: bool, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None):
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QCheckBox.__init__(self)
 
@@ -613,18 +696,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 col = 0
-                parent.setSpan(row, 0, 1, 3)
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 col = 1
-                parent.setSpan(row, 1, 1, 2)
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             parent.setCellWidget(row, col, self)
@@ -718,7 +808,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Class for the inputbox widget. See :func:`squap.add_inputbox` for initialisation information.
         """
         def __init__(self, parent: 'InputTable', name: str, init_value: Any, type_func: Optional[Callable] = None,
-                     live_update: bool = False, var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
+                     live_update: bool = False, var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QLineEdit.__init__(self)
 
@@ -734,18 +824,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 col = 0
-                parent.setSpan(row, 0, 1, 3)
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 col = 1
-                parent.setSpan(row, 1, 1, 2)
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             parent.setCellWidget(row, col, self)
@@ -873,7 +970,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
     class DisplayBox(Box):
         def __init__(self, parent: 'InputTable', name: str, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None):
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             self.var_name = var_name
 
@@ -886,19 +983,26 @@ class InputTable(QTableWidget):    # table for all inputs
             self.row = row
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
-                self.col = 0
-                parent.setSpan(row, 0, 1, 3)
+                col = 0
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
-                self.col = 1
-                parent.setSpan(row, 1, 1, 2)
+                col = 1
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             # </editor-fold>
@@ -979,7 +1083,7 @@ class InputTable(QTableWidget):    # table for all inputs
             row = parent.add_widget(row=row, box_row=(self, ))
             self.row = row
 
-            parent.setSpan(row, 0, 1, 3)
+            parent.setSpan(row, 0, 1, 4)
             parent.input_varnames.append(None)        # so that indexing still works
             parent.setCellWidget(row, 0, self)
 
@@ -1028,7 +1132,7 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         def __init__(self, parent: 'InputTable', name: str, options: list, init_index: int = 0,
                      option_names: Optional[Iterable[str]] = None, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None):
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QComboBox.__init__(self)
 
@@ -1051,18 +1155,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 col = 0
-                parent.setSpan(row, 0, 1, 3)
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 col = 1
-                parent.setSpan(row, 1, 1, 2)
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             parent.setCellWidget(row, col, self)
@@ -1182,7 +1293,7 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         def __init__(self, parent: 'InputTable', name: str, init_value: float, change_rate: float = 10.0,
                      absolute: bool = False, time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
-                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             QSlider.__init__(self)
             self.slider = QSlider(Qt.Orientation.Horizontal, parent)    # done here so it can be added to parent.boxes
@@ -1198,22 +1309,28 @@ class InputTable(QTableWidget):    # table for all inputs
                 box_row = (self.textbox, self.slider, self)
             row = parent.add_widget(row=row, box_row=box_row)
             self.row = row
+            self.col = 2
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 rate_slider_col = 0
-                self.col = 1
-                parent.setSpan(row, 0, 1, 2)
+                colspan = 2
+                parent.setSpan(row, 0, 1, colspan)
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 rate_slider_col = 1
-                self.col = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, 2, 1, 2)
 
             parent.input_varnames.append(var_name)
             # </editor-fold>
@@ -1257,6 +1374,7 @@ class InputTable(QTableWidget):    # table for all inputs
             self.slider.sliderReleased.connect(release_func)
             self.slider.sliderPressed.connect(press_func)
 
+            print(self.row, self.col)
             parent.setItem(self.row, self.col, QTableWidgetItem(str(textify(init_value))))
             setattr(parent.variables, self.current_name, init_value)
             self.parent.cellChanged.connect(self._on_change)
@@ -1440,7 +1558,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Class for the color_picker widget. See :func:`squap.add_color_picker` for initialisation information.
         """
         def __init__(self, parent: 'InputTable', name: str, init_value: ColorType, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None):
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None):
             Box.__init__(self, parent)
             ColorButton.__init__(self)
 
@@ -1457,18 +1575,25 @@ class InputTable(QTableWidget):    # table for all inputs
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
                 col = 0
-                parent.setSpan(row, 0, 1, 3)
+                colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 col = 1
-                parent.setSpan(row, 1, 1, 2)
+                colspan = 2
+
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
+
+            if tooltip:
+                parent.setSpan(row, col, 1, colspan)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             parent.setCellWidget(row, col, self)
