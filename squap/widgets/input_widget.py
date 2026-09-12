@@ -109,7 +109,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
         Change box parameters. ``kwargs`` can usually be the same arguments that are given to the ``__init__`` function
         of this box, except ``init_value`` and ``row``.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `change_params` implemented.")
 
     def bind(self, func: Callable):
         """
@@ -118,7 +118,7 @@ class Box:              # I am not sure if this is required, but I feel like it 
         Args:
             func (:term:`callable`): function to bind to this box.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `bind` implemented.")
 
     def unbind(self, func: Callable):
         """
@@ -127,19 +127,19 @@ class Box:              # I am not sure if this is required, but I feel like it 
         Args:
             func (:term:`callable`): function to unbind from this box.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `unbind` implemented.")
 
     def _on_change(self, *args):        # Function that updates the var.var_name value upon value change
         """
         Update the associated variable when the user interacts with the box. Not really meant for users.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `_on_change` implemented.")
 
     def value(self):
         """
         Return the current value of :ref:`var.var_name <squap.var>`
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `value` implemented.")
 
     def set_value(self, value):
         """
@@ -147,13 +147,13 @@ class Box:              # I am not sure if this is required, but I feel like it 
         the closest possible position to ``value``, and the new value of :ref:`var.var_name <squap.var>` will be the value corresponding to
         the new slider position.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `set_value` implemented.")
 
     def print_val(self):
         """
         Print the current value of the box. Used for the ``print_value`` keyword argument.
         """
-        raise NotImplementedError("Subclasses should implement this! Users should not see this.")
+        raise NotImplementedError("This box type does not have the method `print_val` implemented.")
 
     def remove(self):
         """
@@ -992,13 +992,13 @@ class InputTable(QTableWidget):    # table for all inputs
             self.row = row
 
             if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
-                col = 0
+                self.col = 0
                 colspan = 3
 
                 if var_name is None:
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
-                col = 1
+                self.col = 1
                 colspan = 2
 
                 self.textbox = QLabel(name)
@@ -1008,10 +1008,10 @@ class InputTable(QTableWidget):    # table for all inputs
                     var_name = name
 
             if tooltip:
-                parent.setSpan(row, col, 1, colspan)
+                parent.setSpan(row, self.col, 1, colspan)
                 parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
             else:
-                parent.setSpan(row, col, 1, colspan + 1)
+                parent.setSpan(row, self.col, 1, colspan + 1)
 
             parent.input_varnames.append(var_name)
             # </editor-fold>
