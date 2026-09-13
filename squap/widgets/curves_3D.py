@@ -115,7 +115,10 @@ class LineCurve3D(GLLinePlotItem):
 
 
 class Mesh(GLMeshItem):
-    kwarg_mapping = {"c": "color", "colour": "color", }
+    kwarg_mapping = {"c": "color", "colour": "color", "de": "draw_edges", "df": "draw_faces", "vc": "vertex_colors",
+                     "fc":"face_colors", "cn": "compute_normals"}
+    shader_map = {"none": None, "balloon": "balloon", "shaded": "shaded", "normal_color": "normalColor",
+                  "view_normal_color": "viewNormalColor", "edge_highlight": "edgeHilight"}
 
     def __init__(self, **kwargs):
         self.mesh_data = MeshData()
@@ -148,7 +151,7 @@ class Mesh(GLMeshItem):
             self.setColor(get_single_color(new_kwargs["color"]))
 
         if "shader" in new_kwargs:
-            self.setShader(new_kwargs["shader"])
+            self.setShader(self.shader_map[new_kwargs["shader"]])
 
         for keyword, optkwarg in {"smooth": "smooth", "draw_edges": "drawEdges", "draw_faces": "drawFaces",
                                   "compute_normals": "computeNormals"}.items():
@@ -157,13 +160,10 @@ class Mesh(GLMeshItem):
 
         if "vertexes" in new_kwargs:
             self.mesh_data.setVertexes(new_kwargs["vertexes"])
-
         if "faces" in new_kwargs:
             self.mesh_data.setFaces(new_kwargs["faces"])
-
         if "vertex_colors" in new_kwargs:
             self.mesh_data.setVertexColors(new_kwargs["vertex_colors"])
-
         if "face_colors" in new_kwargs:
             self.mesh_data.setFaceColors(new_kwargs["face_colors"])
 

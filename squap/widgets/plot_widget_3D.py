@@ -190,8 +190,20 @@ class SubplotWidget3D(GLViewWidget):
             color: Default face color used if no vertex or face colors  are specified.
             draw_edges (bool): Whether to draw edges. Defaults to ``False``.
             draw_faces (bool): Whether to draw faces. Defaults to ``True``.
-            shader (bool): Name of shader program to use when drawing faces. Defaults to ``None``, meaning no shader.
-                todo: explain options
+            shader: Name of the shader to use for drawing the faces. Can be one of the following options:
+
+                - ``"none"``: Plain per vertex color, no lighting. Interpolates what color you set.
+                - ``"balloon"``: Alpha increases where the surface faces away from the camera. Meant for translucent
+                    shell surfaces like isosurfaces.
+                - ``"shaded"``: Simple fixed-direction lighting, giving a lit/shadowed look.
+                - ``"normal_color"``: Colors each face by its absolute normal direction, mapped to RGB. Useful for
+                    debugging normals, not for aesthetics. Colors don't change as you rotate the view.
+                - ``"view_normal_color"``: Colors each face by its absolute normal direction, mapped to RGB. Useful for
+                    debugging normals, not for aesthetics. Colors do change as you rotate the view.
+                - ``"edge_highlight"``: Brightens color near silhouette edges, the more perpendicular to the view, the
+                    brighter.
+
+                Defaults to "none".
             smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
                 Defaults to ``False``.
             vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
