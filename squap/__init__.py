@@ -405,6 +405,10 @@ def scatter_3D(*args, **kwargs):
 def plot_3D(*args, **kwargs):
     return get_plot_3D().plot(*args, **kwargs)
 
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.surface)
+def surface_3D(*args, **kwargs):
+    return get_plot_3D().surface(*args, **kwargs)
+
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.mesh)
 def mesh_3D(*args, **kwargs):
     return get_plot_3D().mesh(*args, **kwargs)
