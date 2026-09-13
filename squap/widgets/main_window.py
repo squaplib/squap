@@ -762,7 +762,8 @@ class MainWindow(QMainWindow):
 
     def align_camera(self, ax: Optional[SubplotWidget3D] = None, tab: Optional[InputTable | str] = None):
         """Adjusts camera position of a 3D plot. Use this to find the correct parameters to set the desired initial
-        camera position with :func:`squap.set_camera`.
+        camera position with :func:`squap.set_camera`. Dolly zoom allows to change fov and distance in such a way that
+        the focus stays the same.
 
         Args:
             ax (SubplotWidget3D, optional): Specifies the plot which the control boxes control. Defaults to the main plot.
@@ -789,6 +790,19 @@ class MainWindow(QMainWindow):
                 x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset, _emit_camera_changed=False
             )
 
+        def dolly_zoom():
+            """Given a reference (d0, fov0) and new distance d, return the fov that keeps apparent size constant.
+            Mostly AI generated function."""
+            if var.dolly != 0:
+                fov0 = np.radians(var.fov)
+                d0 = var.distance
+                d = var.distance * 1.05 ** var.dolly
+                fov = np.degrees(2 * np.arctan((d0 / d) * np.tan(fov0 / 2)))
+                var.fov = fov
+                var.distance = d
+                update_cam()
+                _do_update()
+
         boxes = [
             tab.add_rate_slider("distance", current_params["distance"], change_rate=2),
             tab.add_slider("azimuth", current_params["azimuth"], 0, 360, n_ticks=72),
@@ -797,10 +811,12 @@ class MainWindow(QMainWindow):
             tab.add_rate_slider("x_offset", current_pos[0], absolute=True, change_rate=5),
             tab.add_rate_slider("y_offset", current_pos[1], absolute=True, change_rate=5),
             tab.add_rate_slider("z_offset", current_pos[2], absolute=True, change_rate=5),
+            tab.add_joystick("Dolly zoom", var_name="dolly"),
         ]
 
-        for box in boxes:
+        for box in boxes[:-1]:
             box.bind(update_cam)
+        self.on_refresh(dolly_zoom)
 
         update_cam()
 
