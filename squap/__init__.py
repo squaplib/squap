@@ -425,6 +425,14 @@ def cube_mesh_3D(*args, **kwargs):
 def set_camera(*args, **kwargs):
     return get_plot_3D().set_camera(*args, **kwargs)
 
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.get_camera_params)
+def get_camera_params(*args, **kwargs):
+    return get_plot_3D().get_camera_params(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.on_camera_change)
+def on_camera_change(*args, **kwargs):
+    return get_plot_3D().on_camera_change(*args, **kwargs)
+
 @_copy_docstring(widgets.main_window.MainWindow.align_camera)
 def align_camera(*args, **kwargs):
     get_plot_3D()           # make sure 3D plot exists
