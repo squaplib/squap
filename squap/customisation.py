@@ -219,7 +219,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
     if isinstance(data, str):
         def cmap_func(i):
-            return colormap.get(data, source).map(i)
+            return colormap.get(data, source).map(i, mode="float")
 
     elif isinstance(data, dict):
         if not (isinstance(list(data.keys())[0], float) or isinstance(list(data.keys())[0], int)):
