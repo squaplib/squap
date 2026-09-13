@@ -385,6 +385,8 @@ class TextCurve(TextItem):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
+        self.current_font = None
+
         self.set_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
@@ -399,7 +401,13 @@ class TextCurve(TextItem):
         if kwargs:
             new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
             if "text" in new_kwargs:
-                self.setText(new_kwargs["text"])
+                self.setText(str(new_kwargs["text"]))
+            if "font_size" in new_kwargs:
+                if self.current_font is None:
+                    self.current_font = Font(font_size=new_kwargs["font_size"])
+                else:
+                    self.current_font.set_data(font_size=new_kwargs["font_size"])
+                self.setFont(self.current_font)
             if "color" in new_kwargs:
                 self.setColor(get_single_color(new_kwargs["color"]))
             if "angle" in new_kwargs:
