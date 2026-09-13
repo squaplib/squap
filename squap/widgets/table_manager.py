@@ -577,7 +577,7 @@ class TableManager:
             return self.input_tables[0].add_joystick(**new_kwargs)
 
 
-    def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
+    def add_color_picker(self, name: str, init_value: ColorType = (1, 1, 1, 1), var_name: Optional[str] = None,
                          tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                          ) -> 'InputTable.ColorPicker | list[InputTable.ColorPicker]':
         """Adds a :class:`color picker <squap.widgets.InputTable.ColorPicker>` to the main input widget, or to all
