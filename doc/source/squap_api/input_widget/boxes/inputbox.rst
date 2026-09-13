@@ -7,6 +7,7 @@ Inputbox
 
     .. automethod:: squap.widgets.InputTable.InputBox.bind
     .. automethod:: squap.widgets.InputTable.InputBox.unbind
+    .. automethod:: squap.widgets.InputTable.InputBox.trigger
     .. automethod:: squap.widgets.InputTable.InputBox.set_value
     .. automethod:: squap.widgets.InputTable.InputBox.value
     .. automethod:: squap.widgets.InputTable.InputBox.change_params

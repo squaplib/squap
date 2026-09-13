@@ -7,6 +7,7 @@ Dropdown
 
     .. automethod:: squap.widgets.InputTable.Dropdown.bind
     .. automethod:: squap.widgets.InputTable.Dropdown.unbind
+    .. automethod:: squap.widgets.InputTable.Dropdown.trigger
     .. automethod:: squap.widgets.InputTable.Dropdown.set_value
     .. automethod:: squap.widgets.InputTable.Dropdown.value
     .. automethod:: squap.widgets.InputTable.Dropdown.set_index

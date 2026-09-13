@@ -7,6 +7,7 @@ Color Picker
 
     .. automethod:: squap.widgets.InputTable.ColorPicker.bind
     .. automethod:: squap.widgets.InputTable.ColorPicker.unbind
+    .. automethod:: squap.widgets.InputTable.ColorPicker.trigger
     .. automethod:: squap.widgets.InputTable.ColorPicker.set_value
     .. automethod:: squap.widgets.InputTable.ColorPicker.value
     .. automethod:: squap.widgets.InputTable.ColorPicker.change_params
