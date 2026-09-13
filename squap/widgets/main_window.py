@@ -808,8 +808,8 @@ class MainWindow(QMainWindow):
             print(
                 f"The following function would get you the current camera postition: \n"
                 f"squap.set_camera(\n"
-                f"    x_offset={var.x_offset}, y_offset={var.y_offset}, z_offset={var.z_offset}, \n"
-                f"    distance={var.distance}, azimuth={var.azimuth}, elevation={var.elevation}, fov={var.fov}\n)"
+                f"    x_offset={var.x_offset:.4g}, y_offset={var.y_offset:.4g}, z_offset={var.z_offset:.4g}, \n"
+                f"    distance={var.distance:.4g}, azimuth={var.azimuth:.4g}, elevation={var.elevation:.4g}, fov={var.fov:.4g}\n)"
             )
 
         tab.add_button("print camera parameters", get_params)
