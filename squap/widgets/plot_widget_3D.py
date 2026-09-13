@@ -78,7 +78,9 @@ class SubplotWidget3D(GLViewWidget):
         if _emit_camera_changed:
             self.cameraChanged.emit({})
 
-    def get_camera_params(self):
+    def get_camera_params(self) -> dict:
+        """Returns the camera parameters as a dict containing ``"distance"``, ``"fov"``, ``"elevation"``, ``"azimuth"``,
+        ``"x"``, ``"y"`` and ``"z"``. Coordinates are given in grid coordinates and angles in degrees."""
         current_params = self.cameraParams()
         current_pos = current_params["center"].toTuple()
         current_params["azimuth"] = current_params["azimuth"] % 360
