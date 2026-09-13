@@ -241,9 +241,6 @@ class SurfaceCurve(GLSurfacePlotItem):
             self.opts["computeNormals"] = new_kwargs["compute_normals"]
 
         if self.shape != (0, 0):
-            key_list = (list(final_kwargs.keys()))
-            if key_list != ['z', 'colors']:
-                print(key_list)
             self.setData(**final_kwargs)
             if "colors" in final_kwargs and "z" not in final_kwargs:    # eg. meshDataChangedwhen you change cmap while paused
                 self.meshDataChanged()
