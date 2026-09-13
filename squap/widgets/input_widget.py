@@ -129,6 +129,12 @@ class Box:              # I am not sure if this is required, but I feel like it 
         """
         raise NotImplementedError("This box type does not have the method `unbind` implemented.")
 
+    def trigger(self):
+        """
+        Triggers all bound functions.
+        """
+        raise NotImplementedError("This box type does not have the method `trigger` implemented.")
+
     def _on_change(self, *args):        # Function that updates the var.var_name value upon value change
         """
         Update the associated variable when the user interacts with the box. Not really meant for users.
@@ -665,6 +671,9 @@ class InputTable(QTableWidget):    # table for all inputs
 
             return self
 
+        def trigger(self):
+            self.valueChanged.emit(self.value())
+
         def _on_change(self, val):
             setattr(self.parent.variables, self.current_name, self.arr[val])
 
@@ -812,6 +821,9 @@ class InputTable(QTableWidget):    # table for all inputs
 
             return self
 
+        def trigger(self):
+            self.stateChanged.emit(self.value())
+
         def _on_change(self):
             setattr(self.parent.variables, self.current_name, self._val())
 
@@ -884,7 +896,7 @@ class InputTable(QTableWidget):    # table for all inputs
             self.returnPressed.connect(self.clearFocus)     # Deselects box when user presses enter
 
             if print_value:
-                self._connect(self.print_val())
+                self._connect(self.print_val)
                 self.printing_val = True
 
         def change_params(self, **kwargs):
@@ -961,6 +973,11 @@ class InputTable(QTableWidget):    # table for all inputs
                 self._disconnect(self._on_change)
 
             return self
+
+        def trigger(self):
+            if self.live_update:
+                self.textChanged.emit()
+            self.editingFinished.emit()
 
         def _connect(self, func):
             if self.live_update:
@@ -1150,6 +1167,9 @@ class InputTable(QTableWidget):    # table for all inputs
             self.clicked.disconnect(func)
             self.change_funcs.pop(func)
             return self
+        
+        def trigger(self):
+            self.clicked.emit()
 
         def _on_change(self):
             raise ValueError("This function is not defined for a Button")
@@ -1300,6 +1320,9 @@ class InputTable(QTableWidget):    # table for all inputs
             else:
                 self.currentTextChanged.disconnect(self._on_change)
             return self
+
+        def trigger(self):
+            self.currentTextChanged.emit(str(self.value()))
 
         def _on_change(self):
             setattr(self.parent.variables, self.current_name, self.options[self.currentIndex()])
@@ -1579,6 +1602,9 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.parent.cellChanged.disconnect(self._on_change)
             return self
 
+        def trigger(self):
+            self.parent.cellChanged.emit(self.row, self.col)
+
         def _on_change(self, row, col):
             if row == self.row and col == self.col:
                 setattr(self.parent.variables, self.current_name, float(self.parent.item(self.row, self.col).text()))
@@ -1607,7 +1633,7 @@ class InputTable(QTableWidget):    # table for all inputs
             QSlider.__init__(self)
             self.actual_change_funcs = []  # for being able to unbind functions
 
-            self.var_name, self.parent, self.n_ticks, self.dif = var_name, parent, n_ticks, dif
+            self.var_name, self.parent, self.center, self.dif, self.n_ticks = var_name, parent, center, dif, n_ticks
             # this bit is a bit different for the joystick \/\/
             # <editor-fold desc="add_widget and init name&var_name">
             if name == "":  # if self.textbox will be created
@@ -1644,8 +1670,6 @@ class InputTable(QTableWidget):    # table for all inputs
             # </editor-fold>
 
             self.current_name = var_name
-
-            setattr(parent.variables, self.current_name, center)
 
             parent.setCellWidget(self.row, rate_slider_col, self)
             self.setRange(0, n_ticks*2)
@@ -1790,9 +1814,12 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.valueChanged.disconnect(self._on_change)
             return self
 
+        def trigger(self):
+            self.valueChanged.emit(QSlider.value(self))
+
         def _on_change(self, val):
-            value = (val - self.n_ticks)/self.n_ticks*self.dif
-            print(value)
+            print(val)
+            value = self.center + (val - self.n_ticks)/self.n_ticks*self.dif
             setattr(self.parent.variables, self.current_name, value)
             self.parent.setItem(self.row, self.col, QTableWidgetItem(f"{value:.4g}"))
 
@@ -1916,6 +1943,9 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.sigColorChanged.disconnect(self._on_change)
 
             return self
+
+        def trigger(self):
+            self.sigColorChanged.emit(self.value())
 
         def _on_change(self, *args):
             setattr(self.parent.variables, self.current_name, self.value())
