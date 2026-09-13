@@ -88,6 +88,10 @@ class SubplotWidget3D(GLViewWidget):
         del current_params["center"]
         return current_params
 
+    def on_camera_change(self, func):
+        """Bound functions are called when a user or program changes any camera parameter."""
+        self.cameraChanged.connect(func)
+
     def set_zoom_rate(self, new_rate: float = 1.003):
         """Sets the rate at which you zoom when the plot is zoomed after it has been created.
         Starts off at ``1.003``.
