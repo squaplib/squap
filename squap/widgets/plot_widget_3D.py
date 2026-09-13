@@ -303,8 +303,8 @@ class SubplotWidget3D(GLViewWidget):
                 Defaults to ``False``.
             vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
             face_colors (:class:`numpy.ndarray <numpy.ndarray>`): Face colors. Defaults to ``None``.
-            compute_normals (bool): If ``False``, then computation of normal vectors is disabled. This can provide
-                a performance boost for meshes that do not make use of normals.
+            compute_normals (bool): If ``False``, computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals. Defaults to ``True``.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
@@ -347,7 +347,7 @@ class SubplotWidget3D(GLViewWidget):
                                     none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
                                     exclude_args=["self", "kwargs"])
 
-        curve = SphereMesh(radius, nrows, ncols)
+        curve = SphereMesh(radius, nrows=nrows, ncols=ncols)
         curve.set_data(**new_kwargs)
         self.add_curve(curve)
         return curve
