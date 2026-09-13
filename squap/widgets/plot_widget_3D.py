@@ -175,6 +175,101 @@ class SubplotWidget3D(GLViewWidget):
         self.add_curve(curve)
         return curve
 
+    def plot(self, x: Optional[Iterable] = None, y: Optional[Iterable] = None, z: Optional[Iterable] = None,
+                pos: Optional[NDArray] = None, color: ColorsType = "y", width: float = 1.,
+                antialias: bool = False, connect: str = "all", **kwargs):
+        """
+        Creates a new scatter plot item. Use either ``x``, ``y`` and ``z`` or ``pos`` to set the coordinates of the
+        points.
+
+        Args:
+            x (:class:`np.ndarray <numpy.ndarray>`, optional): New x-locations of each point. Defaults to ``None``,
+                which means the data will be initialised with ``pos``, or it will be initialised later.
+            y (:class:`np.ndarray <numpy.ndarray>`, optional): New y-locations of each point. Defaults to ``None``,
+                which means the data will be initialised with ``pos``, or it will be initialised later.
+            z (:class:`np.ndarray <numpy.ndarray>`, optional): New z-locations of each point. Defaults to ``None``,
+                which means the data will be initialised with ``pos``, or it will be initialised later.
+            pos (:class:`np.ndarray <numpy.ndarray>`): Shape ``(N, 3)`` (:class:`array <numpy.ndarray>`) of floats
+                specifying point locations. Can be used instead of ``x``, ``y`` and ``z``.
+            color (:ref:`ColorsType`): Changes the color of the line. See :ref:`ColorsType`
+                for allowed values.
+            width (float): Line width.
+            antialias (bool): Enables smooth line drawing. Defaults to ``False``.
+            connect (str): Can be one of the following options:
+
+                - ``"all"``: Connects all points.
+                - ``"pairs"``: Generates lines between every other point.
+
+                Defaults to ``"all"``.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["x", "y", "z", "pos"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = LineCurve3D()
+        curve.set_data(**new_kwargs, **kwargs)
+        self.add_curve(curve)
+        return curve
+
+    def surface(self, x: Optional[Iterable] = None, y: Optional[Iterable] = None, z: Optional[Iterable] = None,
+                color: Optional[ColorsType] = None, cmap: Optional[Any] = None, opacity: str = "translucent",
+                alpha: Optional[float] = None, shader: bool = "shaded", smooth: bool = False, compute_normals: bool = True,
+                show_grid: bool = False, grid_color: ColorType = "white", grid_width: int = 1,
+                grid_antialias: bool = False, **kwargs):
+        """
+        Creates a new surface plot item and adds it to the plot.
+
+        Args:
+            x: New x-locations. Defaults to ``None``, which means the data will be initialised with ``pos``, or it will
+                be initialised later. ``x`` should be a 1D array.
+            y: New y-locations. Defaults to ``None``, which means the data will be initialised with ``pos``, or it will
+                be initialised later. ``y`` should be a 1D array.
+            z: New z-locations. Defaults to ``None``, which means the data will be initialised with ``pos``, or it will
+                be initialised later. ``z`` should be a 2D array of shape ``(N_x, N_y)``
+            color (:ref:`ColorType` or :class:`np.ndarray <numpy.ndarray>`): Changes the color of the surface if one
+                color is given, or changes the color at each coordinate, in which case color should be shape
+                ``(Nx, Ny, 4)``. Defaults to ``None``, meaning that colors will be assigned with a
+                ``cmap`` if it is given. If neither ``cmap`` nor ``color`` is given, the surface will be white.
+                As always, color values are specified between ``0`` and ``1``.
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`. If
+                no cmap is given, ``data`` will be interpreted as colors.
+            opacity (str): Sets the type of opacity. Choose from ``"opaque"``, ``"translucent"`` or ``"additive"``.
+                Only matters when the alpha value of the color of the curve is not ``1``. Defaults to translucent.
+            alpha (float, optional): If given, overwrites the alpha value of ``color`` or ``cmap``.
+            shader: Name of the shader to use. Can be one of the following options:
+
+                - ``"none"``: Plain per vertex color, no lighting. Interpolates what color you set.
+                - ``"balloon"``: Alpha increases where the surface faces away from the camera. Meant for translucent
+                    shell surfaces like isosurfaces.
+                - ``"shaded"``: Simple fixed-direction lighting, giving a lit/shadowed look.
+                - ``"normal_color"``: Colors each face by its absolute normal direction, mapped to RGB. Useful for
+                    debugging normals, not for aesthetics. Colors don't change as you rotate the view.
+                - ``"view_normal_color"``: Colors each face by its absolute normal direction, mapped to RGB. Useful for
+                    debugging normals, not for aesthetics. Colors do change as you rotate the view.
+                - ``"edge_highlight"``: Brightens color near silhouette edges, the more perpendicular to the view, the
+                    brighter.
+
+                Defaults to "shaded".
+            smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
+                Enabling this makes plots look nicer, but costs a lot more render time. It can be faster to
+                improve your lattice spacing. Defaults to ``False``.
+            compute_normals (bool): If ``False``, computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals. Note that this is very rarely a
+                bottleneck. Defaults to ``True``.
+            show_grid (bool): Whether to show grid lines on the surface. Defaults to ``False``.
+            grid_color (:ref:`ColorType`): Color of the grid lines. Defaults to white.
+            grid_width (float): Width of the grid lines in pixels. Noninteger values have effect when
+                ``grid_antialias`` is enabled Defaults to 1.
+            grid_antialias (bool): Whether to use antialiasing to draw the lines. Defaults to ``False``.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["cmap"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = SurfaceCurve(self, **new_kwargs, **kwargs)
+        self.add_curve(curve)
+        return curve
+
     def mesh(self, vertexes: Optional[NDArray] = None, faces: Optional[NDArray] = None,
              color: ColorType = (1, 1, 1, 0.1), draw_edges: bool = False, draw_faces: bool = True,
              shader: Optional[str] = None, smooth: bool = False,
