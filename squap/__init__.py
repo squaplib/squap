@@ -24,7 +24,7 @@ __all__ = [
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
     "make_3D", "scatter_3D", "plot_3D", "surface_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "cylinder_mesh_3D", "add_grid_3D", "add_grids_3D",
-    "set_zoom_rate_3D", "set_camera", "align_camera", "on_var_change"
+    "set_zoom_rate_3D", "set_camera", "get_camera_params", "on_camera_change", "align_camera", "on_var_change"
 ]
 
 _window = None
