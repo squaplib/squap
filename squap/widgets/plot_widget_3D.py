@@ -75,6 +75,16 @@ class SubplotWidget3D(GLViewWidget):
             self.setCameraPosition(
                 QVector3D(*self.camera_pos)
             )
+        if _emit_camera_changed:
+            self.cameraChanged.emit({})
+
+    def get_camera_params(self):
+        current_params = self.cameraParams()
+        current_pos = current_params["center"].toTuple()
+        current_params["azimuth"] = current_params["azimuth"] % 360
+        current_params["x"], current_params["y"], current_params["z"] = current_pos
+        del current_params["center"]
+        return current_params
 
     def set_zoom_rate(self, new_rate: float = 1.003):
         """Sets the rate at which you zoom when the plot is zoomed after it has been created.
