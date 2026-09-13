@@ -381,7 +381,8 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         return self.DisplayBox(self, name, var_name, tooltip, print_value, row)
 
-    def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None) -> 'InputTable.Button':
+    def add_button(self, name: str, func: Optional[Callable] = None, tooltip: Optional[str] = None,
+                   row: Optional[int] = None) -> 'InputTable.Button':
         """Creates a :class:`button <squap.widgets.InputTable.Button>` with name ``name`` and bound function ``func``,
         and adds it to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_button`
         for initialisation information.
@@ -389,7 +390,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             InputTable.Button: The created :class:`button widget <squap.widgets.InputTable.Button>`.
         """
-        return self.Button(self, name, func, row)
+        return self.Button(self, name, func, tooltip, row)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
                      var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Dropdown':
@@ -1102,7 +1103,8 @@ class InputTable(QTableWidget):    # table for all inputs
         """
         Class for the button widget. See :func:`squap.add_button` for initialisation information.
         """
-        def __init__(self, parent: 'InputTable', name: str, func: Optional[Callable] = None, row: Optional[int] = None):
+        def __init__(self, parent: 'InputTable', name: str, func: Optional[Callable] = None,
+                     tooltip: Optional[str] = None, row: Optional[int] = None):
             Box.__init__(self, parent)
             QPushButton.__init__(self, parent=parent, text=name)
             self.link_funcs = None
@@ -1110,7 +1112,12 @@ class InputTable(QTableWidget):    # table for all inputs
             row = parent.add_widget(row=row, box_row=(self, ))
             self.row = row
 
-            parent.setSpan(row, 0, 1, 4)
+            if tooltip:
+                parent.setSpan(row, 0, 1, 3)
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, 0, 1, 4)
+
             parent.input_varnames.append(None)        # so that indexing still works
             parent.setCellWidget(row, 0, self)
 

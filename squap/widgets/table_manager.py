@@ -418,14 +418,16 @@ class TableManager:
         else:
             return self.input_tables[0].add_displaybox(**new_kwargs)
 
-    def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None
-                   ) -> 'InputTable.Button | list[InputTable.Button]':
+    def add_button(self, name: str, func: Optional[Callable] = None, tooltip: Optional[str] = None,
+                   row: Optional[int] = None) -> 'InputTable.Button | list[InputTable.Button]':
         """Adds a :class:`button <squap.widgets.InputTable.Button>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
             name (str): The name in front of the button.
             func (:term:`callable`, optional): The function which is run on button press.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             row (int, optional): Row to which the button is added. Defaults to first empty row.
 
         Returns:
