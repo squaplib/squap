@@ -116,7 +116,7 @@ class LineCurve3D(GLLinePlotItem):
 
 class SurfaceCurve(GLSurfacePlotItem):
     kwarg_mapping = {"c": "color", "colour": "color", "sg": "show_grid", "gc": "grid_color", "gw": "grid_width",
-                     "ga": "grid_antialias", "cn": "compute_normals"}
+                     "ss": "show_surface", "ga": "grid_antialias", "cn": "compute_normals"}
     shader_map = {"none": None, "balloon": "balloon", "shaded": "shaded", "normal_color": "normalColor",
                   "view_normal_color": "viewNormalColor", "edge_highlight": "edgeHilight"}
 
@@ -217,6 +217,10 @@ class SurfaceCurve(GLSurfacePlotItem):
 
         if "colors" in final_kwargs and not self.smooth:
             final_kwargs["colors"] = final_kwargs["colors"].reshape(-1, 4)
+
+        if "show_surface" in new_kwargs:
+            self.opts['drawFaces'] = new_kwargs["show_surface"]
+            self.update()
 
         if "show_grid" in new_kwargs:
             final_kwargs["showGrid"] = new_kwargs["show_grid"]
