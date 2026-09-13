@@ -20,7 +20,7 @@ __all__ = [
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "add_dropdown", "add_rate_slider", "add_joystick", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
     "make_3D", "scatter_3D", "plot_3D", "surface_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "cylinder_mesh_3D", "add_grid_3D", "add_grids_3D",
@@ -248,6 +248,10 @@ def add_dropdown(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.add_rate_slider)
 def add_rate_slider(*args, **kwargs):
     return get_table_manager().add_rate_slider(*args, **kwargs)
+
+@_copy_docstring(widgets.TableManager.add_joystick)
+def add_joystick(*args, **kwargs):
+    return get_table_manager().add_joystick(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.add_color_picker)
 def add_color_picker(*args, **kwargs):
