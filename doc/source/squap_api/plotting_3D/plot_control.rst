@@ -6,5 +6,6 @@ Plot Window Control
 
 .. autofunction:: squap.set_camera
 .. autofunction:: squap.get_camera_params
+.. autofunction:: squap.on_camera_change
 .. autofunction:: squap.align_camera
 .. autofunction:: squap.set_zoom_rate_3D
