@@ -7,6 +7,7 @@ Checkbox
 
     .. automethod:: squap.widgets.InputTable.CheckBox.bind
     .. automethod:: squap.widgets.InputTable.CheckBox.unbind
+    .. automethod:: squap.widgets.InputTable.CheckBox.trigger
     .. automethod:: squap.widgets.InputTable.CheckBox.set_value
     .. automethod:: squap.widgets.InputTable.CheckBox.value
     .. automethod:: squap.widgets.InputTable.CheckBox.change_params

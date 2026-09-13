@@ -6,6 +6,7 @@ This is the general class all input boxes inherit from. For all input boxes see 
 
     .. automethod:: squap.widgets.Box.bind
     .. automethod:: squap.widgets.Box.unbind
+    .. automethod:: squap.widgets.Box.trigger
     .. automethod:: squap.widgets.Box.set_value
     .. automethod:: squap.widgets.Box.value
     .. automethod:: squap.widgets.Box.change_params

@@ -7,6 +7,7 @@ Slider
 
     .. automethod:: squap.widgets.InputTable.Slider.bind
     .. automethod:: squap.widgets.InputTable.Slider.unbind
+    .. automethod:: squap.widgets.InputTable.Slider.trigger
     .. automethod:: squap.widgets.InputTable.Slider.set_value
     .. automethod:: squap.widgets.InputTable.Slider.value
     .. automethod:: squap.widgets.InputTable.Slider.set_index
