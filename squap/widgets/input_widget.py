@@ -1391,7 +1391,6 @@ class InputTable(QTableWidget):    # table for all inputs
             self.slider.sliderReleased.connect(release_func)
             self.slider.sliderPressed.connect(press_func)
 
-            print(self.row, self.col)
             parent.setItem(self.row, self.col, QTableWidgetItem(str(textify(init_value))))
             setattr(parent.variables, self.current_name, init_value)
             self.parent.cellChanged.connect(self._on_change)
