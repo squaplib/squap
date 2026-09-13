@@ -417,6 +417,20 @@ class InputTable(QTableWidget):    # table for all inputs
             absolute, time_var, custom_func, var_name, tooltip, print_value, row
         )
 
+    def add_joystick(self, name: str, center: float = 0, dif: float = 1, n_ticks: int = 100,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
+                     row: Optional[int] = None) -> 'InputTable.Joystick':
+        """Creates a :class:`joystick <squap.widgets.InputTable.Joystick>` with the given parameters, and adds it
+        to this :class:`input table <squap.widgets.input_widget.InputTable>`. See :func:`squap.add_joystick` for
+        initialisation information.
+
+        Returns:
+            InputTable.Joystick: The created :class:`joystick widget <squap.widgets.InputTable.Joystick>`.
+        """
+        return self.Joystick(
+            self, name, center, dif, n_ticks, var_name, tooltip, print_value, row
+        )
+
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.ColorPicker':
         """Creates a :class:`ColorPicker <squap.widgets.InputTable.ColorPicker>` with the gives parameters, and adds it
@@ -1337,6 +1351,7 @@ class InputTable(QTableWidget):    # table for all inputs
                     raise ValueError("name can only be empty if var_name is specified")  # #1004
             else:
                 rate_slider_col = 1
+                colspan = 1
 
                 self.textbox = QLabel(name)
                 parent.setCellWidget(row, 0, self.textbox)
@@ -1359,22 +1374,23 @@ class InputTable(QTableWidget):    # table for all inputs
             parent.setCellWidget(self.row, rate_slider_col, self.slider)
             self.slider.setRange(0, 200)
             self.slider.setValue(100)
-            self.slider.setStyleSheet("""
-                    QSlider::groove:horizontal {
+            width = 50 if colspan == 1 else 150
+            self.slider.setStyleSheet(f"""
+                    QSlider::groove:horizontal {{
                         border: 1px solid #aaa;
-                        width: 50px;
+                        width: {width}px;
                         height: 8px;
                         border-radius: 4px;
-                    }
+                    }}
 
-                    QSlider::handle:horizontal {
+                    QSlider::handle:horizontal {{
                         background: #000;
                         border: 1px solid #000;
                         width: 14px;
                         height: 16px;
                         border-radius: 8px;
-                        margin: -4px 0;
-                    }
+                        margin: -4px -6px;
+                    }}
                 """)
             self.slider.in_middle = True        # if the rate_slider is set to the middle, nothing needs to happen
             # so if this is set to False, it doesn't run the stuff, so when the rate_slider is released, the impact on
@@ -1568,6 +1584,213 @@ class InputTable(QTableWidget):    # table for all inputs
             self.parent.cellChanged.disconnect(self._on_change)
             self.parent.setItem(self.row, self.col, QTableWidgetItem(str(textify(value))))
             self.parent.cellChanged.connect(self._on_change)
+
+        def print_val(self):
+            print(f"{self.current_name} = {self.value()}")
+
+    class Joystick(Box, QSlider):
+        """
+        Class for the joystick widget. See :func:`squap.add_joystick` for initialisation information.
+        """
+
+        def __init__(self, parent: 'InputTable', name: str, center: float = 0, dif: float = 1, n_ticks: int = 100,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
+                     row: Optional[int] = None):
+            Box.__init__(self, parent)
+            QSlider.__init__(self)
+            self.actual_change_funcs = []  # for being able to unbind functions
+
+            self.var_name, self.parent, self.n_ticks, self.dif = var_name, parent, n_ticks, dif
+            # this bit is a bit different for the joystick \/\/
+            # <editor-fold desc="add_widget and init name&var_name">
+            if name == "":  # if self.textbox will be created
+                box_row = (self, )
+            else:
+                box_row = (self.textbox, self)
+            row = parent.add_widget(row=row, box_row=box_row)
+            self.row = row
+            self.col = 2
+
+            if name == "":  # if no name the first two columns are merged for one cell, but does require var_name
+                rate_slider_col = 0
+                colspan = 2
+                parent.setSpan(row, 0, 1, colspan)
+
+                if var_name is None:
+                    raise ValueError("name can only be empty if var_name is specified")  # #1004
+            else:
+                rate_slider_col = 1
+                colspan = 1
+
+                self.textbox = QLabel(name)
+                parent.setCellWidget(row, 0, self.textbox)
+
+                if var_name is None:
+                    var_name = name
+
+            if tooltip:
+                parent.setCellWidget(row, 3, parent._get_tooltip(tooltip))
+            else:
+                parent.setSpan(row, 2, 1, 2)
+
+            parent.input_varnames.append(var_name)
+            # </editor-fold>
+
+            self.current_name = var_name
+
+            setattr(parent.variables, self.current_name, center)
+
+            parent.setCellWidget(self.row, rate_slider_col, self)
+            self.setRange(0, n_ticks*2)
+            self.setValue(n_ticks)
+            width = 50 if colspan == 1 else 150
+            self.setStyleSheet(f"""
+                    QSlider::groove:horizontal {{
+                        border: 1px solid #aaa;
+                        width: {width}px;
+                        height: 8px;
+                        border-radius: 4px;
+                    }}
+
+                    QSlider::handle:horizontal {{
+                        background: #000;
+                        border: 1px solid #000;
+                        width: 14px;
+                        height: 16px;
+                        border-radius: 8px;
+                        margin: -4px -6px;
+                    }}
+                """)
+            self.setOrientation(Qt.Orientation.Horizontal)      # don't know why this isn't the default in this function
+
+            def release_func():  # resets rate_slider to center when released
+                self.setValue(n_ticks)
+
+            self.sliderReleased.connect(release_func)
+
+            parent.setItem(self.row, self.col, QTableWidgetItem(f"{center:.4g}"))
+            setattr(parent.variables, self.current_name, center)
+
+            self.valueChanged.connect(self._on_change)
+
+            if print_value:
+                self.valueChanged.connect(self.print_val)
+                self.printing_val = True
+
+        def change_params(self, **kwargs):
+            """
+            Changes the parameters of the rate_slider. Only keyword arguments are accepted, and takes all arguments that
+            :func:`squap.add_rate_slider` accepts, except ``init_value`` and ``row``.
+            """
+            turn_on_print_func = False
+            update_new_calc = False
+
+            if "tooltip" in kwargs:
+                raise NotImplementedError("Changing tooltip during runtime has not been implemented yet. ")
+
+            if "name" in kwargs:
+                self.textbox.setText(kwargs["name"])
+            if "var_name" in kwargs:
+                self.current_name = kwargs["var_name"]
+                self._on_change(self.row, self.col)
+            elif self.var_name is not None:
+                self.current_name = self.var_name
+            elif "name" in kwargs:
+                self.current_name = kwargs["name"]
+                self._on_change(self.row, self.col)
+
+            if "print_value" in kwargs:
+                if not kwargs["print_value"]:  # if print_value=False is passed as kwarg
+                    if self.printing_val:
+                        # if print_func already exists (and is not None), remove it and set it to None
+                        self.parent.cellChanged.disconnect(self.print_val)
+                        self.printing_val = False
+                elif not self.printing_val:  # or if it does exist but is set to None at the moment
+                    turn_on_print_func = True
+
+            if "time_var" in kwargs:
+                if kwargs["time_var"] != self.time_var:
+                    if kwargs["time_var"] is None and self.time_var is not None:
+                        self.timer = current_time()
+
+                        def get_t():
+                            return current_time()
+
+                        self.get_t = get_t
+                    elif kwargs["time_var"] is not None and self.time_var is None:
+                        def get_t():
+                            return getattr(self.parent.variables, self.time_var)
+
+                        self.get_t = get_t
+                    self.time_var = kwargs["time_var"]
+
+            if "change_rate" in kwargs:
+                self.change_rate = kwargs["change_rate"]
+
+            if "absolute" in kwargs:
+                self.absolute = kwargs["absolute"]
+                update_new_calc = True
+
+            if "custom_func" in kwargs:
+                self.custom_func = kwargs["custom_func"]
+                update_new_calc = True
+
+            if update_new_calc:
+                if self.custom_func is None:
+                    if self.absolute:
+                        def new_calc(dt,
+                                     slider_value):  # slider_value is a value between -1 & 1 depending on slider position
+                            setattr(self.parent.variables, self.current_name,
+                                    getattr(self.parent.variables, self.current_name)
+                                    + self.change_rate * slider_value * dt)
+
+                    else:
+                        # scales logarithmically, so every dt*slider_value = 1 var gets multiplied by changerate
+                        def new_calc(dt, slider_value):
+                            setattr(self.parent.variables, self.current_name,
+                                    getattr(self.parent.variables, self.current_name) * self.change_rate ** (
+                                            dt * slider_value))
+                else:
+                    def new_calc(dt, slider_value):
+                        setattr(self.parent.variables, self.current_name,
+                                self.custom_func(getattr(self.parent.variables, self.current_name), dt, slider_value))
+
+                self.new_calc = new_calc
+
+            if turn_on_print_func:
+                self.parent.cellChanged.connect(self.print_val)
+                self.printing_val = True
+
+                for func in self.change_funcs:  # reorders change_funcs so that print_val is first
+                    self.parent.cellChanged.disconnect(func)
+                    self.parent.cellChanged.connect(func)
+
+        def bind(self, func):
+            def new_func():
+                func()
+
+            self.change_funcs[func] = new_func
+            self.valueChanged.connect(new_func)
+            return self
+
+        def unbind(self, func):
+            if func not in self.change_funcs and func != self._on_change:
+                raise ValueError("Function is not bound to this Box.")
+            if func != self._on_change:
+                self.valueChanged.disconnect(self.change_funcs[func])
+                self.change_funcs.pop(func)
+            else:
+                self.valueChanged.disconnect(self._on_change)
+            return self
+
+        def _on_change(self, val):
+            value = (val - self.n_ticks)/self.n_ticks*self.dif
+            print(value)
+            setattr(self.parent.variables, self.current_name, value)
+            self.parent.setItem(self.row, self.col, QTableWidgetItem(f"{value:.4g}"))
+
+        def value(self):
+            return getattr(self.parent.variables, self.current_name)
 
         def print_val(self):
             print(f"{self.current_name} = {self.value()}")

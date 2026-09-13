@@ -534,6 +534,47 @@ class TableManager:
         else:
             return self.input_tables[0].add_rate_slider(**new_kwargs)
 
+    def add_joystick(self, name: str, center: float = 0, dif: float = 1, n_ticks: int = 100,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
+                     row: Optional[int] = None) -> 'InputTable.Joystick':
+        """Adds a :class:`joystick <squap.widgets.InputTable.Joystick>` to the main input widget, or to all
+        :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
+
+        Args:
+            name (str): The name in front of the joystick.
+            center (float): The value of the variable when the joystick is released. Defaults to ``0``.
+            dif (float): The difference in value from ``center`` when the slider is dragged all the way to one side. The
+                minimum value, all the way at the left is ``center - dif`` and the maximum all the way at the right is
+                ``center + dif``. Defaults to ``1``.
+            n_ticks (bool): The number of ticks on both sides of the center. Only affects the resolution. Defaults
+                to ``100``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
+            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
+                named ``name``.
+            print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
+            row (int, optional): Row to which the rate slider is added. Defaults to first empty row.
+
+        Returns:
+            InputTable.RateSlider or list of InputTable.RateSlider: The created
+            :class:`rate_slider widget(s) <squap.widgets.InputTable.RateSlider>`.
+        """
+
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        if len(self.input_tables) > 1:
+            boxes = []
+            for table in self.input_tables:
+                boxes.append(table.add_joystick(**new_kwargs))
+
+            self.link_boxes(boxes)
+            return boxes
+        else:
+            return self.input_tables[0].add_joystick(**new_kwargs)
+
+
     def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
                          tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                          ) -> 'InputTable.ColorPicker | list[InputTable.ColorPicker]':
