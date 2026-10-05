@@ -1,3 +1,5 @@
+from argparse import ArgumentError
+
 from ..helper_funcs import textify, get_type_func, ColorType, get_single_color
 
 import numpy as np
@@ -280,14 +282,18 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.empty_rows.remove(new_row)
 
                 self.boxes[new_row] = box_row
+                self.setSpan(new_row, 0, 1, 1)
                 return new_row
         elif row in self.empty_rows:
             self.empty_rows.remove(row)
             self.boxes[row] = box_row
+            self.setSpan(row, 0, 1, 1)
             return row
         elif row > self.current_row + 1:
             extra_rows = []
-            for _ in range(row - self.current_row):
+            for index in range(row - self.current_row):
+                if index != 0:      # Change empty rows to have full colspan
+                    self.setSpan(self.current_row, 0, 1, 4)
                 self.current_row += 1
                 self.setRowCount(self.current_row + 1)
                 table_height = self.rowHeight(0) * (self.current_row + 1) + 26
@@ -297,9 +303,10 @@ class InputTable(QTableWidget):    # table for all inputs
             self.boxes.extend([()]*(len(extra_rows)-1))
             self.empty_rows.extend(extra_rows[:-1])
             self.boxes.append(box_row)
+
             return self.current_row
         else:
-            raise ValueError(f"row {row} is not empty")
+            raise ArgumentError(f"row {row} is not empty")
 
     def remove_row(self, remove_row: int, remove_box: Box):
         """
