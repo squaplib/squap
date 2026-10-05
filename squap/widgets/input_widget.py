@@ -266,7 +266,7 @@ class InputTable(QTableWidget):    # table for all inputs
         Returns:
             int: Row in which the :class:`box <squap.widgets.Box>` has been added.
         """
-        if row is None or row == self.current_row+1:
+        if row is None:
             if not self.empty_rows:
                 self.current_row += 1
                 self.setRowCount(self.current_row + 1)
@@ -289,7 +289,7 @@ class InputTable(QTableWidget):    # table for all inputs
             self.boxes[row] = box_row
             self.setSpan(row, 0, 1, 1)
             return row
-        elif row > self.current_row + 1:
+        elif row > self.current_row:
             extra_rows = []
             for index in range(row - self.current_row):
                 if index != 0:      # Change empty rows to have full colspan
