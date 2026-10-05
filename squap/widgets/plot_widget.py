@@ -198,8 +198,8 @@ class SubplotWidget(PlotWidget):
         # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
 
     def scatter(
-            self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, edge_width: int | Iterable[int] = -1,
-            edge_color: ColorsType = "white", pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
+            self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, symbol_line_width: int | Iterable[int] = -1,
+            symbol_line_color: ColorsType = "white", pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
             antialias: bool = True, **kwargs
     ) -> 'PlotCurve':
         """
@@ -216,8 +216,8 @@ class SubplotWidget(PlotWidget):
             color (:ref:`ColorType`): the color of the points. See :ref:`ColorsType` for allowed values.
                 If a list of colors is passed, it should be the same length as ``x`` and ``y``.
             size (int or list of int): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
-            edge_width (int or list of int): Width of the edge around each point. Default is ``-1`` (no edge).
-            edge_color (:ref:`ColorsType`): Color of the edge around each point. Default is white.
+            symbol_line_width (int or list of int): Width of the edge around each point. Default is ``-1`` (no edge).
+            symbol_line_color (:ref:`ColorsType`): Color of the edge around each point. Default is white.
             pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
                 If ``False``, size is specified in data coordinates. Defaults to ``True``.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
