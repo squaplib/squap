@@ -209,19 +209,19 @@ class InputTable(QTableWidget):    # table for all inputs
     def resizeEvent(self, *args) -> None:       # event is not used since every necessary parameter is in self
         width = self.width()
         height = self.height()
-        row_height = self.verticalHeader().defaultSectionSize()
+        self.row_height = self.verticalHeader().defaultSectionSize()
 
         self.setGeometry(0, 0, width, height)
 
-        if row_height*(self.current_row+1)+26 <= height:
+        if self.row_height*(self.current_row+1)+26 <= height:
             width -= 2
         else:
             width -= 18
 
         self.setColumnWidth(0, int(width * self.col_partition))
         self.setColumnWidth(1, int(self.rate_slider_space))
-        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - row_height)
-        self.setColumnWidth(3, row_height)
+        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - self.row_height)
+        self.setColumnWidth(3, self.row_height)
 
     def _get_tooltip(self, text):
         info_box = InfoBadge(text, diameter=int(self.verticalHeader().defaultSectionSize()*0.85))
