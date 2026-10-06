@@ -188,21 +188,23 @@ class InputTable(QTableWidget):    # table for all inputs
         self.col_partition = 1/3                # where is the partition between col 0 & col 1, should be between 0&1
         self.rate_slider_space = 60             # pixels of space a rate_slider gets
 
-        row_height = self.verticalHeader().defaultSectionSize()
+        self.row_height = self.verticalHeader().defaultSectionSize()
         self.setColumnWidth(0, int(width * self.col_partition))
         self.setColumnWidth(1, int(self.rate_slider_space))
-        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - row_height)
-        self.setColumnWidth(3, row_height)
+        self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - self.row_height)
+        self.setColumnWidth(3, self.row_height)
 
         # this cell is split in 2 for the rate_slider
 
         self.current_row = -1       # row of the last placed widget (so total amount of rows - 1)
+        self.extra_height = 0       # For different height rows.
         self.variables = window.variables
-        self.window = window        # necessary for renaming tabs
-        self.input_varnames = []    # the names of every variable indexed by row for stuff like linking and rate_slider
-        self.boxes = []             # for removing them later (and a nice overview)
-        self.empty_rows = []      # these are the rows that have been removed out of order, so that these are filled
+        self.window = window        # Necessary for renaming tabs
+        self.input_varnames = []    # The names of every variable indexed by row for stuff like linking and rate_slider
+        self.boxes = []             # For removing them later (and a nice overview)
+        self.empty_rows = []        # These are the rows that have been removed out of order, so that these are filled
                                     # up first
+        self.setCurrentCell(-1, -1)
 
     def resizeEvent(self, *args) -> None:       # event is not used since every necessary parameter is in self
         width = self.width()
@@ -306,11 +308,31 @@ class InputTable(QTableWidget):    # table for all inputs
 
             return self.current_row
         else:
-            raise ArgumentError(f"row {row} is not empty")
+            raise ValueError(f"row {row} is not empty")
+
+    def add_spacer(self, height: int):
+        """Adds a space of ``height`` pixels below the `box <squap.widgets.Box>` that has been added the latest."""
+        self.current_row += 1
+        self.setRowCount(self.current_row + 1)
+        self.setSpan(self.current_row, 0, 1, 4)
+        self.setRowHeight(self.current_row, height)
+        self.extra_height += height - self.rowHeight(0)
+        table_height = self.rowHeight(0) * (self.current_row + 1) + 26 + self.extra_height
+        if table_height >= self.height():
+            self.resizeEvent(None)
+
+    def set_spacer(self, row: int, height: int):
+        """Sets the height of the spacer at row ``row`` to ``height`` pixels. Can also be used to change the height of
+        existing rows."""
+        self.extra_height += height - self.rowHeight(row)
+        self.setRowHeight(row, height)
+        table_height = self.rowHeight(0) * (self.current_row + 1) + 26 + self.extra_height
+        if table_height >= self.height():
+            self.resizeEvent(None)
 
     def remove_row(self, remove_row: int, remove_box: Box):
         """
-        Remove box ``remove_box`` from row ``remove_row``.
+        Remove `box <squap.widgets.Box>` ``remove_box`` from row ``remove_row``.
 
         Args:
             remove_row (int): row from which to remove the :class:`box <squap.widgets.Box>`.
@@ -680,6 +702,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.valueChanged.emit(self.value())
+            return self
 
         def _on_change(self, val):
             setattr(self.parent.variables, self.current_name, self.arr[val])
@@ -830,6 +853,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.stateChanged.emit(self.value())
+            return self
 
         def _on_change(self):
             setattr(self.parent.variables, self.current_name, self._val())
@@ -985,6 +1009,7 @@ class InputTable(QTableWidget):    # table for all inputs
             if self.live_update:
                 self.textChanged.emit()
             self.editingFinished.emit()
+            return self
 
         def _connect(self, func):
             if self.live_update:
@@ -1177,6 +1202,7 @@ class InputTable(QTableWidget):    # table for all inputs
         
         def trigger(self):
             self.clicked.emit()
+            return self
 
         def _on_change(self):
             raise ValueError("This function is not defined for a Button")
@@ -1330,6 +1356,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.currentTextChanged.emit(str(self.value()))
+            return self
 
         def _on_change(self):
             setattr(self.parent.variables, self.current_name, self.options[self.currentIndex()])
@@ -1611,6 +1638,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.parent.cellChanged.emit(self.row, self.col)
+            return self
 
         def _on_change(self, row, col):
             if row == self.row and col == self.col:
@@ -1823,6 +1851,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.valueChanged.emit(QSlider.value(self))
+            return self
 
         def _on_change(self, val):
             print(val)
@@ -1953,6 +1982,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
         def trigger(self):
             self.sigColorChanged.emit(self.value())
+            return self
 
         def _on_change(self, *args):
             setattr(self.parent.variables, self.current_name, self.value())
