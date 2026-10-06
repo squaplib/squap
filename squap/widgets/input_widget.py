@@ -310,8 +310,10 @@ class InputTable(QTableWidget):    # table for all inputs
         else:
             raise ValueError(f"row {row} is not empty")
 
-    def add_spacer(self, height: int):
-        """Adds a space of ``height`` pixels below the `box <squap.widgets.Box>` that has been added the latest."""
+    def add_spacer(self, height: int = 30):
+        """Adds a space of ``height`` pixels below the `box <squap.widgets.Box>` that has been added the latest. By
+        default, adds a spacer of 30 pixels, which is the default height of a row. Use table.row_height to get the
+        current row height"""
         self.current_row += 1
         self.setRowCount(self.current_row + 1)
         self.setSpan(self.current_row, 0, 1, 4)
