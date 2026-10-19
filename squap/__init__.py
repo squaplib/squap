@@ -17,7 +17,7 @@ from PySide6.QtCore import QTimer
 
 __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
-    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
+    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "set_xlabel", "set_ylabel", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "imshow", "merge_plots", "set_interval",
     "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "on_key_press", "mouse_clicked", "on_mouse_drag",
     "add_spacer", "set_spacer", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
