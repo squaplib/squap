@@ -748,13 +748,13 @@ class SubplotWidget(PlotWidget):
 
     def xlim(self) -> tuple[float]:
         """
-        Returns current xlim.
+        Returns current view range in the x-direction.
         """
         return tuple(self.getViewBox().viewRange()[0])
 
     def ylim(self) -> tuple[float]:
         """"
-        Returns current ylim.
+        Returns current view range in the y-direction.
         """
         return tuple(self.getViewBox().viewRange()[1])
 
