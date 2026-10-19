@@ -996,9 +996,8 @@ class SubplotWidget(PlotWidget):
         vp_pos = self.viewport().mapFromGlobal(QCursor.pos())  # viewport coords
         scene_pos = self.mapToScene(vp_pos)  # scene coords
         if pixel_mode:
-            return pos.toTuple()
-        else:
-            return self.getViewBox().mapSceneToView(pos).toTuple()
+            return scene_pos.toTuple()
+        return self.getViewBox().mapSceneToView(scene_pos).toTuple()
 
     def mouse_on_screen(self):
         """Returns ``True`` if the mouse is on the screen, otherwise returns ``False``."""
