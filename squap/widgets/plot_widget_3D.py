@@ -36,6 +36,10 @@ class SubplotWidget3D(GLViewWidget):
 
         self.update()
 
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        self.cameraChanged.emit(self.cameraParams())
+
     def set_camera(self,
                    x_offset: Optional[float] = None, y_offset: Optional[float] = None, z_offset: Optional[float] = None,
                    distance: Optional[float] = None, azimuth: Optional[float] = None,
