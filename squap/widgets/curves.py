@@ -532,14 +532,21 @@ class InfLine(InfiniteLine):
                 self.setHoverPen(hover_pen)
 
             label_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_label_kwargs if kwarg in new_kwargs}
-            if label_kwargs and self.label:
+            if label_kwargs:
+                if "label" in label_kwargs:
+                    if not label_kwargs["label"] and self.label:
+                        self.label.setParentItem(None)
+                        if self.label.scene() is not None:
+                            self.label.scene().removeItem(self.label)
+                        self.label = None
+                        return
                 if isinstance(self.label, InfLineLabel):
                     if "movable" in new_kwargs or "label_movable" in new_kwargs:
                         self.label.setMovable(self.movable if self.label_movable is None else self.label_movable)
                     if "label_position" in label_kwargs:
-                        self.label.setPosition(new_kwargs["position"])
+                        self.label.setPosition(label_kwargs["label_position"])
                     if "label_text" in label_kwargs:
-                        self.label.setFormat(new_kwargs["text"])
+                        self.label.setFormat(label_kwargs["label_text"])
                     if "label_anchors" in label_kwargs:
                         if label_kwargs["label_anchors"]:
                             self.label.anchors = label_kwargs["label_anchors"]
