@@ -66,7 +66,7 @@ class DragViewBox(ViewBox):     # currently only exists to allow adding function
                 (``False``). Defaults to ``False``. Only applies when `func` accepts an argument.
         """
         if not (on_start or on_finish or during_drag or overwrite_drag):
-            raise ArgumentError("At least one argument of `on_mouse_drag` must be set to `True`.")
+            raise ArgumentError("At least one argument of `on_start`, `on_finish` or `during_drag` must be set to `True`.")
 
         if len(signature(func).parameters):
             def function():
