@@ -18,12 +18,10 @@ class PlotCurve(PlotDataItem):
         "s": "symbolSize", "size": "symbolSize", "symbol_size": "symbolSize", "pixel_mode": "pxMode",
         "clip_to_view": "clipToView", "symbol_colour": "symbol_color", "symbol_lc": "symbol_line_color",
         "symbol_lw": "symbol_line_width", "gradient": "color", "symbol_edge_color": "symbol_line_color",
-        "symbol_edge_width": "symbol_line_width", "sec": "symbol_line_color", "sew": "symbol_line_width",
-        "dm": "downsample_method", "sfc": "skipFiniteCheck", "ad": "autoDownsample", "pm": "pxMode",
-        "ss": "symbolSize", "ctv": "clipToView", "sc": "symbol_color", "slc": "symbol_line_color",
-        "slw": "symbol_line_width", "xerr": "x_err", "yerr": "y_err", "bs": "beam_size", "beamsize": "beam_size",
-        "errorbar_colour": "errorbar_color", "ec": "errorbar_color", "ew": "errorbar_width"
-    }   # last line is the ones for scatter only, downsample for both, rest for line. (not completely sure)
+        "symbol_edge_width": "symbol_line_width", "pm": "pxMode", "edge_width": "symbol_line_width",
+        "edge_color": "symbol_line_color",
+        "xerr": "x_err", "yerr": "y_err", "beamsize": "beam_size", "errorbar_colour": "errorbar_color"
+    }
     all_pen_kwargs = ["line_color", "width", "dashed", "dash_pattern"]
     all_symbol_kwargs = ["symbol_color", "symbol_line_width",  "symbol_line_color", "symbol_size"]
     all_errorbar_kwargs = ["x_err", "y_err", "beam_size", "errorbar_color", "errorbar_width"]
