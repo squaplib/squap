@@ -259,7 +259,6 @@ class SurfaceCurve(GLSurfacePlotItem):
             md = self.opts['meshdata']
             verts = md.vertexes()
             if verts is not None:
-                print("resorting")
                 faces = md.faces()
                 self.last_azimuth, self.last_elevation = azimuth, elevation
 
