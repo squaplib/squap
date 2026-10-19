@@ -370,7 +370,7 @@ class SphereMesh(Mesh):
 
 
 class CubeMesh(Mesh):
-    def __init__(self, side_length: float | Iterable[float] = 1., position: Iterable[float] = (0, 0, 0), **kwargs):
+    def __init__(self, side_length: float | Iterable[float] = 1., position: Iterable[float] = (0., 0., 0.), **kwargs):
         super().__init__(**kwargs)
         self.verts = np.array([
             [0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0],
