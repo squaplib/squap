@@ -759,7 +759,22 @@ class SubplotWidget(PlotWidget):
         """
         return tuple(self.getViewBox().viewRange()[1])
 
-    def set_xlabel(self, label: str, unit: str = "", right_side: bool = False):
+    def set_xlabel(self, label: str, unit: str = "", top_side: bool = False):
+        """
+        Sets a label on the y-axis.
+
+        Args:
+            label (str): Text that gets displayed on the y-axis.
+            unit (str): Unit can be added as seperate argument.
+            top_side (bool): The text can be displayed on the opposite site too by setting this parameter to ``True``.
+        """
+        kwargs = {"units": unit} if unit else {}
+        if top_side:
+            self.setLabel("top", label, **kwargs)
+        else:
+            self.setLabel("bottom", label, **kwargs)
+
+    def set_ylabel(self, label: str, unit: str = "", right_side: bool = False):
         """
         Sets a label on the x-axis.
 
