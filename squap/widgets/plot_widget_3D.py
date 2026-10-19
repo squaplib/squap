@@ -241,7 +241,7 @@ class SubplotWidget3D(GLViewWidget):
     def surface(self, x: Optional[Iterable] = None, y: Optional[Iterable] = None, z: Optional[Iterable] = None,
                 color: Optional[ColorsType] = None, cmap: Optional[Any] = None, opacity: str = "translucent",
                 alpha: Optional[float] = None, shader: bool = "shaded", smooth: bool = False, compute_normals: bool = True,
-                show_grid: bool = False, grid_color: ColorType = "white", grid_width: int = 1,
+                show_surface: bool = True, show_grid: bool = False, grid_color: ColorType = "white", grid_width: int = 1,
                 grid_antialias: bool = False, **kwargs):
         """
         Creates a new surface plot item and adds it to the plot.
