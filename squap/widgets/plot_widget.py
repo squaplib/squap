@@ -789,7 +789,7 @@ class SubplotWidget(PlotWidget):
             self.setLabel("left", label, **kwargs)
 
     # Wrapper that changes name and docstring only. Done like this for consistent documentation.
-    def show_grid(self, x: Optional[bool] = None, y: Optional[bool] = None, alpha: Optional[float] = None):
+    def show_grid(self, x: Optional[bool] = True, y: Optional[bool] = True, alpha: Optional[float] = None):
         """
         Show or hide the grid for either axis. For more detailed control see :func:`squap.grid`.
 
