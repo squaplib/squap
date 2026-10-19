@@ -37,7 +37,7 @@ class SubplotWidget3D(GLViewWidget):
     def set_camera(self,
                    x_offset: Optional[float] = None, y_offset: Optional[float] = None, z_offset: Optional[float] = None,
                    distance: Optional[float] = None, azimuth: Optional[float] = None,
-                   elevation: Optional[float] = None, fov: Optional[float] = None):
+                   elevation: Optional[float] = None, fov: Optional[float] = None, _emit_camera_changed: bool = True):
         """
         Sets the camera offset, distance, rotation and fov using the given arguments. ``distance``, ``azimuth`` and
         ``elevation`` act like polar coordinates around the origin, and ``x_offset``, ``y_offset`` and ``z_offset``
