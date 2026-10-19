@@ -52,7 +52,7 @@ class PlotCurve(PlotDataItem):
         else:
             raise ValueError(f"curve_type {curve_type} is not a valid type of curve.")  # error #1000
 
-        self.symbol_lw = 0
+        self.symbol_lw = 1
         self.symbol_lc = "white"
         self.gradient = None
         self.errorbar_curve = None
