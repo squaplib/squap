@@ -336,7 +336,7 @@ class Mesh(GLMeshItem):
 
 
 class SphereMesh(Mesh):
-    def __init__(self, radius=1.0, nrows=20, ncols=20, position=(0., 0., 0.), **kwargs):
+    def __init__(self, radius: float = 1.0, position: Iterable[float] = (0., 0., 0.), nrows: int = 20, ncols: int = 20, **kwargs):
         super().__init__(**kwargs)
         self.sphere_data = {"rows": nrows, "cols": ncols, "radius": radius}
         self.position = np.array(position)
