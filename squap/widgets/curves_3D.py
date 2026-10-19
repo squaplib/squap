@@ -2,7 +2,8 @@ from pyqtgraph.opengl import GLScatterPlotItem, GLMeshItem, MeshData
 import numpy as np
 from typing import Optional, Iterable
 
-from ..helper_funcs import is_multiple_colors, get_single_color, transform_kwargs
+from ..customisation import get_cmap
+from ..helper_funcs import is_multiple_colors, get_single_color, transform_kwargs, normalise_arr
 
 
 class ScatterCurve3D(GLScatterPlotItem):
