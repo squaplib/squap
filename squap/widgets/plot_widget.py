@@ -15,6 +15,78 @@ from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowC
 from numpy.typing import NDArray
 
 
+class DragViewBox(ViewBox):     # currently only exists to allow adding functions on mouse drag.
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = parent
+        self.functions_on_drag_start = []
+        self.functions_on_drag_finish = []
+        self.functions_during_drag = []
+        self.drag: bool | Callable = True
+
+    def mouseDragEvent(self, ev, axis=None):
+        if ev.isStart():
+            for func in self.functions_on_drag_start:
+                func()
+        elif ev.isFinish():
+            for func in self.functions_on_drag_finish:
+                func()
+        else:
+            for func in self.functions_during_drag:
+                func()
+
+        if isinstance(self.drag, bool):
+            if self.drag:
+                super().mouseDragEvent(ev, axis)
+            else:
+                ev.accept()
+        elif self.drag():
+            super().mouseDragEvent(ev, axis)
+        else:
+            ev.accept()
+
+    def on_mouse_drag(self, func: Callable, during_drag: bool = True, on_start: bool = False, on_finish: bool = False,
+                      overwrite_drag: Optional[bool | Callable] = None, pixel_mode: bool = False):
+        """
+        Calls function `func` when one or more of the following parts of the dragging event occurs: it starts
+        (``on_start``), it ends (``on_finish``) or during dragging (``during_drag``). By default, only calls the
+        function during dragging, but the arguments can be changed to only call it when the drag finishes or starts.
+        Set ``overwrite_drag`` to ``True`` to stop the regular dragging from happening.
+
+        Args:
+            func (:term:`callable`): The function that is called when a dragging event occurs. The position of the
+                mouse is passed to this function if it accepts an argument.
+            during_drag (bool): Whether to call the function while dragging. Defaults to ``True``.
+            on_start (bool): Whether to call the function when the drag starts. Defaults to ``False``.
+            on_finish (bool): Whether to call the function when the drag finishes. Defaults to ``False``.
+            overwrite_drag (bool or :term:`callable`): When set to ``True``, the regular dragging of the plot view is
+                prevented. Can also be set to a function. If it is set to a function, only drags when the function
+                returns ``False``. Defaults to ``False``.
+            pixel_mode (bool): Whether to give the position in pixels from the top left (``True``), or coordinates
+                (``False``). Defaults to ``False``. Only applies when `func` accepts an argument.
+        """
+        if not (on_start or on_finish or during_drag or overwrite_drag):
+            raise ArgumentError("At least one argument of `on_mouse_drag` must be set to `True`.")
+
+        if len(signature(func).parameters):
+            def function():
+                func(self.parent.get_mouse_position(pixel_mode))
+
+        else:
+            function = func
+
+        if on_start:
+            self.functions_on_drag_start.append(function)
+        if on_finish:
+            self.functions_on_drag_finish.append(function)
+        if during_drag:
+            self.functions_during_drag.append(function)
+        if isinstance(overwrite_drag, bool):
+            self.drag = not overwrite_drag
+        elif overwrite_drag is not None:
+            self.drag = overwrite_drag
+
+
 class SubplotWidget(PlotWidget):
     """
     All plotting functions are methods of this widget. e.g. :func:`squap.plot` actually redirects to
