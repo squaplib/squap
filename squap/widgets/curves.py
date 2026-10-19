@@ -503,7 +503,7 @@ class InfLine(InfiniteLine):
                 self.setMovable(self.movable if self.line_movable is None else self.line_movable)
 
             for attr in ["movable", "label_movable", "label_text", "label_position", "label_anchors", "line_movable",
-                         "hover_color", "hover_width", "label"]:
+                         "hover_color", "hover_width"]:
                 if attr in new_kwargs:  # updates all self.attr
                     setattr(self, attr, new_kwargs[attr])
 
