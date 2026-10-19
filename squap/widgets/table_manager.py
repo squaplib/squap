@@ -246,6 +246,25 @@ class TableManager:
             box_.link_funcs[self.n_links] = func
             box_.bind(func)
 
+    def add_spacer(self, height: int):
+        """Adds a space of ``height`` pixels below the :class:`box <squap.widgets.Box>` that has been added the latest."""
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        for table in self.input_tables:
+            table.add_spacer(**new_kwargs)
+
+    def set_spacer(self, row: int, height: int):
+        """Sets the height of the spacer at row ``row`` to ``height`` pixels. Can also be used to change the height of
+        existing rows."""
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        for table in self.input_tables:
+            table.set_spacer(**new_kwargs)
+
     def add_slider(self, name: str, init_value: float = 1.0, min_value: float = 0.0, max_value: float = 10.0,
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
