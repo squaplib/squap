@@ -794,9 +794,9 @@ class SubplotWidget(PlotWidget):
         Show or hide the grid for either axis. For more detailed control see :func:`squap.grid`.
 
         Args:
-            x (bool, optional): Show grid on the x-axis, starts off as ``False``.
-            y (bool, optional): Show grid on the y-axis, starts off as ``False``.
-            alpha (float, optional): Opacity of the grid, float between ``0.`` and ``1.``.
+            x (bool, optional): Show grid on the x-axis. Defaults to ``True``.
+            y (bool, optional): Show grid on the y-axis. Defaults to ``True``.
+            alpha (float, optional): Opacity of the grid, float between ``0.`` and ``1.``. Starts off at ``1``.
         """
         self.showGrid(x, y, alpha)
 
