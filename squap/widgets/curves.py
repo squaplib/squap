@@ -623,7 +623,61 @@ class ImageCurve(ImageItem):
         self.setImage(**final_kwargs)
 
 
-class GridCurve(GridItem):
+class PolygonCurve(QGraphicsPolygonItem):
+    kwarg_mapping = {"line_color": "edge_color", "color": "fill", "c": "fill", "fill_color": "fill"}
+    all_pen_kwargs = ["edge_color", "edge_width", "dashed", "dash_pattern"]
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.setBrush(QBrush(get_single_color("white")))  # fill color, RGBA
+        self.pen = Qt.NoPen
+        self.setPen(self.pen)  # outline
+        # self.setPen(pg.mkPen(color='red', width=2))  # outline
+        # self.setBrush(QBrush(get_single_color((100, 150, 250, 180))))  # fill color, RGBA
+
+        self.x = None
+        self.y = None
+        self.set_data(**kwargs)
+
+    def set_data(self, **kwargs):
+        """Updates an existing polygon object. Takes the same arguments and keyword arguments as :func:`squap.polygon`."""
+        new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+        if "x" in kwargs:
+            self.x = kwargs["x"]
+        if "y" in kwargs:
+            self.y = kwargs["y"]
+        if "x" in kwargs or "y" in kwargs:
+            # Second part checks if they are both in kwargs but both equal to None.
+            if self.x is None or self.y is None and (kwargs.get("x") is not None and kwargs.get("y") is not None):
+                raise TypeError(f"`x` and `y` must both be assigned at the same time.")
+            else:
+                polygon = QPolygonF([QPointF(x_i, y_i) for x_i, y_i in zip(self.x, self.y)])
+                self.setPolygon(polygon)
+
+        if "fill" in kwargs:
+            if isinstance(kwargs["fill"], QGradient):
+                raise NotImplementedError
+            elif kwargs["fill"] is None:
+                self.setBrush(Qt.NoBrush)
+            else:
+                self.setBrush(QBrush(get_single_color(kwargs["fill"])))
+
+        pen_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_pen_kwargs if kwarg in new_kwargs}
+        if pen_kwargs:
+            pen_kwargs = transform_kwargs(pen_kwargs, {"edge_color": "color", "edge_width": "width"})
+            if any(pen_kwargs.values()):
+                if self.pen is Qt.NoPen:
+                    self.pen = mkPen()
+                if update_pen(self.pen, **pen_kwargs) is not None:
+                    self.setPen(self.pen)
+                else:
+                    self.setPen(None)
+
+    def clear(self):  # normal clear doesn't do much
+        self.set_data(x=[], y=[])
+
+
+class GridCurve(SyncedGridItem):
     kwarg_mapping = {
         "grid_spacing": "tick_spacing", "gs": "tick_spacing", "spacing": "tick_spacing", "ts": "tick_spacing",
         "c": "color", "colour": "color", "w": "width"
