@@ -1,6 +1,7 @@
 from pyqtgraph.opengl import GLViewWidget, GLGridItem
 from PySide6.QtWidgets import QSizePolicy
 from PySide6.QtGui import QVector3D
+from PySide6.QtCore import Signal
 
 import numpy as np
 from typing import Iterable, Optional
