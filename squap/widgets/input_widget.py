@@ -325,7 +325,7 @@ class InputTable(QTableWidget):    # table for all inputs
 
     def set_spacer(self, row: int, height: int):
         """Sets the height of the spacer at row ``row`` to ``height`` pixels. Can also be used to change the height of
-        existing rows."""
+        non-spacer rows."""
         self.extra_height += height - self.rowHeight(row)
         self.setRowHeight(row, height)
         table_height = self.rowHeight(0) * (self.current_row + 1) + 26 + self.extra_height
