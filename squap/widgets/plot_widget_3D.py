@@ -244,7 +244,8 @@ class SubplotWidget3D(GLViewWidget):
                 show_surface: bool = True, show_grid: bool = False, grid_color: ColorType = "white", grid_width: int = 1,
                 grid_antialias: bool = False, **kwargs):
         """
-        Creates a new surface plot item and adds it to the plot.
+        Creates a new surface plot item and adds it to the plot. Set ``draw_surface=False`` and ``show_grid=True`` to only
+        show a grid.
 
         Args:
             x: New x-locations. Defaults to ``None``, which means the data will be initialised with ``pos``, or it will
