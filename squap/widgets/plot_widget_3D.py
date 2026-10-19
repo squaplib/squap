@@ -12,6 +12,7 @@ from numpy.typing import NDArray
 
 class SubplotWidget3D(GLViewWidget):
     """Widget for 3D plots. Obtain from :func:`squap.make_3D`"""
+    cameraChanged = Signal(dict)     # adds a signal that triggers when the camera changes
     def __init__(self, row: int, col: int, **kwargs):
         super().__init__(**kwargs)
         self.row = row          # for merging subplots
@@ -31,6 +32,7 @@ class SubplotWidget3D(GLViewWidget):
         angledelta = ev.angleDelta()
         delta = -angledelta.x()-angledelta.y()
         self.opts["distance"] *= self.zoom_rate**delta
+        self.cameraChanged.emit(self.cameraParams())
 
         self.update()
 
