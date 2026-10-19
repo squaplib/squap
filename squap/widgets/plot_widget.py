@@ -893,8 +893,8 @@ class SubplotWidget(PlotWidget):
 
     def on_mouse_click(self, func: Callable, pixel_mode: bool = False):
         """
-        Bind function to run on mouse click. As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
-        set to ``True`` and in coordinates if set to ``False``. The second argument that is passed is which mouse button is clicked.
+        Bind function to run on mouse click (only works on release). As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
+        set to ``True`` and in coordinates if set to ``False``.
 
         Args:
             func (:term:`callable`): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
