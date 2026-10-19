@@ -126,6 +126,10 @@ def inf_vline(*args, **kwargs):
 def grid(*args, **kwargs):
     return get_window().fig_widget.plot_widget.grid(*args, **kwargs)
 
+@_copy_docstring(widgets.SubplotWidget.polygon)
+def polygon(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.polygon(*args, **kwargs)
+
 @_copy_docstring(widgets.SubplotWidget.arrow)
 def arrow(*args, **kwargs):
     return get_window().fig_widget.plot_widget.arrow(*args, **kwargs)
