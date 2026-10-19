@@ -760,6 +760,43 @@ class MainWindow(QMainWindow):
         self.on_key_press_funcs.append(edited_func)
         return edited_func
 
+    @staticmethod
+    def mouse_clicked(left: bool = False, right: bool = False, middle: bool = False, back: bool = False,
+                      forward: bool = False, get_value: bool = False) -> bool | int:
+        """
+        Returns ``False`` if the mouse is currently not clicked. If the mouse is clicked, this function returns ``True`` by
+        default, but this behaviour changes depending on the values of the given arguments: set the argument associated
+        with the button you want to test for to ``True``. To test if multiple buttons are clicked at the same time, set
+        multiple arguments to ``True``. For more mouse buttons, set ``get_value`` to ``True``. This function then
+        returns an integer based on which mouse buttons are pressed.
+
+        Args:
+            left (bool): Left mouse button.
+            right (bool): Right mouse button.
+            middle (bool): Middle mouse button (clicking scroll wheel).
+            back (bool): Back button available on some mice.
+            forward (bool): Forward button available on some mice.
+            get_value (bool): Return a value depending on what mouse buttons are pressed. Ignores all other arguemnts,
+                and teturns 0 if no buttons are pressed, adds 1 to the result if the left mouse button is pressed, 2 if
+                the right mouse button is pressed, and so on in the order of the arguments of this function. Also
+                allows for more mouse buttons beyond these 5 normal buttons.
+        """
+        buttons = QApplication.mouseButtons()
+        if get_value:
+            return buttons.value
+        else:
+            MB = Qt.MouseButton
+            required = MB.NoButton
+            for wanted, btn in ((left, MB.LeftButton),
+                                (right, MB.RightButton),
+                                (middle, MB.MiddleButton),
+                                (back, MB.BackButton),
+                                (forward, MB.ForwardButton)):
+                if wanted:
+                    required |= btn
+
+            return buttons != MB.NoButton and (buttons & required) == required
+
     def align_camera(self, ax: Optional[SubplotWidget3D] = None, tab: Optional[InputTable | str] = None):
         """Adjusts camera position of a 3D plot. Use this to find the correct parameters to set the desired initial
         camera position with :func:`squap.set_camera`. Dolly zoom allows to change fov and distance in such a way that
