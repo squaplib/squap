@@ -442,6 +442,14 @@ def sphere_mesh_3D(*args, **kwargs):
 def cube_mesh_3D(*args, **kwargs):
     return get_plot_3D().cube_mesh(*args, **kwargs)
 
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.cylinder_mesh)
+def cylinder_mesh_3D(*args, **kwargs):
+    return get_plot_3D().cylinder_mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.arrow)
+def arrow_3D(*args, **kwargs):
+    return get_plot_3D().arrow(*args, **kwargs)
+
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.set_camera)
 def set_camera(*args, **kwargs):
     return get_plot_3D().set_camera(*args, **kwargs)
