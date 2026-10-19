@@ -5,7 +5,8 @@ from argparse import ArgumentError
 from inspect import signature
 
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QApplication
+from PySide6 import QtCore
 from PySide6.QtGui import QGradient, QCursor
 from pyqtgraph import PlotWidget, QtWidgets, ViewBox
 
