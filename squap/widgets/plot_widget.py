@@ -549,6 +549,32 @@ class SubplotWidget(PlotWidget):
         self.curves.append(grid)
         return grid
 
+    def polygon(self, x: Optional[NDArray | list] = None, y: Optional[NDArray | list] = None,
+                fill: ColorType = "white", edge_color: Optional[ColorType] = None, edge_width: Optional[int] = None,
+                **kwargs):
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self", "kwargs"])
+        """
+        Creates a new :class:`polygon <squap.widgets.curves.PolygonCurve>` add it to the view. 
+        
+        Args:
+            x (:class:`np.ndarray <numpy.ndarray>` or list): Array of x-coordinates of the vertices of the polygon.
+                All adjacent points are connected, and the first and last point are connected.
+            y (:class:`np.ndarray <numpy.ndarray>` or list): Array of y-coordinates of the vertices of the polygon.
+                All adjacent points are connected, and the first and last point are connected.
+            fill (ColorType): The color of the inside of the polygon. Defaults to ``"white"``.
+            edge_color (ColorType, optional): The color of the edge surrounding the polygon. Defaults to ``None``, 
+                meaning no edge surrounding the polygon.
+            edge_width (int, optional): The width of the edge surrounding the polygon. Defaults to ``None``, 
+                meaning no edge surrounding the polygon.
+        """
+
+        polygon = PolygonCurve(**new_kwargs, **kwargs)
+        self.addItem(polygon)
+        self.curves.append(polygon)
+        return polygon
+
     def arrow(self, angle: float = 0., size: float = 1., position: tuple[float, float] = (0., 0.),
               fill_color: ColorType = "white", border_color: ColorType = "blue", border_width: float = -1,
               origin: str = "tip", pixel_mode: bool = True, head_length: float = 20,
