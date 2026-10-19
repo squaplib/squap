@@ -988,7 +988,13 @@ class SubplotWidget(PlotWidget):
             tuple: The coordinates of the mouse cursor on the plot.
         """
 
-        pos = self.mapFromGlobal(QCursor.pos())
+        # pos = self.mapFromGlobal(QCursor.pos())
+        # if pixel_mode:
+        #     return pos.toTuple()
+        # else:
+        #     return self.getViewBox().mapSceneToView(pos).toTuple()
+        vp_pos = self.viewport().mapFromGlobal(QCursor.pos())  # viewport coords
+        scene_pos = self.mapToScene(vp_pos)  # scene coords
         if pixel_mode:
             return pos.toTuple()
         else:
