@@ -23,7 +23,7 @@ The most common way to install pyqtgraph is with pip::
 conda
 -----
 
-? I never use conda ...
+squap is not uploaded on conda yet (?), I'm not sure how conda works exactly :)
 
 From Source
 -----------
