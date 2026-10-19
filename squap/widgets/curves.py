@@ -569,7 +569,7 @@ class ImageCurve(ImageItem):
         self.data = data            # Needs to be stored for when cmap is given and data is not changed.
         self.cmap = None            # Needs to be stored for when data is given and cmap is not changed
 
-        self.set_data(**kwargs)
+        self.set_data(self.data, **kwargs)
 
     def set_data(self, data=None, **kwargs):
         """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""
