@@ -23,7 +23,8 @@ dependencies = [
     "matplotlib",
     "pyqtgraph",
     "PySide6",
-    "opencv-python",
+    "opencv-python",        # not sure if necessary
+    "PyOpenGL",
     "imageio"
 ]
 
