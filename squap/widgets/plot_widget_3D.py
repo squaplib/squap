@@ -416,3 +416,53 @@ class SubplotWidget3D(GLViewWidget):
         curve.set_data(**new_kwargs)
         self.add_curve(curve)
         return curve
+
+    def cylinder_mesh(self, radius: float = 1., length: float = 1., nrows: int = 20, ncols: int = 20,
+                    vertexes: Optional[NDArray] = None, faces: Optional[NDArray] = None,
+                    color: ColorType = (1, 1, 1, 0.1), draw_edges: bool = False, draw_faces: bool = True,
+                    shader: Optional[str] = None, smooth: bool = False,
+                    vertex_colors: Optional[ColorsType] = None, face_colors: Optional[ColorsType] = None,
+                    compute_normals: bool = True, **kwargs):
+        """
+        Draws a mesh. Use ``data`` to draw a predetermined shape
+
+        Args:
+            radius (float): Radius of the cylinder. Defaults to ``1``.
+            length (float): Length of the cylinder. Defaults to ``1``.
+            nrows (int): Number of rows in the mesh. Defaults to ``10``.
+            ncols (int): Number of columns in the mesh. Defaults to ``10``.
+            vertexes (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nv, 3)`` array of vertex coordinates. If
+                faces is not specified, then this will instead be interpreted as ``(Nf, 3, 3)`` array of coordinates.
+            faces: (:class:`np.ndarray <numpy.ndarray>`, optional): ``(Nf, 3)`` array of indexes into the vertex array.
+            color: Default face color used if no vertex or face colors  are specified.
+            draw_edges (bool): Whether to draw edges. Defaults to ``False``.
+            draw_faces (bool): Whether to draw faces. Defaults to ``True``.
+            shader (bool): Name of shader program to use when drawing faces. Defaults to ``None``, meaning no shader.
+                todo: explain options
+            smooth (bool): If ``True``, normal vectors are computed for each vertex and interpolated within each face.
+                Defaults to ``False``.
+            vertex_colors (:class:`numpy.ndarray <numpy.ndarray>`): Vertex colors. Defaults to ``None``.
+            face_colors (:class:`numpy.ndarray <numpy.ndarray>`): Face colors. Defaults to ``None``.
+            compute_normals (bool): If ``False``, then computation of normal vectors is disabled. This can provide
+                a performance boost for meshes that do not make use of normals.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = CylinderMesh(radius, nrows=nrows, ncols=ncols)
+        curve.set_data(**new_kwargs)
+        self.add_curve(curve)
+        return curve
+
+    def arrow(self, position: Iterable[float] = (0., 0., 0.), rotation: float = .0, length: float = 0.1, head_size: float = 0.05, head_type: str = "triangle", **kwargs):
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["vertexes", "faces", "shader", "vertex_colors", "face_colors"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = Arrow(position)
+        curve.set_data(**new_kwargs)
+        self.add_curve(curve.head)
+        self.add_curve(curve.shaft)
+        return curve
+
