@@ -4,7 +4,7 @@ from PySide6.QtGui import QVector3D
 from PySide6.QtCore import Signal
 
 import numpy as np
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Any
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh, CylinderMesh, Arrow, LineCurve3D, SurfaceCurve
