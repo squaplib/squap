@@ -52,6 +52,7 @@ class SubplotWidget3D(GLViewWidget):
             azimuth (float, optional): Angle of rotation horizontally around the origin.
             elevation (float, optional): Angle of rotation vertically about the origin.
             fov (float, optional): Field of view.
+            _emit_camera_changed (bool): Flag that prevents recursion in :func:`squap.align_camera`.
         """
         cam_params_kwargs = {}
 
