@@ -978,7 +978,7 @@ class SubplotWidget(PlotWidget):
         """Calls the function ``func`` when the mouse enters the widget."""
         self.mouse_enter_funcs.append(func)
 
-    def get_mouse_position(self, pixel_mode=False) -> tuple:
+    def get_mouse_position(self, pixel_mode: bool = False) -> tuple:
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
 
         Args:
