@@ -207,7 +207,7 @@ class TableManager:
             boxes (Iterable of Box or int): list of boxes or row numbers of the boxes to link
             only_update_boxes (list, optional): list of boxes are only updated when a box in boxes is
                 changed but do not cause the other boxes to update when they are changed.
-                `link_boxes(box1, box2); link_boxes(box2, box3)` can be used to link box1 to box2 and box2 to box3 without linking
+                ``link_boxes(box1, box2); link_boxes(box2, box3)`` can be used to link box1 to box2 and box2 to box3 without linking
                 box1 to box3. todo: klopt niet helemaal
         """
         self.n_links += 1
