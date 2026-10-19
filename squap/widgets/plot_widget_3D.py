@@ -7,7 +7,7 @@ import numpy as np
 from typing import Iterable, Optional
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
-from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh
+from .curves_3D import ScatterCurve3D, Mesh, SphereMesh, CubeMesh, CylinderMesh, Arrow, LineCurve3D, SurfaceCurve
 from numpy.typing import NDArray
 
 
