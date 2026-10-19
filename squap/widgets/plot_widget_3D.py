@@ -28,6 +28,10 @@ class SubplotWidget3D(GLViewWidget):
     def add_curve(self, curve):
         self.addItem(curve)
 
+    def mouseMoveEvent(self, event):
+        super().mouseMoveEvent(event)
+        self.cameraChanged.emit(self.cameraParams())
+
     def wheelEvent(self, ev):       # changes default to changing distance instead of fov
         angledelta = ev.angleDelta()
         delta = -angledelta.x()-angledelta.y()
