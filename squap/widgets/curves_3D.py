@@ -1,4 +1,4 @@
-from pyqtgraph.opengl import GLScatterPlotItem, GLMeshItem, MeshData
+from pyqtgraph.opengl import GLScatterPlotItem, GLLinePlotItem, GLMeshItem, MeshData, GLSurfacePlotItem
 import numpy as np
 from typing import Optional, Iterable
 
