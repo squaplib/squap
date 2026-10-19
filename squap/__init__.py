@@ -221,6 +221,14 @@ def set_interval(*args, **kwargs):
 def is_alive():
     return get_window().is_alive()
 
+@_copy_docstring(widgets.TableManager.add_spacer)
+def add_spacer(*args, **kwargs):
+    return get_table_manager().add_spacer(*args, **kwargs)
+
+@_copy_docstring(widgets.TableManager.set_spacer)
+def set_spacer(*args, **kwargs):
+    return get_table_manager().set_spacer(*args, **kwargs)
+
 @_copy_docstring(widgets.TableManager.add_slider)
 def add_slider(*args, **kwargs):
     return get_table_manager().add_slider(*args, **kwargs)
