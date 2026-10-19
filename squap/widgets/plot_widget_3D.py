@@ -425,7 +425,7 @@ class SubplotWidget3D(GLViewWidget):
                     vertex_colors: Optional[ColorsType] = None, face_colors: Optional[ColorsType] = None,
                     compute_normals: bool = True, **kwargs):
         """
-        Draws a mesh. Use ``data`` to draw a predetermined shape
+        Draws a mesh. Use ``data`` to draw a predetermined shape. Experimental
 
         Args:
             radius (float): Radius of the cylinder. Defaults to ``1``.
