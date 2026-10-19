@@ -11,7 +11,7 @@ from pyqtgraph import PlotWidget, QtWidgets
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from ..customisation import Font
-from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowCurve, VectorFieldCurve
+from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve, PolygonCurve, ArrowCurve, VectorFieldCurve
 from numpy.typing import NDArray
 
 
