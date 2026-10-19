@@ -293,6 +293,14 @@ def get_mouse_position(*args, **kwargs):
 def on_key_press(*args, **kwargs):
     return get_window().on_key_press(*args, **kwargs)
 
+@_copy_docstring(widgets.MainWindow.mouse_clicked)
+def mouse_clicked(*args, **kwargs):
+    return get_window().mouse_clicked(*args, **kwargs)
+
+@_copy_docstring(widgets.DragViewBox.on_mouse_drag)
+def on_mouse_drag(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.getPlotItem().getViewBox().on_mouse_drag(*args, **kwargs)
+
 @_copy_docstring(widgets.MainWindow.resize_window)
 def resize(*args, **kwargs):
     return get_window().resize_window(*args, **kwargs)
