@@ -12,7 +12,7 @@ class Font(QFont):
     """Represents fonts used in squap. Use :func:`squap.get_font` to initialise a font.
     Based on :class:`PySide6.QtGui.QFont`. """
     kwarg_mapping = {           # aliases
-        "font": "font_name", "fn": "font_name", "size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
+        "font": "font_name", "fn": "font_name", "size": "font_size", "text_size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
         "ls": "letter_spacing", "ws": "word_spacing"
     }
 
