@@ -761,12 +761,12 @@ class SubplotWidget(PlotWidget):
 
     def set_xlabel(self, label: str, unit: str = "", top_side: bool = False):
         """
-        Sets a label on the x-axis.
+        Sets a label on the y-axis.
 
         Args:
-            label (str): Text that gets displayed on the x-axis.
+            label (str): Text that gets displayed on the y-axis.
             unit (str): Unit can be added as seperate argument.
-            top_side (bool): The text can be displayed on the opposite side too by setting this parameter to ``True``.
+            top_side (bool): The text can be displayed on the opposite site too by setting this parameter to ``True``.
         """
         kwargs = {"units": unit} if unit else {}
         if top_side:
@@ -776,10 +776,10 @@ class SubplotWidget(PlotWidget):
 
     def set_ylabel(self, label: str, unit: str = "", right_side: bool = False):
         """
-        Sets a label on the y-axis.
+        Sets a label on the x-axis.
 
         Args:
-            label (str): Text that gets displayed on the y-axis.
+            label (str): Text that gets displayed on the x-axis.
             unit (str): Unit can be added as seperate argument.
             right_side (bool): The text can be displayed on the opposite site too by setting this parameter to ``True``.
         """
@@ -788,6 +788,21 @@ class SubplotWidget(PlotWidget):
             self.setLabel("right", label, **kwargs)
         else:
             self.setLabel("left", label, **kwargs)
+
+    def set_ylabel(self, label: str, unit: str = "", top_side: bool = False):
+        """
+        Sets a label on the y-axis.
+
+        Args:
+            label (str): Text that gets displayed on the y-axis.
+            unit (str): Unit can be added as seperate argument.
+            top_side (bool): The text can be displayed on the opposite site too by setting this parameter to ``True``.
+        """
+        kwargs = {"units": unit} if unit else {}
+        if top_side:
+            self.setLabel("top", label, **kwargs)
+        else:
+            self.setLabel("bottom", label, **kwargs)
 
     # Wrapper that changes name and docstring only. Done like this for consistent documentation.
     def show_grid(self, x: Optional[bool] = True, y: Optional[bool] = True, alpha: Optional[float] = None):
