@@ -100,7 +100,7 @@ def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold:
                                 none_kwargs=["font_size"],
                                 exclude_args=["kwargs"])
 
-    return Font(**new_kwargs)
+    return Font(**new_kwargs, **kwargs)
 
 
 def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "horizontal",
