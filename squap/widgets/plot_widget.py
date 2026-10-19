@@ -982,8 +982,8 @@ class SubplotWidget(PlotWidget):
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
 
         Args:
-            pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
-                Defaults to ``False``.
+            pixel_mode (bool): Whether to return position in pixels from the top left (``True``), or coordinates
+                (``False``). Defaults to ``False``.
         Returns:
             tuple: The coordinates of the mouse cursor on the plot.
         """
