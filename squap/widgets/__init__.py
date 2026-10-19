@@ -10,7 +10,7 @@ from .curves_3D import ScatterCurve3D, LineCurve3D, Mesh, SphereMesh, CubeMesh, 
 
 
 __all__ = [
-    "MainWindow", "FigWidget", "TableManager", "SubplotWidget", "InputTable", "Box",
+    "MainWindow", "FigWidget", "TableManager", "SubplotWidget", "DragViewBox", "InputTable", "Box",
     "PlotCurve", "ErrorbarCurve", "TextCurve", "InfLine", "ImageCurve", "GridCurve", "ArrowCurve", "VectorFieldCurve",
     "SubplotWidget3D", "ScatterCurve3D", "LineCurve3D", "Mesh", "SphereMesh", "CubeMesh", "CylinderMesh", "Arrow"
 ]
