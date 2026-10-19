@@ -2,7 +2,9 @@ from copy import copy
 import numpy as np
 from typing import Iterable, Optional
 
-from PySide6.QtGui import QFont, QGradient, QBrush, Qt
+from PySide6.QtGui import QFont, QGradient, QBrush, Qt, QPolygonF
+from PySide6.QtCore import QPointF
+from PySide6.QtWidgets import QGraphicsPolygonItem
 from pyqtgraph import (PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageItem, mkPen, mkBrush, InfLineLabel,
                        GridItem, getConfigOption, ErrorBarItem, ArrowItem)
 
