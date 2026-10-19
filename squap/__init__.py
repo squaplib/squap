@@ -19,7 +19,8 @@ __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
     "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "imshow", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "on_key_press", "mouse_clicked", "add_spacer", "set_spacer", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "on_key_press", "mouse_clicked", "on_mouse_drag",
+    "add_spacer", "set_spacer", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
     "add_dropdown", "add_rate_slider", "add_joystick", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
