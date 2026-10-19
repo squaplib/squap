@@ -3,7 +3,7 @@ from typing import Callable, Iterable       # required for docs
 
 from . import widgets
 from .widgets import (MainWindow, FigWidget, TableManager, SubplotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
-                      TextCurve, InfLine, ImageCurve, GridCurve)
+                      TextCurve, InfLine, ImageCurve, GridCurve, DragViewBox)
 from .variables import Variables
 from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
