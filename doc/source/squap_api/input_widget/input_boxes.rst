@@ -15,5 +15,6 @@ All boxes that can be placed in the input window. For a relevant example see :re
     boxes/button
     boxes/dropdown
     boxes/rate_slider
+    boxes/joystick
     boxes/color_picker
     boxes/general_box
