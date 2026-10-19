@@ -82,7 +82,7 @@ def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold:
         font_name (str): Name of the font. Can be any font on your computer. Defaults to ``"Segoe UI"``.
             Aliases: ``font``, ``fn``.
         font_size (int): Font size. Defaults to ``None``. This usually means the ``font_size`` is 12 todo: check
-            Aliases: ``size``, ``fs``.
+            Aliases: ``text_size``, ``size``, ``fs``.
         bold (bool): Whether to make the font bold. Defaults to ``False``.
         italic (bool): Whether to make the font italic. Defaults to ``False``.
         underline (bool): Whether to give the font underline. Defaults to ``False``.
