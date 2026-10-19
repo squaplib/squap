@@ -1,7 +1,7 @@
 from .main_window import MainWindow
 from .plot_manager import FigWidget
 from .table_manager import TableManager
-from .plot_widget import SubplotWidget
+from .plot_widget import SubplotWidget, DragViewBox
 from .input_widget import InputTable, Box
 from .curves import PlotCurve, ErrorbarCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowCurve, VectorFieldCurve
 
