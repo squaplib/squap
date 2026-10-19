@@ -403,3 +403,96 @@ class CubeMesh(Mesh):
         self.mesh_data = MeshData(vertexes=self.verts*self.side_length + self.position, faces=self.faces)
         self.setMeshData(meshdata=self.mesh_data)
         # super().set_data(**kwargs)
+
+
+class CylinderMesh(Mesh):
+    """Experimental"""
+    def __init__(self, radius: float = 1., length: float = 1., position: Iterable[float] = (0., 0., 0.),
+                 nrows: int = 20, ncols: int = 20, **kwargs):
+        super().__init__(**kwargs)
+        self.cylinder_data = {"rows": nrows, "cols": ncols, "length": length}
+        if hasattr(radius, "__iter__"):
+            self.cylinder_data["radius"] = radius
+        else:
+            self.cylinder_data["radius"] = [radius, radius]
+        self.position = np.array(position)
+        self.mesh_data = MeshData.cylinder(**self.cylinder_data)
+        self.translate(*position)
+
+        self.setMeshData(meshdata=self.mesh_data)
+
+    def set_data(self, **kwargs):
+        super().set_data(**kwargs)
+        if kwargs:
+            if "radius" in kwargs:
+                radius = kwargs["radius"]
+                if hasattr(radius, "__iter__"):
+                    self.cylinder_data["radius"] = radius
+                else:
+                    self.cylinder_data["radius"] = [radius, radius]
+
+            if "length" in kwargs:
+                self.cylinder_data["length"] = kwargs["length"]
+
+            if "nrows" in kwargs:
+                self.cylinder_data["rows"] = kwargs["nrows"]
+
+            if "ncols" in kwargs:
+                self.cylinder_data["cols"] = kwargs["ncols"]
+
+            if "position" in kwargs:
+                new_pos = np.array(kwargs["position"])
+                dif = new_pos - self.position
+                self.translate(*dif)
+                self.position = new_pos
+
+            self.mesh_data = MeshData.cylinder(**self.cylinder_data)
+            self.setMeshData(meshdata=self.mesh_data)
+
+        super().set_data(**kwargs)
+
+
+class Arrow:
+    """Experimental"""
+    def __init__(self, position: Iterable[float] = (0., 0., 0.), rotation: float = .0, length: float = 0.1, head_size: float = 0.05, head_type: str = "triangle"):
+        """
+        Head_type will be a choice between triangle, pyramid and cone.
+        """
+        self.verts = np.array([
+            [0.5, 0, 0], [-0.5, 0, 0], [0, 0, 1]
+        ])
+
+        self.faces = np.array([
+            [0, 1, 2]
+        ])
+
+        self.length = length
+        self.position = position
+        self.rotation = rotation
+
+        self.head_mesh_data = MeshData(vertexes=self.verts*head_size, faces=self.faces)
+        self.head = Mesh()
+        self.head.setMeshData(meshdata=self.head_mesh_data)
+        self.shaft = GLLinePlotItem(width=2, color=(1, 1, 1, 1))
+
+    def set_data(self, **kwargs):
+        updated_shaft = False
+        if "length" in kwargs:
+            updated_shaft = True
+            self.length = kwargs["length"]
+
+        if "position" in kwargs:
+            updated_shaft = True
+            self.position = kwargs["position"]
+
+        if "rotation" in kwargs:
+            updated_shaft = True
+            self.rotation = kwargs["rotation"]
+
+        if updated_shaft:
+            pos = np.array([
+                np.array(self.position) - np.array([0, .5*self.length*np.sin(self.rotation), .5*self.length*np.cos(self.rotation)]),
+                np.array(self.position) - np.array([0, -.5*self.length*np.sin(self.rotation), -.5*self.length*np.cos(self.rotation)]),
+            ])
+            self.shaft.setData(pos=pos)
+            self.head.setMeshData(meshdata=self.head_mesh_data)
