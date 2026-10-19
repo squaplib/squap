@@ -504,7 +504,7 @@ class SubplotWidget(PlotWidget):
                   label_anchors: Optional[list[tuple]] = None, hover_color: ColorType = "red", hover_width: int = 1,
                   name: Optional[str] = None, **kwargs):
         """
-        This function is used to create a horizontal infinite line and add it to the view. This function is the same as
+        Creates a horizontal infinite line and add it to the view. This function is the same as
         :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default ``label_text`` is now ``"x={value}"``.
         """
         new_kwargs = get_new_kwargs(locals(),
