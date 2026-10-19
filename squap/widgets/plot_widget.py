@@ -95,7 +95,7 @@ class SubplotWidget(PlotWidget):
     so that e.g. :meth:`axs[0].plot <SubplotWidget.plot>` will create a regular plot in the first :class:`SubplotWidget`.
     """
     def __init__(self, row: int, col: int, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(viewBox=DragViewBox(self), **kwargs)
         self.row = row          # for merging subplots
         self.col = col
         self.curves = []        # for clearing curves
