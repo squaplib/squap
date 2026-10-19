@@ -283,6 +283,8 @@ class SubplotWidget3D(GLViewWidget):
             compute_normals (bool): If ``False``, computation of normal vectors is disabled. This can provide
                 a performance boost for meshes that do not make use of normals. Note that this is very rarely a
                 bottleneck. Defaults to ``True``.
+            show_surface (bool): Whether to draw the surface itself. When both ``draw_surface`` and ``show_grid`` are
+                set to ``False``, nothing is shown. Defaults to ``True``.
             show_grid (bool): Whether to show grid lines on the surface. Defaults to ``False``.
             grid_color (:ref:`ColorType`): Color of the grid lines. Defaults to white.
             grid_width (float): Width of the grid lines in pixels. Noninteger values have effect when
