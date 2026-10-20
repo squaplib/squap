@@ -8,6 +8,8 @@ from PySide6.QtWidgets import QGraphicsPolygonItem
 from pyqtgraph import (PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageItem, mkPen, mkBrush, InfLineLabel,
                        GridItem, getConfigOption, ErrorBarItem, ArrowItem)
 
+from .custom_objects import SyncedGridItem
+
 from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
     transform_kwargs, ColorType
 from ..customisation import cmap_to_gradient, get_cmap, Font
