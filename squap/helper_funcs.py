@@ -1,11 +1,16 @@
 import ast
 import json
 from typing import TypeAlias, Union, Iterable, Optional
+from io import BytesIO
+import sys
+import re
+from functools import lru_cache
 
 import numpy as np
-from PySide6.QtGui import QGradient, Qt, QColor, QPen
+from matplotlib.figure import Figure
 
-from PySide6.QtWidgets import QTableWidgetItem
+from PySide6.QtGui import QGradient, Qt, QColor, QPen, QPixmap
+from PySide6.QtWidgets import QTableWidgetItem, QLabel
 from pyqtgraph import mkColor
 
 
@@ -208,3 +213,23 @@ def transform_kwargs(kwargs, mapping):
             result[mapping.get(k, k)] = v
 
     return result
+
+
+# lru_cache: If function is called again, it looks in cache if it has been done with the same arguments already.
+@lru_cache(maxsize=512)
+def _latex_to_pixmap(latex, color="black", fontsize=11, dpi=192):
+    fig = Figure(figsize=(0.01, 0.01), dpi=dpi)
+    fig.text(0, 0, latex, fontsize=fontsize, color=color)
+    buf = BytesIO()
+    fig.savefig(buf, format="png", transparent=True, bbox_inches="tight", pad_inches=0)
+    pm = QPixmap()
+    pm.loadFromData(buf.getvalue())
+    pm.setDevicePixelRatio(dpi / 96)
+    return pm
+
+
+_UNESCAPED_DOLLAR = re.compile(r"(?<!\\)\$")
+
+def _is_latex(text):
+    n = len(_UNESCAPED_DOLLAR.findall(text))
+    return n >= 2 and n % 2 == 0
