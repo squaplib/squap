@@ -3,7 +3,7 @@ from typing import Callable, Iterable       # required for docs
 
 from . import widgets
 from .widgets import (MainWindow, FigWidget, TableManager, SubplotWidget, InputTable, Box, PlotCurve, ErrorbarCurve,
-                      TextCurve, InfLine, ImageCurve, GridCurve)
+                      TextCurve, InfLine, ImageCurve, GridCurve, DragViewBox)
 from .variables import Variables
 from .customisation import get_font, get_gradient, get_cmap, cmap_to_colors
 from .helper_funcs import ColorType, ColorsType
@@ -17,14 +17,15 @@ from PySide6.QtCore import QTimer
 
 __all__ = [
     "widgets", "ColorType", "ColorsType",       # things not in __init__.pyi
-    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
-    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "set_xlabel", "set_ylabel", "legend", "set_title", "lock_zoom", "subplots",
+    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "imshow", "merge_plots", "set_interval",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "on_key_press", "mouse_clicked", "on_mouse_drag",
+    "add_spacer", "set_spacer", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
+    "add_dropdown", "add_rate_slider", "add_joystick", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
-    "make_3D", "scatter_3D", "add_grid_3D", "add_grids_3D", "set_zoom_rate_3D", "set_camera",
-    "align_camera"
+    "make_3D", "scatter_3D", "plot_3D", "surface_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "cylinder_mesh_3D", "add_grid_3D", "add_grids_3D",
+    "set_zoom_rate_3D", "set_camera", "get_camera_params", "on_camera_change", "align_camera", "on_var_change"
 ]
 
 _window = None
@@ -74,8 +75,8 @@ def get_table_manager():
     """Makes sure that when a function from table_manager is called, the input table is initialised."""
     global _table_manager
     if _table_manager is None:
-        get_input_table()
         _table_manager = get_window().table_manager
+        get_input_table()
     return _table_manager
 
 
@@ -85,6 +86,15 @@ def get_plot_3D():
     if _plot_widget_3D is None:
         _plot_widget_3D = get_window().fig_widget.make_3D()
     return _plot_widget_3D
+
+
+def clear():
+    """Clear everything. Not quite sure if this works in all cases."""
+    global _table_manager
+    global _input_table
+    _table_manager = None
+    _input_table = None
+    return get_window().clear()
 
 
 # <editor-fold desc="wrapped functions">
@@ -115,6 +125,18 @@ def inf_vline(*args, **kwargs):
 @_copy_docstring(widgets.SubplotWidget.grid)
 def grid(*args, **kwargs):
     return get_window().fig_widget.plot_widget.grid(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.polygon)
+def polygon(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.polygon(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.arrow)
+def arrow(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.arrow(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.vector_field)
+def vector_field(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.vector_field(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.plot_text)
 def plot_text(*args, **kwargs):
@@ -152,9 +174,9 @@ def set_ylabel(*args, **kwargs):
 def show_grid(*args, **kwargs):
     return get_window().fig_widget.plot_widget.show_grid(*args, **kwargs)
 
-@_copy_docstring(widgets.SubplotWidget.disable_flicker)
-def disable_flicker(*args, **kwargs):
-    return get_window().fig_widget.plot_widget.disable_flicker(*args, **kwargs)
+@_copy_docstring(widgets.SubplotWidget.enable_flicker)
+def enable_flicker(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.enable_flicker(*args, **kwargs)
 
 @_copy_docstring(widgets.SubplotWidget.enable_autoscale)
 def enable_autoscale(*args, **kwargs):
@@ -204,6 +226,14 @@ def set_interval(*args, **kwargs):
 def is_alive():
     return get_window().is_alive()
 
+@_copy_docstring(widgets.TableManager.add_spacer)
+def add_spacer(*args, **kwargs):
+    return get_table_manager().add_spacer(*args, **kwargs)
+
+@_copy_docstring(widgets.TableManager.set_spacer)
+def set_spacer(*args, **kwargs):
+    return get_table_manager().set_spacer(*args, **kwargs)
+
 @_copy_docstring(widgets.TableManager.add_slider)
 def add_slider(*args, **kwargs):
     return get_table_manager().add_slider(*args, **kwargs)
@@ -215,6 +245,10 @@ def add_checkbox(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.add_inputbox)
 def add_inputbox(*args, **kwargs):
     return get_table_manager().add_inputbox(*args, **kwargs)
+
+@_copy_docstring(widgets.TableManager.add_displaybox)
+def add_displaybox(*args, **kwargs):
+    return get_table_manager().add_displaybox(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.add_button)
 def add_button(*args, **kwargs):
@@ -228,6 +262,10 @@ def add_dropdown(*args, **kwargs):
 def add_rate_slider(*args, **kwargs):
     return get_table_manager().add_rate_slider(*args, **kwargs)
 
+@_copy_docstring(widgets.TableManager.add_joystick)
+def add_joystick(*args, **kwargs):
+    return get_table_manager().add_joystick(*args, **kwargs)
+
 @_copy_docstring(widgets.TableManager.add_color_picker)
 def add_color_picker(*args, **kwargs):
     return get_table_manager().add_color_picker(*args, **kwargs)
@@ -240,13 +278,41 @@ def on_mouse_click(*args, **kwargs):
 def on_mouse_move(*args, **kwargs):
     return get_window().fig_widget.plot_widget.on_mouse_move(*args, **kwargs)
 
-@_copy_docstring(widgets.SubplotWidget.get_mouse_pos)
-def get_mouse_pos(*args, **kwargs):
-    return get_window().fig_widget.plot_widget.get_mouse_pos(*args, **kwargs)
+@_copy_docstring(widgets.SubplotWidget.on_mouse_leave)
+def on_mouse_leave(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.on_mouse_leave(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.on_mouse_enter)
+def on_mouse_enter(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.on_mouse_enter(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.mouse_on_screen)
+def mouse_on_screen(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.mouse_on_screen(*args, **kwargs)
+
+@_copy_docstring(widgets.SubplotWidget.get_mouse_position)
+def get_mouse_position(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.get_mouse_position(*args, **kwargs)
 
 @_copy_docstring(widgets.MainWindow.on_key_press)
 def on_key_press(*args, **kwargs):
     return get_window().on_key_press(*args, **kwargs)
+
+@_copy_docstring(widgets.MainWindow.mouse_clicked)
+def mouse_clicked(*args, **kwargs):
+    return get_window().mouse_clicked(*args, **kwargs)
+
+@_copy_docstring(widgets.DragViewBox.on_mouse_drag)
+def on_mouse_drag(*args, **kwargs):
+    return get_window().fig_widget.plot_widget.getPlotItem().getViewBox().on_mouse_drag(*args, **kwargs)
+
+@_copy_docstring(widgets.MainWindow.resize_window)
+def resize(*args, **kwargs):
+    return get_window().resize_window(*args, **kwargs)
+
+@_copy_docstring(widgets.MainWindow.size)
+def size():
+    return get_window().size()
 
 @_copy_docstring(widgets.MainWindow.add_table)
 def add_tab(*args, **kwargs):
@@ -255,6 +321,10 @@ def add_tab(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.rename_tab)
 def rename_tab(*args, **kwargs):
     return get_table_manager().rename_tab(*args, **kwargs)
+
+@_copy_docstring(widgets.MainWindow.set_table_location)
+def set_table_location(*args, **kwargs):
+    return get_window().set_table_location(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.set_active_tab)
 def set_active_tab(*args, **kwargs):
@@ -265,8 +335,8 @@ def get_active_tab(*args, **kwargs):
     return get_table_manager().get_active_tab(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.get_all_tabs)
-def get_all_tabs():
-    return get_table_manager().get_all_tabs()
+def get_all_tabs(*args, **kwargs):
+    return get_table_manager().get_all_tabs(*args, **kwargs)
 
 @_copy_docstring(widgets.TableManager.on_tab_change)
 def on_tab_change(*args, **kwargs):
@@ -287,14 +357,6 @@ def link_boxes(*args, **kwargs):
 @_copy_docstring(widgets.TableManager.set_input_partition)
 def set_input_partition(*args, **kwargs):
     return get_table_manager().set_input_partition(*args, **kwargs)
-
-@_copy_docstring(widgets.MainWindow.resize_window)
-def resize(*args, **kwargs):
-    return get_window().resize_window(*args, **kwargs)
-
-@_copy_docstring(widgets.MainWindow.size)
-def size():
-    return get_window().size()
 
 @_copy_docstring(widgets.MainWindow.set_input_width)
 def set_input_width(*args, **kwargs):
@@ -328,10 +390,6 @@ def close_window():
     """Closes the window."""
     return get_window().close()
 
-@_copy_docstring(widgets.MainWindow.clear)
-def clear():
-    return get_window().clear()
-
 @_copy_docstring(widgets.MainWindow.export)
 def export(*args, **kwargs):
     return get_window().export(*args, **kwargs)
@@ -364,9 +422,45 @@ def add_grids_3D(*args, **kwargs):
 def scatter_3D(*args, **kwargs):
     return get_plot_3D().scatter(*args, **kwargs)
 
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.plot)
+def plot_3D(*args, **kwargs):
+    return get_plot_3D().plot(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.surface)
+def surface_3D(*args, **kwargs):
+    return get_plot_3D().surface(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.mesh)
+def mesh_3D(*args, **kwargs):
+    return get_plot_3D().mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.sphere_mesh)
+def sphere_mesh_3D(*args, **kwargs):
+    return get_plot_3D().sphere_mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.cube_mesh)
+def cube_mesh_3D(*args, **kwargs):
+    return get_plot_3D().cube_mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.cylinder_mesh)
+def cylinder_mesh_3D(*args, **kwargs):
+    return get_plot_3D().cylinder_mesh(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.arrow)
+def arrow_3D(*args, **kwargs):
+    return get_plot_3D().arrow(*args, **kwargs)
+
 @_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.set_camera)
 def set_camera(*args, **kwargs):
     return get_plot_3D().set_camera(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.get_camera_params)
+def get_camera_params(*args, **kwargs):
+    return get_plot_3D().get_camera_params(*args, **kwargs)
+
+@_copy_docstring(widgets.plot_widget_3D.SubplotWidget3D.on_camera_change)
+def on_camera_change(*args, **kwargs):
+    return get_plot_3D().on_camera_change(*args, **kwargs)
 
 @_copy_docstring(widgets.main_window.MainWindow.align_camera)
 def align_camera(*args, **kwargs):
@@ -374,6 +468,9 @@ def align_camera(*args, **kwargs):
     get_input_table()       # make sure input tab exists
     return get_window().align_camera(*args, **kwargs)
 
+@_copy_docstring(var.on_change)
+def on_var_change(*args, **kwargs):
+    var.on_change(*args, **kwargs)
 # </editor-fold>
 
 

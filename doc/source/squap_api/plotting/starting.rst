@@ -7,3 +7,4 @@ Starting And Animation
 .. autofunction:: squap.set_interval
 .. autofunction:: squap.show_window
 .. autofunction:: squap.refresh
+.. autofunction:: squap.close_window

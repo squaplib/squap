@@ -6,6 +6,7 @@ from pyqtgraph.graphicsItems.GraphicsObject import GraphicsObject
 
 from .plot_widget import SubplotWidget
 from .plot_widget_3D import SubplotWidget3D
+from ..helper_funcs import is_iter
 
 
 class FigWidget(QTableWidget):
@@ -41,15 +42,10 @@ class FigWidget(QTableWidget):
             for curve in self.axs.curves:
                 self.axs.removeItem(curve)
 
-        self.plot_widget = SubplotWidget(0, 0)
-        self.axs = self.plot_widget                     # when there are no subplots, axs is the main plot widget
-        self.shape = (1, 1)
-        self.setRowCount(1)
-        self.setColumnCount(1)
-
-        self.widthratios = None                 # for subplots
-        self.heightratios = None
         super().clear()
+
+    def size(self):
+        return np.array(super().size().toTuple())
 
     def get_plot_widget(self, row: int = 0, col: int = 0):
         """Gets plot widget at row ``row`` and column ``col``."""
@@ -75,18 +71,42 @@ class FigWidget(QTableWidget):
                 raise IndexError(f"No widget found at ({row}, {col}).")
 
 
-    def make_3D(self, row: int = 0, col: int = 0) -> SubplotWidget3D:
+    def make_3D(self, *args) -> SubplotWidget3D:
         """
         Removes the current plot widget at row ``row`` and column ``col`` and adds a 3D plot widget. When you aren't
-        making use of subplots, the defaults replace the main widget.
+        making use of subplots, passing no arguments replaces the main widget.
 
         Args:
-            row (int, optional): Row of the replaced widget. Defaults to 0.
-            col (int, optional): Column of the replaced widget. Defaults to 0.
+            args: Can be any of the following:
+
+                - row (int), col (int): Row and column of the replaced widget.
+                - SubplotWidget: The widget that should be replaced.
+                - None: Replaces the most top left widget.
 
         Returns:
             SubplotWidget3D: The created 3D plot widget.
         """
+        if not args:
+            row = 0
+            col = 0
+        elif isinstance(args[0], SubplotWidget):
+            row = args[0].row
+            col = args[0].col
+        elif isinstance(args[0], int):
+            if len(args) == 1:      # if one argument, the plots are probably 1D
+                if len(self.axs.shape) == 1:
+                    plot = self.axs[args[0]]
+                    row = plot.row
+                    col = plot.col
+                else:
+                    raise ValueError("If one integer is given, the number of rows and columns in the subplot must both "
+                                     "be more than one.")
+            else:
+                row = args[0]
+                col = args[1]
+
+        else:
+            raise ValueError("Expected arguments of type int")
 
         plot = self.get_plot_widget(row, col)
         if isinstance(plot, SubplotWidget):
@@ -107,7 +127,7 @@ class FigWidget(QTableWidget):
                     self.axs[row] = new_plot_widget
 
             else:
-                self.axs[row, col] = new_plot_widget
+                self.axs[self.axs == self.axs[row, col]] = new_plot_widget  # replace any instance of self.axs[row, col]
 
             return new_plot_widget
         elif isinstance(plot, SubplotWidget3D):
@@ -145,7 +165,7 @@ class FigWidget(QTableWidget):
             self, nrows: int = 1, ncols: int = 1, heightratios: Optional[list[int]] = None,
             widthratios: Optional[list[int]] = None) -> list:
         """
-        Initialises a subplot window and gives a 1D or 2D list of :class:`PlotWidgets <squap.widgets.plot_widget.PlotWidget>`.
+        Initialises a subplot window and gives a 1D or 2D list of :class:`subplots <squap.widgets.plot_widget.SubplotWidget>`.
 
         Args:
             nrows (int): number of rows.
@@ -156,8 +176,8 @@ class FigWidget(QTableWidget):
                 integer values allowed. Not working yet!(?)
 
         Returns:
-            list of :class:`PlotWidget <squap.widgets.plot_widget.PlotWidget>`: Possibly nested list of
-            :class:`plot widgets <squap.widgets.plot_widget.PlotWidget>` on which different plots can be drawn.
+            list of :class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`: Possibly nested list of
+            :class:`subplots <squap.widgets.plot_widget.SubplotWidget>` on which different plots can be drawn.
         """
         if nrows == 1 and ncols == 1 and heightratios is None and widthratios is None:
             return self.axs
@@ -225,7 +245,10 @@ class FigWidget(QTableWidget):
             for pw in self.axs.flatten():
                 if item in pw.curves:
                     pw.removeItem(item)
-            return
+                    return
+            else:
+                raise ValueError("Item has not been found")
+
         else:
             if item in self.axs.curves:
                 self.axs.removeItem(item)
@@ -243,14 +266,19 @@ class FigWidget(QTableWidget):
             :class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`: One new
             :class:`plot object <squap.widgets.plot_widget.SubplotWidget>` in place of the merged plots.
 
-        todo: adjust for QTableWidget
         """
         # hrs = list(np.cumsum(window.heightratios))
         # wrs = list(np.cumsum(window.widthratios))
+        if len(self.axs.shape) < 2:
+            raise RuntimeError("Can only merge plots when plots are initialised in a 2D grid with `squap.subplots`.")
 
         coordinates = []  # coordinates of plots, integer starting from 0, not accounting width and heights.
         for index, plt in enumerate(plots):
-            coordinates.append((plt.row, plt.col))
+            if is_iter(plt):        # if plt is a row instead of a single plot
+                for plot in plt:
+                    coordinates.append((plot.row, plot.col))
+            else:
+                coordinates.append((plt.row, plt.col))
 
         co_arr = np.array(coordinates)
         min_row, max_row = min(co_arr[:, 0]), max(co_arr[:, 0])
@@ -269,6 +297,8 @@ class FigWidget(QTableWidget):
         new_plot = SubplotWidget(min_row, min_col)
 
         self.setCellWidget(min_row, min_col, new_plot)
+        self.axs[min_row:max_row+1, min_col:max_col+1] = new_plot
+
         return new_plot
 
 

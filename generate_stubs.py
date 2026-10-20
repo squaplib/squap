@@ -2,8 +2,8 @@
 import inspect
 import re
 from squap import (plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
-    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, plot_text, merge_plots, set_interval, on_refresh,
-    on_mouse_click, on_mouse_move, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
+    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, arrow, vector_field, grid, plot_text, merge_plots, set_interval, on_refresh,
+    on_mouse_click, on_mouse_move, on_mouse_leave, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
     add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
@@ -11,8 +11,8 @@ from squap import (plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, lege
 
 proxied = [
     plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
-    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, plot_text, merge_plots, set_interval, on_refresh,
-    on_mouse_click, on_mouse_move, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
+    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, arrow, vector_field, grid, plot_text, merge_plots, set_interval, on_refresh,
+    on_mouse_click, on_mouse_move, on_mouse_leave, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
     add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
@@ -21,9 +21,9 @@ proxied = [
 
 all = [
     "widgets",
-    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
+    "var", "plot", "scatter", "errorbar", "arrow", "vector_field", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
     "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
     "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
     "ColorType", "ColorsType", "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",

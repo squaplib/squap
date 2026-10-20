@@ -5,13 +5,87 @@ from argparse import ArgumentError
 from inspect import signature
 
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QApplication
+from PySide6 import QtCore
 from PySide6.QtGui import QGradient, QCursor
-from pyqtgraph import PlotWidget, QtWidgets
+from pyqtgraph import PlotWidget, QtWidgets, ViewBox
 
 from ..helper_funcs import get_new_kwargs, ColorType, ColorsType
 from ..customisation import Font
-from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve
+from .curves import PlotCurve, TextCurve, InfLine, ImageCurve, GridCurve, PolygonCurve, ArrowCurve, VectorFieldCurve
+from numpy.typing import NDArray
+
+
+class DragViewBox(ViewBox):     # currently only exists to allow adding functions on mouse drag.
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = parent
+        self.functions_on_drag_start = []
+        self.functions_on_drag_finish = []
+        self.functions_during_drag = []
+        self.drag: bool | Callable = True
+
+    def mouseDragEvent(self, ev, axis=None):
+        if ev.isStart():
+            for func in self.functions_on_drag_start:
+                func()
+        elif ev.isFinish():
+            for func in self.functions_on_drag_finish:
+                func()
+        else:
+            for func in self.functions_during_drag:
+                func()
+
+        if isinstance(self.drag, bool):
+            if self.drag:
+                super().mouseDragEvent(ev, axis)
+            else:
+                ev.accept()
+        elif self.drag():
+            super().mouseDragEvent(ev, axis)
+        else:
+            ev.accept()
+
+    def on_mouse_drag(self, func: Callable, during_drag: bool = True, on_start: bool = False, on_finish: bool = False,
+                      overwrite_drag: Optional[bool | Callable] = None, pixel_mode: bool = False):
+        """
+        Calls function `func` when one or more of the following parts of the dragging event occurs: it starts
+        (``on_start``), it ends (``on_finish``) or during dragging (``during_drag``). By default, only calls the
+        function during dragging, but the arguments can be changed to only call it when the drag finishes or starts.
+        Set ``overwrite_drag`` to ``True`` to stop the regular dragging from happening.
+
+        Args:
+            func (:term:`callable`): The function that is called when a dragging event occurs. The position of the
+                mouse is passed to this function if it accepts an argument.
+            during_drag (bool): Whether to call the function while dragging. Defaults to ``True``.
+            on_start (bool): Whether to call the function when the drag starts. Defaults to ``False``.
+            on_finish (bool): Whether to call the function when the drag finishes. Defaults to ``False``.
+            overwrite_drag (bool or :term:`callable`): When set to ``True``, the regular dragging of the plot view is
+                prevented. Can also be set to a function. If it is set to a function, only drags when the function
+                returns ``False``. Defaults to ``False``.
+            pixel_mode (bool): Whether to give the position in pixels from the top left (``True``), or coordinates
+                (``False``). Defaults to ``False``. Only applies when `func` accepts an argument.
+        """
+        if not (on_start or on_finish or during_drag or overwrite_drag):
+            raise ArgumentError("At least one argument of `on_start`, `on_finish` or `during_drag` must be set to `True`.")
+
+        if len(signature(func).parameters):
+            def function():
+                func(self.parent.get_mouse_position(pixel_mode))
+
+        else:
+            function = func
+
+        if on_start:
+            self.functions_on_drag_start.append(function)
+        if on_finish:
+            self.functions_on_drag_finish.append(function)
+        if during_drag:
+            self.functions_during_drag.append(function)
+        if isinstance(overwrite_drag, bool):
+            self.drag = not overwrite_drag
+        elif overwrite_drag is not None:
+            self.drag = overwrite_drag
 
 
 class SubplotWidget(PlotWidget):
@@ -22,10 +96,24 @@ class SubplotWidget(PlotWidget):
     so that e.g. :meth:`axs[0].plot <SubplotWidget.plot>` will create a regular plot in the first :class:`SubplotWidget`.
     """
     def __init__(self, row: int, col: int, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(viewBox=DragViewBox(self), **kwargs)
         self.row = row          # for merging subplots
         self.col = col
         self.curves = []        # for clearing curves
+        self.mouse_leave_funcs = []
+        self.mouse_enter_funcs = []
+
+        self.enable_flicker(False)      # slows down plotting a tiny bit but makes sure no flickering occurs.
+
+    def leaveEvent(self, event):        # allows adding function calls when the mouse leaves the widget
+        super().leaveEvent(event)
+        for func in self.mouse_leave_funcs:
+            func()
+
+    def enterEvent(self, event):
+        super().enterEvent(event)
+        for func in self.mouse_enter_funcs:
+            func()
 
     def base_plot(self, curve_type: str, *args, **kwargs):
         if len(args) == 1:
@@ -44,12 +132,13 @@ class SubplotWidget(PlotWidget):
     def plot_text(self, text: str, pos: Iterable[float], color: ColorType = (0.8, 0.8, 0.8), angle: float = 0,
                   font: Optional[str | Font] = None, font_size: Optional[int] = None, html: Optional[str] = None,
                   text_width: Optional[int] = None, **kwargs):
-        """ Displays a :class:`text object <squap.widgets.plot_widget.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
+        """ Displays a :class:`text object <squap.widgets.curves.TextCurve>` at coordinates pos. See :func:`squap.get_font` for more information on fonts.
 
         Args:
             text (str): The text to be displayed.
             pos (tuple): The position of the text in coordinates on the 2D plane.
-            color (:ref:`ColorType`, optional): Color of the text. Defaults to gray.
+            color (:ref:`ColorType`): Color of the text. Defaults to gray.
+            border color and fill color?
             angle (float, optional): Angle at which the text is placed in degrees. Defaults to ``0``.
             font (str or Font, optional): The font of the text. Defaults to Segoe UI.
             font_size (int, optional): if set to 0 or negative, system default fontsize is used (usually 12)
@@ -57,7 +146,7 @@ class SubplotWidget(PlotWidget):
             text_width (int, optional): The width of the text. Todo: check how it works
 
         Returns:
-            TextCurve: The created :class:`text object <squap.widgets.plot_widget.TextCurve>`.
+            TextCurve: The created :class:`text object <squap.widgets.curves.TextCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["text_width", "font", "font_size", "html"],
@@ -72,7 +161,7 @@ class SubplotWidget(PlotWidget):
                auto_levels: bool = False, levels=None, axis_order="row-major",
                border_color: ColorType | None = None, **kwargs):      # **kwargs for aliases
         """
-        Creates an :py:class:`image <squap.widgets.plot_widget.ImageCurve>` at location ``location``. This image consists
+        Creates an :py:class:`image <squap.widgets.curves.ImageCurve>` at location ``location``. This image consists
         of equally spaced pixels, colored according to ``data`` and ``cmap``.
         This function hasn't been tested thoroughly
 
@@ -87,7 +176,8 @@ class SubplotWidget(PlotWidget):
 
             location (tuple, optional): Location of the image. ``(location[0], location[1])`` is the bottom left coordinate, and
                 ``(location[2], location[3])`` is the top right coordinate.
-            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`.
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`. If
+                no cmap is given, ``data`` will be interpreted as colors.
             auto_levels (bool, optional): todo: describe
             levels (optional): todo: describe
             axis_order (bool, optional): Whether the ordering of the pixels listed in ``data`` is ``"row-major"`` or
@@ -99,7 +189,7 @@ class SubplotWidget(PlotWidget):
             ImageCurve: The created image curve.
         """
         new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=["location"],
+                                    none_kwargs=["location", "cmap"],
                                     exclude_args=["self", "args", "kwargs"])
 
         img = ImageCurve(**new_kwargs, **kwargs)
@@ -109,14 +199,14 @@ class SubplotWidget(PlotWidget):
 
     def plot(
             self, *args, color: ColorsType = "y", width: int = 1, dashed: bool = False,
-            dash_pattern: Optional[Iterable[int]] = None, connect: str | np.ndarray = "auto",
+            dash_pattern: Optional[Iterable[int]] = None, connect: str | NDArray = "auto",
             gradient: Optional[QGradient] = None, line_style: Optional[str] = None, antialias: bool = True,
             auto_downsample: bool = False, downsample: int = 1, downsample_method: str = "mean",
             skip_finite_check: bool = False, **kwargs
     ) -> 'PlotCurve':
         """
-        Creates a new :class:`plot curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`plot curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other (keyword) arguments.
 
         Args:
             *args: Provide ``x`` and ``y``, just ``y``, or no data at all. Data can also be passed as keyword arguments.
@@ -145,7 +235,7 @@ class SubplotWidget(PlotWidget):
                 gradient can be seen as a 2D image of a gradient which appears at each pixel that lies on the line.
                 When ``style`` of the gradient is set to ``"horizontal"`` or ``"vertical"``, or ``"radial"`` without providing
                 ``position``, the bounds of the gradient will be automatically determined when
-                :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
+                :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` is called, which can decrease performance. So, specify ``position`` for
                 optimal performance. Default is ``None``.
             line_style (optional, str): todo: some presets for simplicity, ``ls`` is also allowed instead of ``line_style``.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
@@ -171,7 +261,7 @@ class SubplotWidget(PlotWidget):
                 - ``y``: You can provide ``y`` as keyword argument as well.
 
         Returns:
-            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+            :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=["dash_pattern", "gradient", "line_style"],
@@ -181,13 +271,13 @@ class SubplotWidget(PlotWidget):
         # new_kwargs gets constructed from normal keyword args, but skips kwargs, which mostly just contains aliases
 
     def scatter(
-            self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, edge_width: int | Iterable[int] = -1,
-            edge_color: ColorsType = "white", pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
+            self, *args, color: ColorsType = "y", size: int | Iterable[int] = 7, symbol_line_width: Optional[int | Iterable[int]] = None,
+            symbol_line_color: Optional[ColorsType] = None, pixel_mode: bool = True, downsample: int = 1, downsample_method: str = "mean", auto_downsample: bool = False,
             antialias: bool = True, **kwargs
     ) -> 'PlotCurve':
         """
-        Creates a new :class:`scatter curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other arguments.
+        Creates a new :class:`scatter curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other arguments.
         If both ``x`` and ``y`` are provided, you can set them together using ``scatter(x, y, ...)``.
         If only ``y`` is provided using ``scatter(y, ...)``,
         ``x`` is set as the index of ``y``. ``x`` and ``y`` can also be passed as keyword arguments by doing ``scatter(x=x, ...)``,
@@ -199,8 +289,8 @@ class SubplotWidget(PlotWidget):
             color (:ref:`ColorType`): the color of the points. See :ref:`ColorsType` for allowed values.
                 If a list of colors is passed, it should be the same length as ``x`` and ``y``.
             size (int or list of int): The size of the scatter plot points. Also accepted as ``s``. Default is ``7``.
-            edge_width (int or list of int): Width of the edge around each point. Default is ``-1`` (no edge).
-            edge_color (:ref:`ColorsType`): Color of the edge around each point. Default is white.
+            symbol_line_width (int or list of int, optional): Width of the edge around each point. Default is ``-1`` (no edge).
+            symbol_line_color (:ref:`ColorsType`, optional): Color of the edge around each point. Default is white.
             pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
                 If ``False``, size is specified in data coordinates. Defaults to ``True``.
             downsample (int): Reduce the number of samples displayed by the given factor. Default is ``1`` (no downsampling).
@@ -223,10 +313,10 @@ class SubplotWidget(PlotWidget):
                 - ``y``: You can provide ``y`` as keyword argument as well.
 
         Returns:
-            :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve.
+            :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve.
         """
         new_kwargs = get_new_kwargs(locals(),
-                                    none_kwargs=[],
+                                    none_kwargs=["symbol_line_color", "symbol_line_width"],
                                     exclude_args=["self", "args", "kwargs"])
 
         return self.base_plot("scatter", *args, **new_kwargs, **kwargs)
@@ -239,8 +329,8 @@ class SubplotWidget(PlotWidget):
                  downsample: int = 1, downsample_method: str = "mean", skip_finite_check: bool = False, **kwargs
          ) -> 'PlotCurve':
         """
-        Creates a new :class:`errorbar curve <squap.widgets.plot_widget.PlotCurve>`, and calls
-        :meth:`set_data <squap.widgets.plot_widget.PlotCurve.set_data>` with the other (keyword) arguments.
+        Creates a new :class:`errorbar curve <squap.widgets.curves.PlotCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.PlotCurve.set_data>` with the other (keyword) arguments.
 
 
         Args:
@@ -315,9 +405,9 @@ class SubplotWidget(PlotWidget):
                 - `error_width`: For seperating errorbar and line width.
 
         Returns:
-             :class:`PlotCurve <squap.widgets.plot_widget.PlotCurve>`: The generated curve. The errorbar curve is
-             technically located at :class:`ErrorbarCurve <squap.widgets.plot_widget.ErrorbarCurve>`, but everything
-             can be set with just :meth:`PlotCurve.set_data() <squap.widgets.plot_widget.PlotCurve.set_data>`.
+             :class:`PlotCurve <squap.widgets.curves.PlotCurve>`: The generated curve. The errorbar curve is
+             technically located at :class:`ErrorbarCurve <squap.widgets.curves.ErrorbarCurve>`, but everything
+             can be set with just :meth:`PlotCurve.set_data() <squap.widgets.curves.PlotCurve.set_data>`.
         """
 
         new_kwargs = get_new_kwargs(locals(),
@@ -327,7 +417,7 @@ class SubplotWidget(PlotWidget):
 
         return self.base_plot("plot", *args, **new_kwargs, **kwargs)
 
-    def inf_dline(self, pos: float | tuple[float], angle: float = 45, color: ColorType = "y", width: int = 1,
+    def inf_dline(self, pos: float | tuple[float, float], angle: float = 45, color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -385,7 +475,7 @@ class SubplotWidget(PlotWidget):
         self.curves.append(line)
         return line
 
-    def inf_hline(self, pos: float | tuple[float], color: ColorType = "y", width: int = 1,
+    def inf_hline(self, pos: float | tuple[float, float], color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -407,7 +497,7 @@ class SubplotWidget(PlotWidget):
         self.curves.append(line)
         return line
 
-    def inf_vline(self, pos: float | tuple[float], color: ColorType = "y", width: int = 1,
+    def inf_vline(self, pos: float | tuple[float, float], color: ColorType = "y", width: int = 1,
                   dashed: bool = False, dash_pattern: Optional[Iterable[int]] = None, line_style: Optional[str] = None,
                   movable: bool = False, bounds: Optional[Iterable[int]] = None, span: tuple = (0, 1),
                   line_movable: Optional[bool] = None, label: bool = False, label_text: str = "{value}",
@@ -415,7 +505,7 @@ class SubplotWidget(PlotWidget):
                   label_anchors: Optional[list[tuple]] = None, hover_color: ColorType = "red", hover_width: int = 1,
                   name: Optional[str] = None, **kwargs):
         """
-        This function is used to create a horizontal infinite line and add it to the view. This function is the same as
+        Creates a horizontal infinite line and add it to the view. This function is the same as
         :func:`inf_dline(pos, angle=90, ...) <squap.inf_dline>` but instead the default ``label_text`` is now ``"x={value}"``.
         """
         new_kwargs = get_new_kwargs(locals(),
@@ -432,12 +522,13 @@ class SubplotWidget(PlotWidget):
     def grid(self, tick_spacing: Optional[tuple | float] = None, color: Optional[ColorType] = None, width: int = 1,
              **kwargs):
         """
-        This function is used to create a :class:`grid <squap.widgets.plot_widget.GridCurve>` and add it to view. Todo: improve
-        Use :func:`squap.show_grid` for simple use-cases.
+        Creates a :class:`grid <squap.widgets.curves.GridCurve>` and add it to view.
+        Use :func:`squap.show_grid` for completely automatic grids, where it is possible to disable the lines along
+        the x- or y-axis.
 
         Args:
             tick_spacing(tuple or float, optional): Set the grid spacing. When set to ``None`` grid line distance is
-                chosen automatically. When an iterable is given, give x- and y-spacing. When 1 value is given, this value
+                chosen automatically. When an iterable is given, give x- and y-spacing. When one value is given, this value
                 is used for both x and y. For more complex scaling you can set the x- and y-spacing on different scales.
                 Eg. passing ``([1, 100], None)`` will mean x-spacing is automatically determined to be either 1 or 100,
                 and y-spacing is completely automatic. Replacing ``[1, 100]`` by ``[1, 100, None]`` will mean it can be 1 or
@@ -447,7 +538,7 @@ class SubplotWidget(PlotWidget):
             **kwargs: Some aliases are allowed.
 
         Returns:
-            GridCurve: The generated :class:`grid <squap.widgets.plot_widget.GridCurve>`.
+            GridCurve: The generated :class:`grid <squap.widgets.curves.GridCurve>`.
         """
         new_kwargs = get_new_kwargs(locals(),
                                     none_kwargs=[],
@@ -459,15 +550,170 @@ class SubplotWidget(PlotWidget):
         self.curves.append(grid)
         return grid
 
+    def polygon(self, x: Optional[NDArray | list] = None, y: Optional[NDArray | list] = None,
+                fill: ColorType = "white", edge_color: Optional[ColorType] = None, edge_width: Optional[int] = None,
+                **kwargs):
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self", "kwargs"])
+        """
+        Creates a new :class:`polygon <squap.widgets.curves.PolygonCurve>` add it to the view. 
+        
+        Args:
+            x (:class:`np.ndarray <numpy.ndarray>` or list): Array of x-coordinates of the vertices of the polygon.
+                All adjacent points are connected, and the first and last point are connected.
+            y (:class:`np.ndarray <numpy.ndarray>` or list): Array of y-coordinates of the vertices of the polygon.
+                All adjacent points are connected, and the first and last point are connected.
+            fill (ColorType): The color of the inside of the polygon. Defaults to ``"white"``.
+            edge_color (ColorType, optional): The color of the edge surrounding the polygon. Defaults to ``None``, 
+                meaning no edge surrounding the polygon.
+            edge_width (int, optional): The width of the edge surrounding the polygon. Defaults to ``None``, 
+                meaning no edge surrounding the polygon.
+        """
+
+        polygon = PolygonCurve(**new_kwargs, **kwargs)
+        self.addItem(polygon)
+        self.curves.append(polygon)
+        return polygon
+
+    def arrow(self, angle: float = 0., size: float = 1., position: tuple[float, float] = (0., 0.),
+              fill_color: ColorType = "white", border_color: ColorType = "blue", border_width: float = -1,
+              origin: str = "tip", pixel_mode: bool = True, head_length: float = 20,
+              head_width: Optional[float] = None, tip_angle: float = 60., base_angle: float = 0.,
+              tail_length: Optional[float] = 50., tail_width: float = 6., length: float = 1., **kwargs):
+        """
+        Creates a new :class:`arrow object <squap.widgets.curves.ArrowCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.ArrowCurve.set_data>` with the other (keyword) arguments.
+        To add a vector field see :meth:`squap.vector_field`, and for an arrow
+        pointing to a location on a curve see (Not implemented yet).
+
+        Args:
+            angle (float): Orientation of the arrow in degrees. Default is 0.; arrow pointing to the left.
+            size (float): Relative size of the arrow. Change to proportionally scale all relevant parameters. Use
+                :meth:`arrow.get_data() <squap.widgets.curves.ArrowCurve.get_data>` to see the values of
+                these parameters.
+            position (tuple of float): Position of the arrow in coordinates. Defaults to ``(0, 0)``. Which part of the
+                arrow is placed at this position is controlled by ``origin``.
+            fill_color (:ref:`ColorType`): The color of the arrow. Defaults to ``"white"``.
+            border_color (:ref:`ColorType`): The color of the border around the arrow. Defaults to ``"blue"``
+                (but the border is not visible by default).
+            border_width (float): The width of the border around the arrow. Defaults to ``-1`` meaning it is disabled.
+
+            origin (str): Which part of the arrow is placed at ``location``; this point also acts as the
+                arrow's center of rotation. One of:
+
+                - ``"tip"``: the tip of the arrow.
+                - ``"center"``: the center of the arrow.
+                - ``"tail"``: the tail of the arrow.
+
+                Defaults to ``"tip"``. Is only implemented for pxMode=False.
+
+            pixel_mode (bool): If ``True``, parameters are specified in pixels. If ``False``, parameters are
+                specified in data coordinates. Defaults to ``True``.
+            head_length (float): Length of the arrow head, from tip to base. Default is ``20``.
+            head_width (float, optional): Width of the arrow head at its base. If `head_width` is specified, it
+                overrides ``tip_angle``.
+            tip_angle (float): Angle of the tip of the arrow in degrees. Smaller values make a ‘sharper’ arrow.
+                Default is ``60``.
+            base_angle (float): Angle of the base of the arrow head. Default is ``0``, which means that the base of the
+                arrow head is perpendicular to the arrow tail.
+            tail_length (float, optional): Length of the arrow tail, measured from the base of the arrow head to the
+                end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
+            tail_width (float): Width of the tail. Default is ``6``.
+            length (float): Relative length of the arrow. Change to proportionally scale all relevant parameters. Use
+                :meth:`arrow.get_data() <squap.widgets.curves.ArrowCurve.get_data>` to see the values of these
+                parameters.
+
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["head_width"],
+                                    exclude_args=["self", "kwargs"])
+
+        arrow = ArrowCurve(view_box=self.getPlotItem().getViewBox(), **new_kwargs, **kwargs)
+
+        self.addItem(arrow)
+        self.curves.append(arrow)       # I am not sure if this should also happen if it is part of a vector field.
+        return arrow
+
+    def vector_field(self, data: np.ndarray, pos_x: Optional[np.ndarray] = None, pos_y: Optional[np.ndarray] = None,
+                     scale_type: Optional[str] = None, size: float = 1., pixel_mode: bool = True,
+                     fill_color: ColorsType = "yellow", border_color: ColorsType = "blue",
+                     border_width: float | list[float] = -1, cmap: Optional[Any] = None, absolute: bool = False,
+                     head_length: float = 4., head_width: Optional[float] = None, tip_angle: float = 60.,
+                     base_angle: float = 0., tail_length: Optional[float] = 10., tail_width: float = 1.2,
+                     **kwargs):
+        """
+        Creates a new :class:`vector field <squap.widgets.curves.VectorFieldCurve>`, and calls
+        :meth:`set_data <squap.widgets.curves.VectorFieldCurve.set_data>` with the other (keyword) arguments.
+        Accepts most arguments accepted by :meth:`squap.arrow`, that form a basis arrow. All arrows
+        are based on this basis arrow, and scaled due to the size of the vector field according to ``scale_type``.
+        To add a single arrow see :meth:`squap.arrow`, and for an arrow pointing to a location on a curve
+        see (Not implemented yet).
+
+        Args:
+            data (:class:`np.ndarray <numpy.ndarray>`): The vector field which is displayed. It should be
+                shape ``(Ny, Nx, 2)``.
+            pos_x (:class:`np.ndarray <numpy.ndarray>`, optional): The x-positions at which each vector is shown.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :func:`np.meshgrid <numpy.meshgrid>`.
+                Defaults to evenly spaced points between 0 and 1.
+            pos_y (:class:`np.ndarray <numpy.ndarray>`, optional): The y-positions at which each vector is shown.
+                Shape should be ``(Ny, Nx)``,  for example obtained from :func:`np.meshgrid <numpy.meshgrid>`.
+                Defaults to evenly spaced points between 0 and 1.
+            scale_type (str): How the amplitude of the vector field is shown.
+                It should be one of the following:
+
+                - ``None`` or ``"None"``: The amplitude of the vector field has no visual effect.
+                - ``"length"``: The amplitude of the vector field changes the length of the arrows, but not the width.
+                - ``"size"``: The amplitude changes the length and width of the arrows.
+                - ``"color"``: The amplitude changes the color according to the given ``cmap``.
+
+                Defaults to ``"length"``.
+            size (float): Increases or decreases the size of all arrows. Defaults to ``1``.
+            pixel_mode (bool): If ``True``, parameters are specified in pixels. If ``False``, parameters are
+                specified in data coordinates. Defaults to ``True``.
+
+            fill_color (:ref:`ColorType`): The color of the arrow. Defaults to ``"white"``.
+            border_color (:ref:`ColorType`): The color of the border around the arrow. Defaults to ``"blue"``
+                (but the border is not visible by default).
+            border_width (float): The width of the border around the arrow. Defaults to ``-1`` meaning it is disabled.
+
+            cmap: Colormap from :func:`squap.get_cmap` or ``data`` argument accepted by :func:`squap.get_cmap`, which
+                is used if scale_type is set to ``"color"``.
+            absolute (bool): If ``False`` normalizes the amplitude of the field. If ``True``, uses the absolute value.
+                When set to ``False``, for ``scale_type = "color"`` the amplitudes are scaled so that the maximum value
+                is 1, for ``length`` and ``"size"`` the amplitudes are scaled so that the maximum amplitude
+                is 2. Has no affect when ``scale_type`` is set to ``None``. Defaults to ``False``.
+                Setting ``absolute`` to ``True`` can cause unexpected behaviour when ``scale_type`` is set
+                to ``"color"``.
+
+            head_length (float): Length of the arrow head, from tip to base. Default is ``20``.
+            head_width (float, optional): Width of the arrow head at its base. If `head_width` is specified, it
+                overrides ``tip_angle``.
+            tip_angle (float): Angle of the tip of the arrow in degrees. Smaller values make a ‘sharper’ arrow.
+                Default is ``60``.
+            base_angle (float): Angle of the base of the arrow head. Default is ``0``, which means that the base of the
+                arrow head is perpendicular to the arrow tail.
+            tail_length (float, optional): Length of the arrow tail, measured from the base of the arrow head to the
+                end of the tail. If this value is None, no tail will be drawn. Default is ``50``.
+            tail_width (float): Width of the tail. Default is ``6``.
+
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=["pos_x", "pos_y", "cmap"],
+                                    exclude_args=["self", "kwargs"])
+
+        curve = VectorFieldCurve(self, **new_kwargs, **kwargs)
+        self.curves.append(curve)
+        return curve
 
     def lock_zoom(self, curves: 'Iterable[PlotCurve]'):
         """
-        Locks zoom onto current range of specified :class:`curves <squap.widgets.plot_widget.PlotCurve>`. Works only
-        if they are normal :class:`curves <squap.widgets.plot_widget.PlotCurve>` with x- and y- data.
+        Locks zoom onto current range of specified :class:`curves <squap.widgets.curves.PlotCurve>`. Works only
+        if they are normal :class:`curves <squap.widgets.curves.PlotCurve>` with x- and y- data.
 
         Args:
-            curves (list of :class:`curves <squap.widgets.plot_widget.PlotCurve>`):
-                :class:`curves <squap.widgets.plot_widget.PlotCurve>` on which the zoom should lock
+            curves (list of :class:`curves <squap.widgets.curves.PlotCurve>`):
+                :class:`curves <squap.widgets.curves.PlotCurve>` on which the zoom should lock
 
         """
         x_min, x_max, y_min, y_max = [], [], [], []
@@ -503,17 +749,32 @@ class SubplotWidget(PlotWidget):
 
     def xlim(self) -> tuple[float]:
         """
-        Returns current xlim.
+        Returns current view range in the x-direction.
         """
         return tuple(self.getViewBox().viewRange()[0])
 
     def ylim(self) -> tuple[float]:
         """"
-        Returns current ylim.
+        Returns current view range in the y-direction.
         """
         return tuple(self.getViewBox().viewRange()[1])
 
-    def set_xlabel(self, label: str, unit: str = "", right_side: bool = False):
+    def set_xlabel(self, label: str, unit: str = "", top_side: bool = False):
+        """
+        Sets a label on the y-axis.
+
+        Args:
+            label (str): Text that gets displayed on the y-axis.
+            unit (str): Unit can be added as seperate argument.
+            top_side (bool): The text can be displayed on the opposite site too by setting this parameter to ``True``.
+        """
+        kwargs = {"units": unit} if unit else {}
+        if top_side:
+            self.setLabel("top", label, **kwargs)
+        else:
+            self.setLabel("bottom", label, **kwargs)
+
+    def set_ylabel(self, label: str, unit: str = "", right_side: bool = False):
         """
         Sets a label on the x-axis.
 
@@ -544,22 +805,21 @@ class SubplotWidget(PlotWidget):
             self.setLabel("bottom", label, **kwargs)
 
     # Wrapper that changes name and docstring only. Done like this for consistent documentation.
-    def show_grid(self, x: Optional[bool] = None, y: Optional[bool] = None, alpha: Optional[float] = None):
+    def show_grid(self, x: Optional[bool] = True, y: Optional[bool] = True, alpha: Optional[float] = None):
         """
         Show or hide the grid for either axis. For more detailed control see :func:`squap.grid`.
 
         Args:
-            x (bool, optional): Show grid on the x-axis, starts off as ``False``.
-            y (bool, optional): Show grid on the y-axis, starts off as ``False``.
-            alpha (float, optional): Opacity of the grid, float between ``0.`` and ``1.``.
+            x (bool, optional): Show grid on the x-axis. Defaults to ``True``.
+            y (bool, optional): Show grid on the y-axis. Defaults to ``True``.
+            alpha (float, optional): Opacity of the grid, float between ``0.`` and ``1.``. Starts off at ``1``.
         """
         self.showGrid(x, y, alpha)
 
-    def disable_flicker(self, disable=True):
-        """This function can be called to disable the flickering that sometimes occur with fast updating plots.
-        It does slow down plotting.
+    def enable_flicker(self, enable=True):
+        """This function can be called to optimise plotting, but can cause flickering at high framerate.
         """
-        if disable:
+        if not enable:
             self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         else:
             self.setViewportUpdateMode(QtWidgets.QGraphicsView.SmartViewportUpdate)
@@ -620,7 +880,6 @@ class SubplotWidget(PlotWidget):
         if y is not None:
             kwargs["y"] = y
 
-        print(kwargs)
         self.setAutoPan(**kwargs)
 
     def disable_autopan(self, axis: Optional[str] = None, x: Optional[bool] = None,
@@ -644,19 +903,14 @@ class SubplotWidget(PlotWidget):
         """
         self.setTitle(text)
 
-    # def clear(self):          # pyqtgraph implementation is probably better
-    #     for curve in self.curves:
-    #         curve.clear()
-
     def remove_curve(self, curve: QWidget):
         """Removes an item from the plot, usually a curve."""
         self.removeItem(curve)
 
-
     def on_mouse_click(self, func: Callable, pixel_mode: bool = False):
         """
-        Bind function to run on mouse click. As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
-        set to ``True`` and in coordinates if set to ``False``. The second argument that is passed is which mouse button is clicked.
+        Bind function to run on mouse click (only works on release). As arguments it gets the position of the mouse; in pixels if ``pixel_mode`` is
+        set to ``True`` and in coordinates if set to ``False``.
 
         Args:
             func (:term:`callable`): The function that is called when the mouse is clicked. The function can take up to 2 arguments:
@@ -687,7 +941,6 @@ class SubplotWidget(PlotWidget):
             def mouse_func(event):
                 pos = event.scenePos()
                 plot_pos = self.getViewBox().mapSceneToView(pos).toTuple()
-                print(event, pos, plot_pos)
                 args = ([plot_pos, event][i] for i in range(n_args))  # handles 0, 1 or 2 n_args
                 func(*args)
 
@@ -730,18 +983,38 @@ class SubplotWidget(PlotWidget):
 
         self.scene().sigMouseMoved.connect(mouse_func)
 
-    def get_mouse_pos(self, pixel_mode=False) -> tuple:
+    def on_mouse_leave(self, func: Callable, enter: bool = False):
+        """Calls the function ``func`` when the mouse leaves the widget. Set ``enter`` to ``True`` to also call ``func``
+        when the mouse enters the widget."""
+        self.mouse_leave_funcs.append(func)
+        if enter:
+            self.mouse_enter_funcs.append(func)
+
+    def on_mouse_enter(self, func: Callable):
+        """Calls the function ``func`` when the mouse enters the widget."""
+        self.mouse_enter_funcs.append(func)
+
+    def get_mouse_position(self, pixel_mode: bool = False) -> tuple:
         """Get the position of the mouse cursor on the plot, either as pixels from the top left, or as coordinates.
 
         Args:
-            pixel_mode (bool): whether to return pixels from the top left (``True``), or coordinates (``False``).
-                Defaults to ``False``.
+            pixel_mode (bool): Whether to return position in pixels from the top left (``True``), or coordinates
+                (``False``). Defaults to ``False``.
         Returns:
             tuple: The coordinates of the mouse cursor on the plot.
         """
 
-        pos = self.mapFromGlobal(QCursor.pos())
+        # pos = self.mapFromGlobal(QCursor.pos())
+        # if pixel_mode:
+        #     return pos.toTuple()
+        # else:
+        #     return self.getViewBox().mapSceneToView(pos).toTuple()
+        vp_pos = self.viewport().mapFromGlobal(QCursor.pos())  # viewport coords
+        scene_pos = self.mapToScene(vp_pos)  # scene coords
         if pixel_mode:
-            return pos.toTuple()
-        else:
-            return self.getViewBox().mapSceneToView(pos).toTuple()
+            return scene_pos.toTuple()
+        return self.getViewBox().mapSceneToView(scene_pos).toTuple()
+
+    def mouse_on_screen(self):
+        """Returns ``True`` if the mouse is on the screen, otherwise returns ``False``."""
+        return self.underMouse()

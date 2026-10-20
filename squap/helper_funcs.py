@@ -1,16 +1,20 @@
 import ast
-import os.path
 import json
 from typing import TypeAlias, Union, Iterable, Optional
+from io import BytesIO
+import sys
+import re
+from functools import lru_cache
 
 import numpy as np
-from PySide6.QtGui import QGradient, Qt, QColor, QPen
+from matplotlib.figure import Figure
 
-from PySide6.QtWidgets import QTableWidgetItem
-from pyqtgraph import mkPen, mkColor
+from PySide6.QtGui import QGradient, Qt, QColor, QPen, QPixmap
+from PySide6.QtWidgets import QTableWidgetItem, QLabel
+from pyqtgraph import mkColor
 
 
-ColorType: TypeAlias = Union[QColor, mkColor, str, Iterable[float], float]
+ColorType: TypeAlias = Union[QColor, str, Iterable[float], float]
 ColorsType: TypeAlias = Union[ColorType, Iterable["ColorsType"]]        # allows arbitrary nesting
 
 # def map_color(color_name):
@@ -75,9 +79,10 @@ def update_pen(pen: QPen, **kwargs) -> QPen:
     if "width" in kwargs:
         if kwargs["width"] is not None:
             if kwargs["width"] <= 0:
-                return None
+                pen.setStyle(Qt.NoPen)
+            elif pen.style() == Qt.NoPen:
+                pen.setStyle(Qt.SolidLine)
             pen.setWidth(kwargs["width"])
-
 
     if "dashed" in kwargs:
         if kwargs["dashed"]:
@@ -155,7 +160,7 @@ def normalise_arr(arr):
     return arr
 
 
-def get_type_func(value, parent, col):
+def get_type_func(value, box):
     # this for-loop is essentially get_instance(value) and then assigns type_func
     if value is None:
         type_func = ast.literal_eval
@@ -170,8 +175,7 @@ def get_type_func(value, parent, col):
                     int(i) for i in string.replace(" ", "").replace(")", "").split("(")[1].split(",")))
 
             elif instance is np.ndarray:
-                parent.setItem(parent.current_row, col, QTableWidgetItem(
-                    json.dumps(value.tolist())))
+                box.setText(json.dumps(value.tolist()))
                 type_func = lambda string: np.array(json.loads(string))
             else:
                 raise AssertionError("This should never run.")
@@ -209,3 +213,23 @@ def transform_kwargs(kwargs, mapping):
             result[mapping.get(k, k)] = v
 
     return result
+
+
+# lru_cache: If function is called again, it looks in cache if it has been done with the same arguments already.
+@lru_cache(maxsize=512)
+def _latex_to_pixmap(latex, color="black", fontsize=11, dpi=192):
+    fig = Figure(figsize=(0.01, 0.01), dpi=dpi)
+    fig.text(0, 0, latex, fontsize=fontsize, color=color)
+    buf = BytesIO()
+    fig.savefig(buf, format="png", transparent=True, bbox_inches="tight", pad_inches=0)
+    pm = QPixmap()
+    pm.loadFromData(buf.getvalue())
+    pm.setDevicePixelRatio(dpi / 96)
+    return pm
+
+
+_UNESCAPED_DOLLAR = re.compile(r"(?<!\\)\$")
+
+def _is_latex(text):
+    n = len(_UNESCAPED_DOLLAR.findall(text))
+    return n >= 2 and n % 2 == 0

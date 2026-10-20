@@ -10,9 +10,8 @@ import numpy as np
 from typing import Callable, Optional
 
 from PySide6.QtWidgets import QMainWindow, QSplitter, QApplication
-from PySide6.QtGui import QGuiApplication, QVector3D
-from PySide6.QtCore import QTimer
-from PySide6.QtCore import Qt
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import QTimer, Qt
 
 from .plot_manager import FigWidget
 from .table_manager import TableManager
@@ -40,9 +39,12 @@ class MainWindow(QMainWindow):
         self.fps_timer = None
         self.refresh_timer = None
         self.timer = None                   # for disconnecting update_funcs
+        self.location = "left"
 
+        self._updating = False              # flag that prevents recursion in align_camera
         self.resized = False                # if it has been resized already, the input_widget mustn't make it bigger
         self.splitter = None                # stuff that can be initialised later is set to None
+        self.table_container = None         # For self.set_table_location
         self.exit_when_closed = False       # whether to exit the entire program when window is closed
         # (above is mainly useful for `while True: squap.refresh`)
         self.close_funcs = []
@@ -50,24 +52,52 @@ class MainWindow(QMainWindow):
 
         self.resize(width, height)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event=None):
         # Window is being closed
         for func in self.close_funcs:
             func()
         if self.exit_when_closed:       # not sure if there should be an else
             sys.exit("Application has been closed (code 1008)")
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         self.fig_widget.update_size(event)
         self.table_manager.height = self.height()
-        event.accept()
+        if event:
+            event.accept()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event=None):
         for func in self.on_key_press_funcs:
             func(event)
 
         if event:
             event.accept()
+
+    def pos(self):
+        """Returns the position of the top-left of the window as numpy array in pixels."""
+        return np.array(super().pos().toTuple())
+
+    def clear(self):
+        """Clear everything. Todo: check"""
+        to_move = (np.array(self.size()) - self.fig_widget.size())/2
+        self.move(*(self.pos() + to_move))
+        self.resize(*self.fig_widget.size())
+
+        for update_func in self.update_funcs:
+            self.timer.timeout.disconnect(update_func)
+
+        self.update_funcs = []
+
+        self.fig_widget.clear()
+        self.fig_widget = FigWidget(self)
+        self.setCentralWidget(self.fig_widget)
+
+        self.table_manager.clear()
+        self.table_manager = TableManager(self.height())
+        self.resized = False
+        self.splitter = None
+        self.exit_when_closed = False       # whether to exit the entire program when window is closed
+        self.close_funcs = []
+        self.on_key_press_funcs = []
 
     def add_table(self, name: Optional[str] = None) -> InputTable:
         """
@@ -106,14 +136,17 @@ class MainWindow(QMainWindow):
             name = f"tab{len(self.table_manager.input_tables)+1}"
 
         self.splitter = QSplitter()
+        self.splitter.splitterMoved.connect(lambda: self.resizeEvent(None))     # sometimes when moving the split point,
+        # the plot gets cut off. This is fixed here.
         self.table_manager.width_fraction = width_fraction
 
         # new_w = old_w*3/2
         self.table_manager.width = int(self.width()*3/2*width_fraction)
         table = InputTable(self.table_manager.width, self.table_manager.height, name, self)
-        _, table_container = self.table_manager.create_first_table(table)
+        _, self.table_container = self.table_manager.create_first_table(table)
+        # table container is stored for self.set_table_location
 
-        self.splitter.addWidget(table_container)
+        self.splitter.addWidget(self.table_container)
         self.splitter.addWidget(self.fig_widget)
         self.setCentralWidget(self.splitter)
 
@@ -121,11 +154,52 @@ class MainWindow(QMainWindow):
         if self.isVisible():
             self.resize(self.width() + self.table_manager.width + 4, height)
             # +4 extra for space between plot_widget and input_widget
+            self.splitter.setSizes([self.table_manager.width, self.fig_widget.width()])
 
-            pos = self.pos().toTuple()
+            pos = self.pos()
             self.move(int(pos[0] - 0.5 * (self.table_manager.width+4)), pos[1])
 
         return table
+
+    def set_table_location(self, location: str = "left"):
+        """
+        Changes the side of the window on which the table is placed.
+
+        Args:
+            location: Which side the :class:`table <squap.widgets.input_widget.InputTable>` is placed on. Choose from
+                ``"left"``, ``"right"``, ``"top"`` and ``"bottom"``. Defaults to ``"left"``
+
+        """
+        if self.table_manager.main_input_widget is None:
+            self.init_first_tab()
+
+        was_horizontal = self.location == "left" or self.location == "right"
+        is_horizontal = location == "left" or location == "right"
+        if was_horizontal and not is_horizontal:
+            self.splitter.setOrientation(Qt.Orientation.Vertical)
+            old_size = np.array(self.size())
+            new_size = (old_size - np.array([4, 0]))*np.array([2/3, 3/2]) + np.array([0, 4])
+            # self.splitter.setSizes()
+            self.move(*(self.pos() + (old_size - new_size) / 2))
+            self.resize(*new_size)
+        elif not was_horizontal and is_horizontal:
+            old_size = np.array(self.size())
+            new_size = (old_size - np.array([0, 4]))*np.array([3/2, 2/3]) + np.array([4, 0])
+            self.resize(*new_size)
+            self.move(*(self.pos() + (old_size - new_size) / 2))
+            self.splitter.setOrientation(Qt.Orientation.Horizontal)
+
+        was_reversed = self.location == "right" or self.location == "bottom"
+        is_reversed = location == "right" or location == "bottom"
+        if not was_reversed and is_reversed:
+            self.splitter.insertWidget(0, self.fig_widget)
+            self.splitter.insertWidget(1, self.table_container)
+        elif was_reversed and not is_reversed:
+            self.splitter.insertWidget(0, self.table_container)
+            self.splitter.insertWidget(1, self.fig_widget)
+        self.location = location
+        self.resizeEvent(None)
+
 
     # def init_3D(self):
     #     self.plot_style_3D = True
@@ -311,14 +385,6 @@ class MainWindow(QMainWindow):
 
         self.app.exec()
 
-    def clear(self):
-        """Clear everything. Todo: check"""
-        for update_func in self.update_funcs:
-            self.timer.timeout.disconnect(update_func)
-
-        self.update_funcs = []
-        self.fig_widget.clear()
-
     def export(self, filename: str, widget: str = "window"):
         """Saves the current window as an image to file ``filename``.
 
@@ -449,7 +515,8 @@ class MainWindow(QMainWindow):
                 buffer=buffer,
                 dtype=np.uint8
             )
-            arrs.append(arr[:, :, :3])  # only include RGB, not A
+            arr = arr[:, :, [2, 1, 0]]  # only include RGB, not A, and numpy uses different order than imageio
+            arrs.append(arr)
 
         try:
             width, height, _ = arr.shape
@@ -494,8 +561,11 @@ class MainWindow(QMainWindow):
 
         def stop_func():
             basename, extension = os.path.splitext(filename)
-            print(
-                f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
+            if not pixmaps:
+                raise ValueError("No frames were captured, error code 1006.")
+            else:
+                print(
+                    f"started saving {len(pixmaps)} frames to file {basename}{extension} at {fps} fps")
             if not extension:
                 extension = f".mp4"
 
@@ -512,12 +582,11 @@ class MainWindow(QMainWindow):
                     buffer=buffer,
                     dtype=np.uint8
                 )
-                arrs.append(arr[:, :, :3])  # only include RGB, not A
+                arr = arr[:, :, [2, 1, 0]]  # only include RGB, not A, and numpy uses different order than imageio
+                arrs.append(arr)
 
-            try:
-                width, height, _ = arr.shape
-            except NameError:
-                raise NameError("No frames were captured, error code 1006.")
+            else:
+                width, height, _ = arrs[0].shape
 
             imageio.mimsave(f"{basename}{extension}", arrs, fps=fps, macro_block_size=1)
 
@@ -525,20 +594,25 @@ class MainWindow(QMainWindow):
 
             self.update_funcs.remove(record_func)
 
-        self.update_funcs.append(record_func)
+        self.on_refresh(record_func)
 
         return stop_func
 
-    def display_fps(self, update_speed: float = 0.2, get_fps: bool = False, optimized: bool = False,
-                    ax: Optional[SubplotWidget] = None):
+    def display_fps(self, update_speed: float = 0.2, displaybox: Optional[bool] = None, get_fps: Optional[bool] = None,
+                    optimized: bool = False, ax: Optional[SubplotWidget] = None):
         """
         Display frames per second (fps) at the top of the :class:`plot widget <squap.widgets.plot_widget.SubplotWidget>`.
 
         Args:
             update_speed (float): The update speed for fps calculation. Defaults to ``0.2`` seconds.
-            get_fps (bool): Whether to store the fps. If set to ``True``, the fps will be saved to
-                :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``.
-            optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a bit
+            displaybox (bool, optional): Shows the current fps in a :class:`displaybox widget <squap.widgets.InputTable.DisplayBox>`.
+                For a 2D plot, if it is set to ``False`` the fps will be shown as the title of the plot. For a 3D plot,
+                the current fps will be printed when this is set to ``False``. Defaults to ``False`` for
+                2D plots and defaults to ``True`` for 3D plots.
+            get_fps (bool, optional): Whether to store the fps. If set to ``True``, the fps will be saved to
+                :ref:`var.fps <squap.var>` every time it is updated. Defaults to ``False``. If display_box is set to ``True``,
+                this will be overwritten to be ``True`` as well.
+            optimized (bool): Whether to use an optimized calculation method. If set to ``True``, it is a little bit
                 quicker, but less consistent for variable fps. Defaults to ``False``.
             ax (:class:`SubplotWidget <squap.widgets.plot_widget.SubplotWidget>`, optional): Which window to set the title to the fps. Defaults to top-left.
 
@@ -556,6 +630,22 @@ class MainWindow(QMainWindow):
         self.fps_timer = current_time()
         skip = Namespace(total=0, count=0)  # Namespace used for function variables that need to carry over
         # the fps is updated
+        if displaybox is True or (isinstance(ax, SubplotWidget3D) and displaybox is not False):
+            if self.table_manager.first_input_table is None:
+                self.init_first_tab()
+            displaybox = self.table_manager.add_displaybox("fps")
+
+        def set_fps(fps):
+            if isinstance(ax, SubplotWidget3D):
+                if displaybox or get_fps:
+                    setattr(self.variables, "fps", fps)
+                if not displaybox:
+                    print(f"{fps = }")
+            else:
+                if displaybox or get_fps:
+                    setattr(self.variables, "fps", fps)
+                if not displaybox:
+                    ax.set_title(f"fps = {fps}")
 
         if optimized:
             def func():
@@ -566,12 +656,7 @@ class MainWindow(QMainWindow):
                         self.fps_timer = now
                         fps = (skip.total + 1) / elapsed
                         fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                        if get_fps:
-                            setattr(self.variables, "fps", fps)
-                        if self.fig_widget.plot_style_3D:
-                            print(f"{fps = }")
-                        else:
-                            ax.set_title(f"fps = {fps}")
+                        set_fps(fps)
 
                         skip.total = int(update_speed * fps)
                         skip.count = skip.total
@@ -585,13 +670,10 @@ class MainWindow(QMainWindow):
                     self.fps_timer = current_time()
                     fps = skip.count / elapsed
                     fps = round(fps, -int(np.floor(np.log10(fps))) + (5 - 1))
-                    if isinstance(ax, SubplotWidget3D):
-                        print(f"{fps = }")
-                    else:
-                        ax.set_title(f"fps = {fps}")
+                    set_fps(fps)
                     skip.count = 0
 
-        self.update_funcs.append(func)  # both so that it works for both styles
+        self.update_funcs.append(func)
 
     def benchmark(self, n_frames: Optional[int] = None, duration: Optional[float] = None):
         """Run the program until it is closed and then report the total frames and fps.
@@ -678,9 +760,47 @@ class MainWindow(QMainWindow):
         self.on_key_press_funcs.append(edited_func)
         return edited_func
 
+    @staticmethod
+    def mouse_clicked(left: bool = False, right: bool = False, middle: bool = False, back: bool = False,
+                      forward: bool = False, get_value: bool = False) -> bool | int:
+        """
+        Returns ``False`` if the mouse is currently not clicked. If the mouse is clicked, this function returns ``True`` by
+        default, but this behaviour changes depending on the values of the given arguments: set the argument associated
+        with the button you want to test for to ``True``. To test if multiple buttons are clicked at the same time, set
+        multiple arguments to ``True``. For more mouse buttons, set ``get_value`` to ``True``. This function then
+        returns an integer based on which mouse buttons are pressed.
+
+        Args:
+            left (bool): Left mouse button.
+            right (bool): Right mouse button.
+            middle (bool): Middle mouse button (clicking scroll wheel).
+            back (bool): Back button available on some mice.
+            forward (bool): Forward button available on some mice.
+            get_value (bool): Return a value depending on what mouse buttons are pressed. Ignores all other arguemnts,
+                and teturns 0 if no buttons are pressed, adds 1 to the result if the left mouse button is pressed, 2 if
+                the right mouse button is pressed, and so on in the order of the arguments of this function. Also
+                allows for more mouse buttons beyond these 5 normal buttons.
+        """
+        buttons = QApplication.mouseButtons()
+        if get_value:
+            return buttons.value
+        else:
+            MB = Qt.MouseButton
+            required = MB.NoButton
+            for wanted, btn in ((left, MB.LeftButton),
+                                (right, MB.RightButton),
+                                (middle, MB.MiddleButton),
+                                (back, MB.BackButton),
+                                (forward, MB.ForwardButton)):
+                if wanted:
+                    required |= btn
+
+            return buttons != MB.NoButton and (buttons & required) == required
+
     def align_camera(self, ax: Optional[SubplotWidget3D] = None, tab: Optional[InputTable | str] = None):
         """Adjusts camera position of a 3D plot. Use this to find the correct parameters to set the desired initial
-        camera position with :func:`squap.set_camera`.
+        camera position with :func:`squap.set_camera`. Dolly zoom allows to change fov and distance in such a way that
+        the focus stays the same.
 
         Args:
             ax (SubplotWidget3D, optional): Specifies the plot which the control boxes control. Defaults to the main plot.
@@ -704,8 +824,21 @@ class MainWindow(QMainWindow):
         def update_cam():
             ax.set_camera(
                 distance=var.distance, azimuth=var.azimuth, elevation=var.elevation, fov=var.fov,
-                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset
+                x_offset=var.x_offset, y_offset=var.y_offset, z_offset=var.z_offset, _emit_camera_changed=False
             )
+
+        def dolly_zoom():
+            """Given a reference (d0, fov0) and new distance d, return the fov that keeps apparent size constant.
+            Mostly AI generated function."""
+            if var.dolly != 0:
+                fov0 = np.radians(var.fov)
+                d0 = var.distance
+                d = var.distance * 1.05 ** var.dolly
+                fov = np.degrees(2 * np.arctan((d0 / d) * np.tan(fov0 / 2)))
+                var.fov = fov
+                var.distance = d
+                update_cam()
+                _do_update()
 
         boxes = [
             tab.add_rate_slider("distance", current_params["distance"], change_rate=2),
@@ -715,10 +848,12 @@ class MainWindow(QMainWindow):
             tab.add_rate_slider("x_offset", current_pos[0], absolute=True, change_rate=5),
             tab.add_rate_slider("y_offset", current_pos[1], absolute=True, change_rate=5),
             tab.add_rate_slider("z_offset", current_pos[2], absolute=True, change_rate=5),
+            tab.add_joystick("Dolly zoom", var_name="dolly"),
         ]
 
-        for box in boxes:
+        for box in boxes[:-1]:
             box.bind(update_cam)
+        self.on_refresh(dolly_zoom)
 
         update_cam()
 
@@ -726,8 +861,18 @@ class MainWindow(QMainWindow):
             print(
                 f"The following function would get you the current camera postition: \n"
                 f"squap.set_camera(\n"
-                f"    x_offset={var.x_offset}, y_offset={var.y_offset}, z_offset={var.z_offset}, \n"
-                f"    distance={var.distance}, azimuth={var.azimuth}, elevation={var.elevation}, fov={var.fov}\n)"
+                f"    x_offset={var.x_offset:.4g}, y_offset={var.y_offset:.4g}, z_offset={var.z_offset:.4g}, \n"
+                f"    distance={var.distance:.4g}, azimuth={var.azimuth:.4g}, elevation={var.elevation:.4g}, fov={var.fov:.4g}\n)"
             )
 
         tab.add_button("print camera parameters", get_params)
+
+        def _do_update():
+            current_params_ = ax.cameraParams()
+            current_pos_ = current_params_["center"].toTuple()
+            box_values = [current_params_["distance"], current_params_["azimuth"]%360, current_params_["elevation"],
+                          current_params_["fov"], *current_pos_]
+            for i, (box_, box_value) in enumerate(zip(boxes, box_values)):
+                box_.set_value(box_value)
+
+        ax.cameraChanged.connect(_do_update)

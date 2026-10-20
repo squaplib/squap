@@ -9,8 +9,8 @@ class TableManager:
     """Stores the table/tab widgets so that not everything is located inside the main window. The main
     window is only a window. """
     def __init__(self, height):
-        self.width = 0
-        self.height = height
+        self.width = 0                      # is not always up to date
+        self.height = height                # is not always up to date
         self.width_fraction = 0
 
         self.input_tables = []              # the input_widget, or all input tables in the QTabWidget if multiple tabs
@@ -26,6 +26,15 @@ class TableManager:
         self.input_partition = 1/3
 
         self.n_links = 0            # number of links between boxes
+
+    def clear(self):
+        for input_table in self.input_tables:
+            input_table.clear()
+        if self.tab_widget is not None:
+            self.tab_widget.clear()
+    #
+    # def size(self):
+    #     return self.width, self.height
 
     def set_input_partition(self, fraction: float = 1/3):
         """Set the position of the partition between the 2 columns of all :class:`input tables <squap.widgets.input_widget.InputTable>`, and
@@ -198,7 +207,7 @@ class TableManager:
             boxes (Iterable of Box or int): list of boxes or row numbers of the boxes to link
             only_update_boxes (list, optional): list of boxes are only updated when a box in boxes is
                 changed but do not cause the other boxes to update when they are changed.
-                `link_boxes(box1, box2); link_boxes(box2, box3)` can be used to link box1 to box2 and box2 to box3 without linking
+                ``link_boxes(box1, box2); link_boxes(box2, box3)`` can be used to link box1 to box2 and box2 to box3 without linking
                 box1 to box3. todo: klopt niet helemaal
         """
         self.n_links += 1
@@ -237,10 +246,29 @@ class TableManager:
             box_.link_funcs[self.n_links] = func
             box_.bind(func)
 
+    def add_spacer(self, height: int):
+        """Adds a space of ``height`` pixels below the :class:`box <squap.widgets.Box>` that has been added the latest."""
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        for table in self.input_tables:
+            table.add_spacer(**new_kwargs)
+
+    def set_spacer(self, row: int, height: int):
+        """Sets the height of the spacer at row ``row`` to ``height`` pixels. Can also be used to change the height of
+        existing rows."""
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        for table in self.input_tables:
+            table.set_spacer(**new_kwargs)
+
     def add_slider(self, name: str, init_value: float = 1.0, min_value: float = 0.0, max_value: float = 10.0,
                    n_ticks: int = 51, tick_interval: Optional[float] = None, only_ints: bool = False,
                    logscale: bool = False, custom_arr: Optional[Iterable] = None, var_name: Optional[str] = None,
-                   print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider | list[InputTable.Slider]':
+                   tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.Slider | list[InputTable.Slider]':
         """Adds a :class:`slider <squap.widgets.InputTable.Slider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
@@ -265,6 +293,8 @@ class TableManager:
                 ``init_value``). Defaults to ``None``.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
             row (int, optional): Row to which the slider is added. Defaults to first empty row.
 
@@ -287,7 +317,7 @@ class TableManager:
             return self.input_tables[0].add_slider(**new_kwargs)
 
     def add_checkbox(self, name: str, init_value: bool = False, var_name: Optional[str] = None,
-                     print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox | list[InputTable.CheckBox]':
+                     tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None) -> 'InputTable.CheckBox | list[InputTable.CheckBox]':
         """Adds a :class:`checkbox <squap.widgets.InputTable.CheckBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
@@ -296,6 +326,8 @@ class TableManager:
             init_value (bool): The initial value of the checkbox. Defaults to ``False`` (not ticked).
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the checkbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the checkbox is added. Defaults to first empty row.
 
@@ -318,8 +350,8 @@ class TableManager:
         else:
             return self.input_tables[0].add_checkbox(**new_kwargs)
 
-    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None,
-                     var_name: Optional[str] = None, print_value: bool = False,
+    def add_inputbox(self, name: str, init_value: Any = 1.0, type_func: Optional[Callable] = None, live_update: bool = False,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
                      row: Optional[int] = None) -> 'InputTable.InputBox | list[InputTable.InputBox]':
         """Adds a :class:`inputbox <squap.widgets.InputTable.InputBox>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -345,8 +377,12 @@ class TableManager:
                 is not given, it is automatically determined, which works for the following instances: :class:`str`,
                 :class:`float`, :class:`complex`, :class:`bool`, :class:`range`, and the following iterables:
                 :class:`tuple`, :class:`list`, :class:`dict`, :class:`set` and :class:`numpy.ndarray`.
+            live_update (bool): If set to ``True``, the variable will be updated anytime the user types, if set to ``False``,
+                only updates when the user presses enter or clicks away. Defaults to ``False``.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will
                 be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
             row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
 
@@ -368,14 +404,49 @@ class TableManager:
         else:
             return self.input_tables[0].add_inputbox(**new_kwargs)
 
-    def add_button(self, name: str, func: Optional[Callable] = None, row: Optional[int] = None
-                   ) -> 'InputTable.Button | list[InputTable.Button]':
+    def add_displaybox(self, name: str, var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
+                       row: Optional[int] = None):
+        """Adds a :class:`displaybox <squap.widgets.InputTable.DisplayBox>` to the main input widget, or to all
+        :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more. This box shows the current
+        value of a variable in :class:`squap.var`.
+
+        Args:
+            name (str): The name in front of the inputbox.
+            var_name (str, optional): The name of the (created) variable. If ``var_name`` is not provided, the variable will
+                be named ``name``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
+            print_value (bool): Whether to print the value of the inputbox when it changes. Defaults to ``False``.
+            row (int, optional): Row to which the inputbox is added. Defaults to first empty row.
+
+        Returns:
+            InputTable.DisplayBox or list of InputTable.DisplayBox: The created
+            :class:`displaybox widget(s) <squap.widgets.InputTable.DisplayBox>`.
+        """
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        if len(self.input_tables) > 1:
+            boxes = []
+            for table in self.input_tables:
+                boxes.append(table.add_displaybox(**new_kwargs))
+
+            self.link_boxes(boxes)
+            return boxes
+        else:
+            return self.input_tables[0].add_displaybox(**new_kwargs)
+
+    def add_button(self, name: str, func: Optional[Callable] = None, tooltip: Optional[str] = None,
+                   row: Optional[int] = None) -> 'InputTable.Button | list[InputTable.Button]':
         """Adds a :class:`button <squap.widgets.InputTable.Button>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
 
         Args:
             name (str): The name in front of the button.
             func (:term:`callable`, optional): The function which is run on button press.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             row (int, optional): Row to which the button is added. Defaults to first empty row.
 
         Returns:
@@ -392,13 +463,12 @@ class TableManager:
             for table in self.input_tables:
                 boxes.append(table.add_button(**new_kwargs))
 
-            self.link_boxes(boxes)
             return boxes
         else:
             return self.input_tables[0].add_button(**new_kwargs)
 
     def add_dropdown(self, name: str, options: list, init_index: int = 0, option_names: Optional[Iterable[str]] = None,
-                     var_name: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                      ) -> 'InputTable.Dropdown | list[InputTable.Dropdown]':
         """Adds a :class:`dropdown <squap.widgets.InputTable.DropDown>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -410,6 +480,8 @@ class TableManager:
             init_index (int): The index that the dropwdown is initially set to.
             option_names (list of str, optional): A :class:`list` of all options shown in the dropwdown menu. If
                 ``option_names`` is not provided it will be set to ``options``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable
                 will be named ``name``.
             print_value (bool): Whether to print the value of the dropwdown when it changes. Defaults to ``False``.
@@ -436,7 +508,7 @@ class TableManager:
 
     def add_rate_slider(self, name: str, init_value: float = 1.0, change_rate: float = 10.0, absolute: bool = False,
                         time_var: Optional[str] = None, custom_func: Optional[Callable] = None,
-                        var_name: Optional[str] = None, print_value: bool = False,
+                        var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
                         row: Optional[int] = None) -> 'InputTable.RateSlider | list[InputTable.RateSlider]':
         """Adds a :class:`rate slider <squap.widgets.InputTable.RateSlider>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -457,6 +529,8 @@ class TableManager:
                 take three arguments: ``old_value``, ``dt`` and ``slider_value`` and must return the new value. ``old_value`` is
                 the value of the variable the previous time the function was run, ``dt`` is the change in time since then (takes
                 ``time_var`` into account). ``slider_value`` is a value between ``-1`` and ``1``, dependent on the slider position.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
                 named ``name``.
             print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
@@ -481,8 +555,49 @@ class TableManager:
         else:
             return self.input_tables[0].add_rate_slider(**new_kwargs)
 
-    def add_color_picker(self, name: str, init_value: ColorType = (255, 255, 255), var_name: Optional[str] = None,
-                         print_value: bool = False, row: Optional[int] = None
+    def add_joystick(self, name: str, center: float = 0, dif: float = 1, n_ticks: int = 100,
+                     var_name: Optional[str] = None, tooltip: Optional[str] = None, print_value: bool = False,
+                     row: Optional[int] = None) -> 'InputTable.Joystick':
+        """Adds a :class:`joystick <squap.widgets.InputTable.Joystick>` to the main input widget, or to all
+        :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
+
+        Args:
+            name (str): The name in front of the joystick.
+            center (float): The value of the variable when the joystick is released. Defaults to ``0``.
+            dif (float): The difference in value from ``center`` when the slider is dragged all the way to one side. The
+                minimum value, all the way at the left is ``center - dif`` and the maximum all the way at the right is
+                ``center + dif``. Defaults to ``1``.
+            n_ticks (bool): The number of ticks on both sides of the center. Only affects the resolution. Defaults
+                to ``100``.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
+            var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
+                named ``name``.
+            print_value (bool): Whether to print the value of the slider when it changes. Defaults to ``False``.
+            row (int, optional): Row to which the rate slider is added. Defaults to first empty row.
+
+        Returns:
+            InputTable.RateSlider or list of InputTable.RateSlider: The created
+            :class:`rate_slider widget(s) <squap.widgets.InputTable.RateSlider>`.
+        """
+
+        new_kwargs = get_new_kwargs(locals(),
+                                    none_kwargs=[],
+                                    exclude_args=["self"])
+
+        if len(self.input_tables) > 1:
+            boxes = []
+            for table in self.input_tables:
+                boxes.append(table.add_joystick(**new_kwargs))
+
+            self.link_boxes(boxes)
+            return boxes
+        else:
+            return self.input_tables[0].add_joystick(**new_kwargs)
+
+
+    def add_color_picker(self, name: str, init_value: ColorType = (1, 1, 1, 1), var_name: Optional[str] = None,
+                         tooltip: Optional[str] = None, print_value: bool = False, row: Optional[int] = None
                          ) -> 'InputTable.ColorPicker | list[InputTable.ColorPicker]':
         """Adds a :class:`color picker <squap.widgets.InputTable.ColorPicker>` to the main input widget, or to all
         :class:`input tables <squap.widgets.input_widget.InputTable>` if there are more.
@@ -491,6 +606,8 @@ class TableManager:
         Args:
             name (str): The name in front of the color picker.
             init_value (:ref:`ColorType`): The initial value of the color picker.
+            tooltip (str, optional): Specify this parameter to create a tooltip icon on the left of the box. When you
+                hover over it, show the given text.
             var_name (str, optional): The name of the created variable. If ``var_name`` is not provided, the variable will be
                 named ``name``.
             print_value (bool): Whether to print the value of the color picker when it changes. Defaults to ``False``.

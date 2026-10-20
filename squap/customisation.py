@@ -5,13 +5,14 @@ from PySide6.QtCore import QPointF
 from matplotlib import colors
 from pyqtgraph import colormap
 import numpy as np
+from numpy.typing import NDArray
 
 
 class Font(QFont):
     """Represents fonts used in squap. Use :func:`squap.get_font` to initialise a font.
     Based on :class:`PySide6.QtGui.QFont`. """
     kwarg_mapping = {           # aliases
-        "font": "font_name", "fn": "font_name", "size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
+        "font": "font_name", "fn": "font_name", "size": "font_size", "text_size": "font_size", "fs": "font_size", "strikethrough": "strikeout",
         "ls": "letter_spacing", "ws": "word_spacing"
     }
 
@@ -81,7 +82,7 @@ def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold:
         font_name (str): Name of the font. Can be any font on your computer. Defaults to ``"Segoe UI"``.
             Aliases: ``font``, ``fn``.
         font_size (int): Font size. Defaults to ``None``. This usually means the ``font_size`` is 12 todo: check
-            Aliases: ``size``, ``fs``.
+            Aliases: ``text_size``, ``size``, ``fs``.
         bold (bool): Whether to make the font bold. Defaults to ``False``.
         italic (bool): Whether to make the font italic. Defaults to ``False``.
         underline (bool): Whether to give the font underline. Defaults to ``False``.
@@ -99,7 +100,7 @@ def get_font(font_name: str = "Segoe UI", font_size: Optional[int] = None, bold:
                                 none_kwargs=["font_size"],
                                 exclude_args=["kwargs"])
 
-    return Font(**new_kwargs)
+    return Font(**new_kwargs, **kwargs)
 
 
 def get_gradient(cmap: str | colors.Colormap | Iterable | dict, style: str = "horizontal",
@@ -210,7 +211,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
         :term:`callable`: A function that interpolates to find the best approximation of the color at location ``i``: a value
         between ``0`` and ``1``.
     """
-    if callable(data):  # probably catches too much, todo: check
+    if callable(data):  # For when you pass a cmap, might catch too much
         return data
 
     if isinstance(data, list):  # turns data into dict with equal spacing
@@ -218,9 +219,11 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
     if isinstance(data, str):
         def cmap_func(i):
-            return colormap.get(data, source).map(i)
+            return colormap.get(data, source).map(i, mode="float")
 
     elif isinstance(data, dict):
+        if not (isinstance(list(data.keys())[0], float) or isinstance(list(data.keys())[0], int)):
+            raise TypeError(f"The keys of the dictionary should be floats between 0 and 1, not of type {type(list(data.keys())[0])}")
         for key, value in data.items():
             data[key] = np.array(mkcol_to_arr(get_single_color(value)))
         keys, values = map(np.array, zip(*sorted(data.items())))
@@ -241,7 +244,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             indices = np.array(np.searchsorted(keys, i_arr))  # index of first item that is bigger than i.
 
             lower_bound = indices == 0
-            upper_bound = indices == max(keys)
+            upper_bound = indices == len(keys)
 
             result = np.zeros((len(i_arr), 4))
             result[lower_bound] = values[0]
@@ -269,7 +272,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
             #     v_1, v_2, x_1, x_2 = values[index - 1], values[index], keys[index - 1], keys[index]
             #     result[ii] = v_1 + (v_2 - v_1) / (x_2 - x_1) * (i[ii] - x_1)
     else:
-        raise TypeError("cmap is of incorrect type. Must be str, list or dict.")
+        raise TypeError(f"data is of incorrect type. Must be cmap, str, list or dict. Is now {type(data)}")
 
     cmap_func.data = data
 
@@ -278,7 +281,7 @@ def get_cmap(data: str | dict[float, ColorType] | Iterable[ColorType], source: s
 
 def cmap_to_gradient(cmap, gradient):
     """
-    cmap must be from get_cmap, or accepted by get_cmap, and the gradient must be from get_gradient
+    `cmap` must be from `get_cmap`, or accepted by `get_cmap`, and the gradient must be from `get_gradient`.
     """
     cmap = get_cmap(cmap)
     if isinstance(cmap.data, str):
@@ -291,7 +294,7 @@ def cmap_to_gradient(cmap, gradient):
     return gradient
 
 
-def cmap_to_colors(cmap: Callable, N_points: int) -> np.ndarray:       # todo: temporary, make this better
+def cmap_to_colors(cmap: Callable, N_points: int) -> NDArray:       # todo: temporary, make this better
     """
     Transform a cmap into N equally spaced colors.
 

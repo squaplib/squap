@@ -1,16 +1,16 @@
 from .main_window import MainWindow
 from .plot_manager import FigWidget
 from .table_manager import TableManager
-from .plot_widget import SubplotWidget
+from .plot_widget import SubplotWidget, DragViewBox
 from .input_widget import InputTable, Box
-from .curves import PlotCurve, ErrorbarCurve, TextCurve, InfLine, ImageCurve, GridCurve
+from .curves import PlotCurve, ErrorbarCurve, TextCurve, InfLine, ImageCurve, GridCurve, ArrowCurve, VectorFieldCurve
 
 from .plot_widget_3D import SubplotWidget3D
-from .curves_3D import ScatterCurve3D
+from .curves_3D import ScatterCurve3D, LineCurve3D, Mesh, SphereMesh, CubeMesh, CylinderMesh, Arrow
 
 
 __all__ = [
-    "MainWindow", "FigWidget", "TableManager", "SubplotWidget", "InputTable", "Box",
-    "PlotCurve", "ErrorbarCurve", "TextCurve", "InfLine", "ImageCurve", "GridCurve",
-    "SubplotWidget3D", "ScatterCurve3D"
+    "MainWindow", "FigWidget", "TableManager", "SubplotWidget", "DragViewBox", "InputTable", "Box",
+    "PlotCurve", "ErrorbarCurve", "TextCurve", "InfLine", "ImageCurve", "GridCurve", "ArrowCurve", "VectorFieldCurve",
+    "SubplotWidget3D", "ScatterCurve3D", "LineCurve3D", "Mesh", "SphereMesh", "CubeMesh", "CylinderMesh", "Arrow"
 ]

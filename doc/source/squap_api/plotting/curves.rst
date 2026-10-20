@@ -15,15 +15,27 @@ All the customisation options for a PlotCurve are shown in :ref:`sphx_glr_auto_e
 
     .. automethod:: set_data
 
-.. autoclass:: TextCurve
-
-    .. automethod:: set_data
-
 .. autoclass:: InfLine
 
     .. automethod:: set_data
 
+.. autoclass:: TextCurve
+
+    .. automethod:: set_data
+
 .. autoclass:: ImageCurve
+
+    .. automethod:: set_data
+
+.. autoclass:: PolygonCurve
+
+    .. automethod:: set_data
+
+.. autoclass:: ArrowCurve
+
+    .. automethod:: set_data
+
+.. autoclass:: VectorFieldCurve
 
     .. automethod:: set_data
 

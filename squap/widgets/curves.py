@@ -2,9 +2,11 @@ from copy import copy
 import numpy as np
 from typing import Iterable, Optional
 
-from PySide6.QtGui import QFont, QGradient, QBrush, Qt
-from pyqtgraph import PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageItem, mkPen, InfLineLabel, GridItem, \
-    getConfigOption, ErrorBarItem
+from PySide6.QtGui import QFont, QGradient, QBrush, Qt, QPolygonF
+from PySide6.QtCore import QPointF
+from PySide6.QtWidgets import QGraphicsPolygonItem
+from pyqtgraph import (PlotDataItem, PlotWidget, InfiniteLine, TextItem, ImageItem, mkPen, mkBrush, InfLineLabel,
+                       GridItem, getConfigOption, ErrorBarItem, ArrowItem)
 
 from ..helper_funcs import is_iter, get_single_color, is_multiple_colors, update_pen, \
     transform_kwargs, ColorType
@@ -18,12 +20,10 @@ class PlotCurve(PlotDataItem):
         "s": "symbolSize", "size": "symbolSize", "symbol_size": "symbolSize", "pixel_mode": "pxMode",
         "clip_to_view": "clipToView", "symbol_colour": "symbol_color", "symbol_lc": "symbol_line_color",
         "symbol_lw": "symbol_line_width", "gradient": "color", "symbol_edge_color": "symbol_line_color",
-        "symbol_edge_width": "symbol_line_width", "sec": "symbol_line_color", "sew": "symbol_line_width",
-        "dm": "downsample_method", "sfc": "skipFiniteCheck", "ad": "autoDownsample", "pm": "pxMode",
-        "ss": "symbolSize", "ctv": "clipToView", "sc": "symbol_color", "slc": "symbol_line_color",
-        "slw": "symbol_line_width", "xerr": "x_err", "yerr": "y_err", "bs": "beam_size", "beamsize": "beam_size",
-        "errorbar_colour": "errorbar_color", "ec": "errorbar_color", "ew": "errorbar_width"
-    }   # last line is the ones for scatter only, downsample for both, rest for line. (not completely sure)
+        "symbol_edge_width": "symbol_line_width", "pm": "pxMode", "edge_width": "symbol_line_width",
+        "edge_color": "symbol_line_color",
+        "xerr": "x_err", "yerr": "y_err", "beamsize": "beam_size", "errorbar_colour": "errorbar_color"
+    }
     all_pen_kwargs = ["line_color", "width", "dashed", "dash_pattern"]
     all_symbol_kwargs = ["symbol_color", "symbol_line_width",  "symbol_line_color", "symbol_size"]
     all_errorbar_kwargs = ["x_err", "y_err", "beam_size", "errorbar_color", "errorbar_width"]
@@ -54,7 +54,7 @@ class PlotCurve(PlotDataItem):
         else:
             raise ValueError(f"curve_type {curve_type} is not a valid type of curve.")  # error #1000
 
-        self.symbol_lw = 0
+        self.symbol_lw = 1
         self.symbol_lc = "white"
         self.gradient = None
         self.errorbar_curve = None
@@ -122,8 +122,8 @@ class PlotCurve(PlotDataItem):
             symbol_line_width (int): the line width each symbol is drawn with, ``symbol_lw`` and ``slw`` are also allowed.
             symbol_line_color (:ref:`ColorsType`): Change the color of the line around each symbol, see :ref:`ColorsType`
                 for allowed values. ``symbol_lc`` and ``slc`` are also allowed.
-            pixel_mode (bool): Whether to fix the size of each point. If ``True``, size is specified in pixels.
-                If ``False``, size is specified in data coordinates. Defaults to ``True``.
+            pixel_mode (bool): If ``True``, size is specified in pixels. If ``False``, size is specified in data
+                coordinates. Defaults to ``True``.
             x_err: Size of the errorbar at each x value. Can be the following types:
 
                 - ``None``: No error in the x-direction.
@@ -281,6 +281,9 @@ class PlotCurve(PlotDataItem):
                             f"Currently, `x` is {'not ' if not is_iter(x) else ''}iterable "
                             f"and `y` is {'not ' if not is_iter(y) else ''}iterable.")
 
+    def clear(self):    # normal clear doesn't do much
+        self.set_data(x=[], y=[])
+
 
 class ErrorbarCurve(ErrorBarItem):
     """Is added to PlotCurve as attribute when an errorbar curve is initialised. Users probably will not interact with this object."""
@@ -370,6 +373,9 @@ class ErrorbarCurve(ErrorBarItem):
 
             self.setData(**errorbar_kwargs)
 
+    def clear(self):    # normal clear doesn't do much
+        self.set_data(x=[], y=[], x_err=[], y_err=[])
+
 
 class TextCurve(TextItem):
     kwarg_mapping = {
@@ -379,6 +385,8 @@ class TextCurve(TextItem):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
+        self.current_font = None
+
         self.set_data(*args, **kwargs)
 
     def set_data(self, *args, **kwargs):
@@ -393,7 +401,13 @@ class TextCurve(TextItem):
         if kwargs:
             new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
             if "text" in new_kwargs:
-                self.setText(new_kwargs["text"])
+                self.setText(str(new_kwargs["text"]))
+            if "font_size" in new_kwargs:
+                if self.current_font is None:
+                    self.current_font = Font(font_size=new_kwargs["font_size"])
+                else:
+                    self.current_font.set_data(font_size=new_kwargs["font_size"])
+                self.setFont(self.current_font)
             if "color" in new_kwargs:
                 self.setColor(get_single_color(new_kwargs["color"]))
             if "angle" in new_kwargs:
@@ -489,7 +503,7 @@ class InfLine(InfiniteLine):
                 self.setMovable(self.movable if self.line_movable is None else self.line_movable)
 
             for attr in ["movable", "label_movable", "label_text", "label_position", "label_anchors", "line_movable",
-                         "hover_color", "hover_width", "label"]:
+                         "hover_color", "hover_width"]:
                 if attr in new_kwargs:  # updates all self.attr
                     setattr(self, attr, new_kwargs[attr])
 
@@ -518,14 +532,21 @@ class InfLine(InfiniteLine):
                 self.setHoverPen(hover_pen)
 
             label_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_label_kwargs if kwarg in new_kwargs}
-            if label_kwargs and self.label:
+            if label_kwargs:
+                if "label" in label_kwargs:
+                    if not label_kwargs["label"] and self.label:
+                        self.label.setParentItem(None)
+                        if self.label.scene() is not None:
+                            self.label.scene().removeItem(self.label)
+                        self.label = None
+                        return
                 if isinstance(self.label, InfLineLabel):
                     if "movable" in new_kwargs or "label_movable" in new_kwargs:
                         self.label.setMovable(self.movable if self.label_movable is None else self.label_movable)
                     if "label_position" in label_kwargs:
-                        self.label.setPosition(new_kwargs["position"])
+                        self.label.setPosition(label_kwargs["label_position"])
                     if "label_text" in label_kwargs:
-                        self.label.setFormat(new_kwargs["text"])
+                        self.label.setFormat(label_kwargs["label_text"])
                     if "label_anchors" in label_kwargs:
                         if label_kwargs["label_anchors"]:
                             self.label.anchors = label_kwargs["label_anchors"]
@@ -542,16 +563,15 @@ class ImageCurve(ImageItem):
         "loc": "location", "z": "data", "image": "data", "bc": "border_color", "border": "border_color"
     }
 
-    def __init__(self, data=None, location=None, cmap=None, auto_levels=False, levels=None, axis_order="row-major",
-                 border_color=None, **kwargs):        # **kwargs for aliases
+    def __init__(self, data=None, **kwargs):        # **kwargs for aliases
         super().__init__(axisOrder="row-major")
         self.auto_levels = None         # will be updated before first usage, initial value is irrelevant.
         self.rect = None
         self.data_shape = data.shape if data is not None else None
-        self.data = data            # for when cmap is given and data is not changed.
-        self.cmap = None            # for when data is given and cmap is not changed
-        self.set_data(data=data, location=location, cmap=cmap, auto_levels=auto_levels, levels=levels,
-                      axis_order=axis_order, border_color=border_color, **kwargs)
+        self.data = data            # Needs to be stored for when cmap is given and data is not changed.
+        self.cmap = None            # Needs to be stored for when data is given and cmap is not changed
+
+        self.set_data(self.data, **kwargs)
 
     def set_data(self, data=None, **kwargs):
         """Updates an existing image object. Takes the same arguments and keyword arguments as :func:`squap.imshow`."""
@@ -605,7 +625,61 @@ class ImageCurve(ImageItem):
         self.setImage(**final_kwargs)
 
 
-class GridCurve(GridItem):
+class PolygonCurve(QGraphicsPolygonItem):
+    kwarg_mapping = {"line_color": "edge_color", "color": "fill", "c": "fill", "fill_color": "fill"}
+    all_pen_kwargs = ["edge_color", "edge_width", "dashed", "dash_pattern"]
+
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.setBrush(QBrush(get_single_color("white")))  # fill color, RGBA
+        self.pen = Qt.NoPen
+        self.setPen(self.pen)  # outline
+        # self.setPen(pg.mkPen(color='red', width=2))  # outline
+        # self.setBrush(QBrush(get_single_color((100, 150, 250, 180))))  # fill color, RGBA
+
+        self.x = None
+        self.y = None
+        self.set_data(**kwargs)
+
+    def set_data(self, **kwargs):
+        """Updates an existing polygon object. Takes the same arguments and keyword arguments as :func:`squap.polygon`."""
+        new_kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+        if "x" in kwargs:
+            self.x = kwargs["x"]
+        if "y" in kwargs:
+            self.y = kwargs["y"]
+        if "x" in kwargs or "y" in kwargs:
+            # Second part checks if they are both in kwargs but both equal to None.
+            if self.x is None or self.y is None and (kwargs.get("x") is not None and kwargs.get("y") is not None):
+                raise TypeError(f"`x` and `y` must both be assigned at the same time.")
+            else:
+                polygon = QPolygonF([QPointF(x_i, y_i) for x_i, y_i in zip(self.x, self.y)])
+                self.setPolygon(polygon)
+
+        if "fill" in kwargs:
+            if isinstance(kwargs["fill"], QGradient):
+                raise NotImplementedError
+            elif kwargs["fill"] is None:
+                self.setBrush(Qt.NoBrush)
+            else:
+                self.setBrush(QBrush(get_single_color(kwargs["fill"])))
+
+        pen_kwargs = {kwarg: new_kwargs[kwarg] for kwarg in self.all_pen_kwargs if kwarg in new_kwargs}
+        if pen_kwargs:
+            pen_kwargs = transform_kwargs(pen_kwargs, {"edge_color": "color", "edge_width": "width"})
+            if any(pen_kwargs.values()):
+                if self.pen is Qt.NoPen:
+                    self.pen = mkPen()
+                if update_pen(self.pen, **pen_kwargs) is not None:
+                    self.setPen(self.pen)
+                else:
+                    self.setPen(None)
+
+    def clear(self):  # normal clear doesn't do much
+        self.set_data(x=[], y=[])
+
+
+class GridCurve(SyncedGridItem):
     kwarg_mapping = {
         "grid_spacing": "tick_spacing", "gs": "tick_spacing", "spacing": "tick_spacing", "ts": "tick_spacing",
         "c": "color", "colour": "color", "w": "width"
@@ -645,3 +719,329 @@ class GridCurve(GridItem):
                 pen_kwargs["color"] = pen_kwargs["color"]  # handled by update_pen
             update_pen(self.pen, **pen_kwargs)
             self.setPen(self.pen)
+
+
+class ArrowCurve(ArrowItem):
+    kwarg_mapping = {
+        "c": "fill_color", "colour": "fill_color", "color": "fill_color", "fc": "fill_color",
+        "fill_colour": "fill_color", "bc": "border_color",
+        "border_colour": "border_color", "bw": "border_width",
+        "hl": "head_length", "hw": "head_width", "pm": "pixel_mode", "ta": "tip_angle", "ba": "base_angle",
+        "tl": "tail_length", "tw": "tail_width",
+        "pos": "position", "location": "position", "loc": "position",
+    }
+    final_kwarg_mapping = {
+        "angle": "angle", "head_length": "headLen", "head_width": "headWidth", "pixel_mode": "pxMode",
+        "tip_angle": "tipAngle", "base_angle": "baseAngle", "tail_length": "tailLen", "tail_width": "tailWidth",
+    }
+
+    def __init__(self, view_box, **kwargs):
+        super().__init__()
+        self.view_box = view_box        # required for different origin when pixel_mode is `True`
+
+        self.border_pen = mkPen(color="b", width=-1)
+        self.brush = mkBrush(color="white")
+
+        self.pixel_mode = None
+        self.angle = None
+        self.origin = "tip"
+        self.head_length = 0
+        self.head_width = 0
+        self.tail_length = 0
+        self.tail_width = 0
+        self.tip_angle = 0
+        self.position = (0, 0)
+        self.size = 1
+        self.length = 1
+        self.tip_type = "angle"     # either "angle" or "width"
+
+        kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+        self.set_data(**kwargs)
+
+    def set_data(self, **kwargs):
+        """Updates an existing arrow object. Takes the same arguments and keyword arguments as :func:`squap.arrow`."""
+        # since some variation of the arguments are all accepted by setStyle, I will work with the pyqtgraph names in
+        # this function.
+        kwargs = transform_kwargs(kwargs, self.kwarg_mapping)
+        final_kwargs = {value: kwargs[key] for key, value in self.final_kwarg_mapping.items() if key in kwargs}
+        if "color" in kwargs:
+            kwargs["fill_color"] = kwargs["color"]
+            kwargs["border_color"] = kwargs["color"]
+
+        if "fill_color" in kwargs:
+            final_kwargs["brush"] = QBrush(get_single_color(kwargs["fill_color"]))
+        border_pen_kwargs = {}
+        if "border_color" in kwargs:
+            border_pen_kwargs["color"] = kwargs["border_color"]
+        if "border_width" in kwargs:
+            border_pen_kwargs["width"] = kwargs["border_width"]
+        if border_pen_kwargs:
+            update_pen(self.border_pen, **border_pen_kwargs)
+            self.setPen(self.border_pen)  # Changing it via setStyle doesn't trigger a redraw.
+
+        if "origin" in kwargs:
+            self.origin = kwargs["origin"]
+
+        if "tail_length" in kwargs:
+            self.tail_length = kwargs["tail_length"]
+        if "tail_width" in kwargs:
+            self.tail_width = kwargs["tail_width"]
+        if "head_length" in kwargs:
+            self.head_length = kwargs["head_length"]
+
+        if "tip_angle" in kwargs:
+            self.tip_angle = kwargs["tip_angle"]
+            self.tip_type = "angle"
+            self.head_width = self.get_data()["head_width"]
+
+        if "width" in kwargs:
+            self.head_width = kwargs["width"]
+            self.tip_type = "width"
+            self.tip_angle = self.get_data()["tip_angle"]
+
+        if "position" in kwargs:
+            self.position = np.array(kwargs["position"])
+
+        if "pixel_mode" in kwargs:
+            self.pixel_mode = kwargs["pixel_mode"]
+            if "angle" not in kwargs and self.pixel_mode:
+                final_kwargs["angle"] = -self.angle
+
+        if "angle" in kwargs:
+            self.angle = kwargs["angle"]
+            if self.pixel_mode:
+                final_kwargs["angle"] = -self.angle
+
+        if kwargs:      # The code below should be run very often upon parameter change, so it is just always done.
+            if self.origin == "tip":
+                position = self.position
+            else:
+                length = self.head_length + self.tail_length
+                rad_angle = self.angle / 360 * 2 * np.pi
+                dpos = length * np.array([np.cos(rad_angle), np.sin(rad_angle)])
+
+                if self.pixel_mode:         # dpos is in pixels; convert to scene units
+                    view = self.view_box
+                    if view is not None:
+                        pixel_size = view.viewPixelSize()
+                        dpos = dpos * np.array(pixel_size)
+
+                if self.origin == "tail":
+                    position = self.position - dpos
+                elif self.origin == "center":
+                    position = self.position - dpos/2
+                else:
+                    raise ValueError(f"Origin must be either 'tip', 'tail' or 'center', is now '{self.origin}'.")
+
+            self.setPos(*position)
+
+        if "size" in kwargs:
+            resize_factor = kwargs["size"] / self.size
+            self.size = kwargs["size"]
+            for prop in ["tail_length", "tail_width", "head_length", "head_width"]:
+                if prop == "head_width" and self.tip_type == "angle":
+                    continue
+
+                new_value = self.__getattribute__(prop)*resize_factor
+                self.__setattr__(prop, new_value)
+                final_kwargs[self.final_kwarg_mapping[prop]] = new_value
+
+        if "length" in kwargs:
+            resize_factor = kwargs["length"] / self.length
+            self.length = kwargs["length"]
+            if self.tip_type == "angle":        # If tip_type is "angle" make sure the head_width stays the same
+                self.head_width = self.get_data()["head_width"]
+                final_kwargs["headWidth"] = self.head_width
+                self.tip_type = "width"
+            for prop in ["tail_length", "head_length"]:
+                new_value = self.__getattribute__(prop)*resize_factor
+                self.__setattr__(prop, new_value)
+                final_kwargs[self.final_kwarg_mapping[prop]] = new_value
+
+        self.setStyle(**final_kwargs)
+        self.setPen(self.border_pen)        # Setting the style often resets the Pen to default, not sure when
+        # this happens, so I just always reset the pen.
+
+    def get_data(self):
+        if self.tip_type == "angle":
+            self.head_width = self.head_length * np.tan(np.radians(self.tip_angle * 0.5))
+        else:
+            self.tip_angle = 2 * np.degrees(np.arctan(self.head_width / self.head_length))
+        return {
+            "border_pen": self.border_pen, "brush": self.brush, "pixel_mode": self.pixel_mode,
+            "angle": self.angle, "origin": self.origin, "head_length": self.head_length,
+            "head_width": self.head_width, "tail_length": self.tail_length, "tail_width": self.tail_width,
+            "tip_angle": self.tip_angle, "position": self.position, "size": self.size, "tip_type": self.tip_type}
+
+
+class VectorFieldCurve:
+    kwarg_mapping = {
+        "c": "fill_color", "colour": "fill_color", "color": "fill_color", "fc": "fill_color",
+        "fill_colour": "fill_color", "bc": "border_color",
+        "border_colour": "border_color", "bw": "border_width",
+        "hl": "head_length", "hw": "head_width", "pm": "pixel_mode", "ta": "tip_angle", "ba": "base_angle",
+        "tl": "tail_length", "tw": "tail_width",
+        "pos": "position", "location": "position", "loc": "position",
+    }
+    arrow_kwargs = [
+        "size", "head_length", "head_width", "pixel_mode", "tip_angle", "base_angle", "tail_length", "tail_width"]
+
+    def __init__(self, parent, data: np.ndarray, **kwargs):
+        self.parent = parent        # adds arrows via parent
+
+        self.scale_type = None
+        self.absolute = False
+        self.cmap = None
+        self.current_arrow_kwargs = {}
+        self.arrows = []
+        self.shape = (0, 0, 0)
+        self.pos_arr = np.zeros((0, 0, 2))
+        self.data = np.zeros((0, 0, 2))
+
+        self.set_data(data, **kwargs)
+
+    def set_data(self, data: Optional[np.ndarray] = None, **kwargs):
+        """Updates an existing vector field object. Takes the same arguments and keyword arguments as
+        :func:`squap.vector_field`."""
+        # The following handles pos_x and pos_y. If one of them is passed, just that one is changed. If one of them is
+        # passed and the shape is different from what it was, the other becomes linspace between 0 and 1 of the same
+        # shape. If both are passed, and the shapes mismatch, an error is thrown. If both are passed correctly
+        # self.pos_arr is constructed properly.
+        if "pos_x" in kwargs or "pos_y" in kwargs:
+            if "pos_x" in kwargs:
+                pos_x = kwargs["pos_x"]
+                if pos_x.shape != self.pos_arr.shape[:2]:  # if the shape is new
+                    self.pos_arr = np.zeros((*pos_x.shape, 2))
+                    if "pos_y" in kwargs:
+                        if kwargs["pos_y"].shape != pos_x.shape[:2]:
+                            raise ValueError(f"`pos_x` and `pos_y` should be the same shape. They are now shapes "
+                                             f"{pos_x.shape} and {kwargs['pos_y'].shape}, respectively.")
+                        else:
+                            self.pos_arr[:, :, 1] = kwargs["pos_y"]
+                    else:
+                        pos_y = np.linspace(0, 1, pos_x.shape[0])[:, np.newaxis]
+                        self.pos_arr[:, :, 1] = pos_y
+                self.pos_arr[:, :, 0] = pos_x
+            else:
+                pos_y = kwargs["pos_y"]
+                if pos_y.shape != self.pos_arr.shape[:2]:  # if the shape is new
+                    self.pos_arr = np.zeros((*pos_y.shape, 2))
+                    pos_x = np.linspace(0, 1, pos_y.shape[1])[np.newaxis, :]
+                    self.pos_arr[:, :, 0] = pos_x
+                self.pos_arr[:, :, 1] = pos_y
+
+        if data is not None:
+            self.data = data
+            if self.shape != data.shape:    # not going to optimise this for now, you shouldn't change shape too often.
+                self.shape = data.shape
+                if self.pos_arr.shape != data.shape:
+                    self.pos_arr = np.zeros(data.shape)
+                    x, y = np.meshgrid(
+                        np.linspace(0, 1, data.shape[1]), np.linspace(0, 1, data.shape[0])
+                    )
+                    self.pos_arr[:, :, 0] = x
+                    self.pos_arr[:, :, 1] = y
+                self.arrows = []
+                lin_positions = self.pos_arr.reshape(self.shape[0] * self.shape[1], 2)
+                lin_data = data.reshape(self.shape[0]*self.shape[1], 2)
+                for index in range(self.shape[0] * self.shape[1]):
+                    self.arrows.append(self.parent.arrow(
+                        position=lin_positions[index], **self._data_to_kwargs(lin_data[index]), origin="center", color="black", border_width=-1)
+                    )
+
+            else:
+                lin_data = data.reshape(self.shape[0]*self.shape[1], 2)
+                for index, arrow in enumerate(self.arrows):
+                    arrow.set_data(**self._data_to_kwargs(lin_data[index]), border_width=-1)
+
+        if kwargs:
+            if "scale_type" in kwargs:
+                old_scale_type = self.scale_type
+                if old_scale_type == "size":
+                    for index, arrow in enumerate(self.arrows):
+                        arrow.set_data(size=1)
+                elif old_scale_type == "length":
+                    for index, arrow in enumerate(self.arrows):
+                        arrow.set_data(length=1)
+
+                self.scale_type = kwargs["scale_type"]
+                if self.scale_type == "None":
+                    self.scale_type = None
+            if "absolute" in kwargs:
+                self.absolute = kwargs["absolute"]
+            if "cmap" in kwargs:
+                self.cmap = get_cmap(kwargs["cmap"])
+
+            for color_kwarg in ["fill_color", "border_color"]:
+                if color_kwarg in kwargs:
+                    if is_multiple_colors(kwargs[color_kwarg]):
+                        if len(kwargs[color_kwarg]) == len(self.arrows):
+                            raise ValueError(f"`{color_kwarg}` should be the same length as the number of arrows, is now "
+                                             f"{len(kwargs[color_kwarg])} and {len(self.arrows)}.")
+                        else:
+                            for index, arrow in enumerate(self.arrows):
+                                arrow.set_data(**{color_kwarg: kwargs[color_kwarg][index]})
+                    else:
+                        for arrow in self.arrows:
+                            arrow.set_data(**{color_kwarg: kwargs[color_kwarg]})
+
+            if "border_width" in kwargs:
+                border_width = kwargs["border_width"]
+                if is_iter(border_width):
+                    if len(border_width) == len(self.arrows):
+                        raise ValueError(f"`{color_kwarg}` should be the same length as the number of arrows, is now "
+                                         f"{len(border_width)} and {len(self.arrows)}.")
+                    else:
+                        for index, arrow in enumerate(self.arrows):
+                            arrow.set_data(border_width=border_width[index])
+                else:
+                    for arrow in self.arrows:
+                        arrow.set_data(border_width=border_width)
+
+        if self.scale_type is None:
+            if kwargs:
+                new_arrow_kwargs = {}
+                for kwarg in self.arrow_kwargs:
+                    if kwarg in kwargs:
+                        new_arrow_kwargs[kwarg] = kwargs[kwarg]
+                self.current_arrow_kwargs.update(new_arrow_kwargs)
+                for arrow in self.arrows:
+                    arrow.set_data(**new_arrow_kwargs)
+        else:
+            if self.data is not None:
+                if data is None:        # if data is not None, lin_data is already defined
+                    lin_data = self.data.reshape(self.shape[0]*self.shape[1], 2)
+                amplitude = np.sum(lin_data**2, axis=1)
+                if np.any(amplitude > 0):
+                    if self.scale_type == "color":
+                        if not self.absolute:
+                            amplitude /= np.max(amplitude)  # values between 0 and 1.
+                        if self.cmap is None:
+                            self.cmap = get_cmap({0: "b", 1: "r"})          # cmap is not working atm, but I believe it is
+                            # fixed on my pc
+                        colors = self.cmap(amplitude)
+                        for index, arrow in enumerate(self.arrows):
+                            arrow.set_data(c=colors[index])
+                    elif self.scale_type == "length":
+                        if not self.absolute:
+                            amplitude = amplitude/np.max(amplitude)*2  # values between 0 and 2.
+                        for index, arrow in enumerate(self.arrows):
+                            arrow.set_data(length=amplitude[index])
+                    elif self.scale_type == "size":
+                        if not self.absolute:
+                            amplitude = amplitude/np.max(amplitude)*2  # values between 0 and 2.
+                        for index, arrow in enumerate(self.arrows):
+                            arrow.set_data(size=amplitude[index])
+
+    @staticmethod
+    def _data_to_kwargs(arrow_data: np.ndarray):
+        """
+        ``arrow_data`` is here just a single arrow value, meaning this argument is ``data[i_y, i_x]``
+        """
+        angle = np.degrees(np.arctan2(arrow_data[1], arrow_data[0])) + 180
+        return {"angle": angle}
+
+    def _apply_pos_arr(self):
+        positions = self.pos_arr.reshape(self.shape[0] * self.shape[1], 2)
+        for index, arrow in enumerate(self.arrows):
+            arrow.set_data(position=positions[index])
