@@ -1,32 +1,37 @@
 # generate_stubs.py (vibe coded)
 import inspect
 import re
-from squap import (plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
-    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, arrow, vector_field, grid, plot_text, merge_plots, set_interval, on_refresh,
-    on_mouse_click, on_mouse_move, on_mouse_leave, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
-    add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
+from squap import (plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, set_xlabel, set_ylabel, legend, set_title, lock_zoom, subplots, remove_item,
+    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, arrow, vector_field, plot_text, imshow, merge_plots, set_interval, on_refresh,
+    on_mouse_click, on_mouse_move, on_mouse_leave, on_mouse_enter, get_mouse_position, mouse_on_screen, mouse_clicked, on_mouse_drag, on_key_press,
+    add_slider, add_checkbox, add_inputbox, add_displaybox, add_button, add_dropdown, add_rate_slider, add_joystick, add_color_picker,
+    link_boxes, add_tab, set_active_tab, rename_tab, set_table_location, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
-    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, align_camera)
+    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, get_camera_params, on_camera_change, align_camera, on_var_change)
 
 proxied = [
-    plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, legend, set_title, lock_zoom, subplots, remove_item,
-    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, arrow, vector_field, grid, plot_text, merge_plots, set_interval, on_refresh,
-    on_mouse_click, on_mouse_move, on_mouse_leave, get_mouse_pos, on_key_press, add_slider, add_checkbox, add_inputbox, add_button,
-    add_dropdown, add_rate_slider, link_boxes, add_tab, set_active_tab, rename_tab, on_tab_change, get_all_boxes, display_fps,
+    plot, scatter, errorbar, set_xlim, set_ylim, xlim, ylim, set_xlabel, set_ylabel, legend, set_title, lock_zoom, subplots, remove_item,
+    get_gradient, get_cmap, inf_dline, inf_hline, inf_vline, grid, arrow, vector_field, plot_text, imshow, merge_plots, set_interval, on_refresh,
+    on_mouse_click, on_mouse_move, on_mouse_leave, on_mouse_enter, get_mouse_position, mouse_on_screen, mouse_clicked, on_mouse_drag, on_key_press,
+    add_slider, add_checkbox, add_inputbox, add_displaybox, add_button, add_dropdown, add_rate_slider, add_joystick, add_color_picker,
+    link_boxes, add_tab, set_active_tab, rename_tab, set_table_location, on_tab_change, get_all_boxes, display_fps,
     resize, benchmark, set_input_width, set_input_partition, is_alive, refresh, show_window, show, clear, export,
     export_video, start_recording, get_font, cmap_to_colors, make_3D, scatter_3D, add_grid_3D, add_grids_3D,
-    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, align_camera
+    enable_autoscale, disable_autoscale, enable_autopan, disable_autopan, set_zoom_rate_3D, set_camera, get_camera_params, on_camera_change, align_camera, on_var_change
 ]  # all "functions" that are actually methods
 
-all = [
+__all__ = [
     "widgets",
-    "var", "plot", "scatter", "errorbar", "arrow", "vector_field", "set_xlim", "set_ylim", "xlim", "ylim", "legend", "set_title", "lock_zoom", "subplots",
-    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "plot_text", "merge_plots", "set_interval",
-    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "get_mouse_pos", "on_key_press", "add_slider", "add_checkbox", "add_inputbox", "add_button",
-    "add_dropdown", "add_rate_slider", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
+    "var", "plot", "scatter", "errorbar", "set_xlim", "set_ylim", "xlim", "ylim", "set_xlabel", "set_ylabel", "legend", "set_title", "lock_zoom", "subplots",
+    "remove_item", "get_gradient", "get_cmap", "inf_dline", "inf_hline", "inf_vline", "grid", "arrow", "vector_field", "plot_text", "imshow", "merge_plots", "set_interval",
+    "on_refresh", "on_mouse_click", "on_mouse_move", "on_mouse_leave", "on_mouse_enter", "get_mouse_position", "mouse_on_screen", "mouse_clicked", "on_mouse_drag", "on_key_press",
+    "add_spacer", "set_spacer", "add_slider", "add_checkbox", "add_inputbox", "add_displaybox", "add_button",
+    "add_dropdown", "add_rate_slider", "add_joystick", "link_boxes", "add_tab", "set_active_tab", "rename_tab", "set_table_location", "on_tab_change", "get_all_boxes", "display_fps", "resize", "benchmark", "set_input_width",
     "set_input_partition", "is_alive", "refresh", "show_window", "show", "clear", "export", "export_video", "start_recording", "get_font",
-    "ColorType", "ColorsType", "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
+    "cmap_to_colors", "enable_autoscale", "disable_autoscale", "enable_autopan", "disable_autopan",
+    "make_3D", "scatter_3D", "plot_3D", "surface_3D", "mesh_3D", "sphere_mesh_3D", "cube_mesh_3D", "cylinder_mesh_3D", "add_grid_3D", "add_grids_3D",
+    "set_zoom_rate_3D", "set_camera", "get_camera_params", "on_camera_change", "align_camera", "on_var_change"
 ]
 
 
