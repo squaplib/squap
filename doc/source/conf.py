@@ -40,7 +40,7 @@ sphinx_gallery_conf = {
     "gallery_dirs": "auto_examples",      # where the generated output goes (relative to doc/source)
 }
 
-autodoc_mock_imports = ["pyqtgraph", "PySide6"]
+autodoc_mock_imports = ["pyqtgraph", "PySide6", "OpenGL"]
 
 exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 
