@@ -1,6 +1,6 @@
 from argparse import ArgumentError
 
-from ..helper_funcs import textify, get_type_func, ColorType, get_single_color
+from ..helper_funcs import textify, get_type_func, ColorType, get_single_color, _latex_to_pixmap, _is_latex
 
 import numpy as np
 from typing import Any, Callable, Optional, Iterable
@@ -10,10 +10,11 @@ from pyqtgraph import ColorButton
 
 from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QWidget, QGridLayout,
-    QLabel, QSlider, QCheckBox, QPushButton, QComboBox, QLineEdit
+    QLabel, QSlider, QCheckBox, QPushButton, QComboBox, QLineEdit,
+    QStyledItemDelegate, QStyleOptionViewItem, QStyle
 )
-from PySide6.QtGui import QPainter, QColor, QFont, QFontMetricsF
-from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtGui import QPainter, QColor, QFont, QFontMetricsF, QPalette
+from PySide6.QtCore import Qt, QRectF, QPointF, QSize
 
 
 class InfoBadge(QWidget):
@@ -172,10 +173,50 @@ class Box:              # I am not sure if this is required, but I feel like it 
         self.parent.remove_row(self.row, self)
 
 
+class LatexDelegate(QStyledItemDelegate):   # LLM generated
+    def __init__(self, parent, role):
+        super().__init__(parent)
+        self.latex_role = role
+
+        self.text_color = parent.palette().color(QPalette.Text).name()
+
+    def paint(self, painter, option, index):
+        latex = index.data(self.latex_role)
+        if not latex:
+            return super().paint(painter, option, index)
+
+        # draw background / selection highlight without text
+        opt = QStyleOptionViewItem(option)
+        self.initStyleOption(opt, index)
+        opt.text = ""
+        style = opt.widget.style() if opt.widget else QApplication.style()
+        style.drawControl(QStyle.CE_ItemViewItem, opt, painter, opt.widget)
+
+        fontsize = option.font.pointSizeF()
+        pm = _latex_to_pixmap(latex, self.text_color, fontsize)
+
+        h = pm.height() / pm.devicePixelRatio()
+        r = option.rect
+        x = r.x()
+        y = int(r.y() + (r.height() - h) / 2)  # keep vertical centering
+        painter.drawPixmap(int(x), y, pm)
+
+    def sizeHint(self, option, index):
+        latex = index.data(self.latex_role)
+        if not latex:
+            return super().sizeHint(option, index)
+        pm = _latex_to_pixmap(latex, self.text_color)
+        r = pm.devicePixelRatio()
+        return QSize(int(pm.width() / r) + 10, int(pm.height() / r) + 10)
+
 class InputTable(QTableWidget):    # table for all inputs
     def __init__(self, width: int, height: int, name: str, window):    # takes window as an argument so that it can inherit
         # update_funcs and variables easily
         super().__init__()
+
+        # For drawing writing text with latex. Uses a high role such that UserRole is still free.
+        self._latex_role = Qt.UserRole + 200
+        self.setItemDelegate(LatexDelegate(self, role=self._latex_role))    # Disables editing QTableWidgetItem text.
 
         self.name = name
         self.resize(width, height)
@@ -193,6 +234,7 @@ class InputTable(QTableWidget):    # table for all inputs
         self.setColumnWidth(1, int(self.rate_slider_space))
         self.setColumnWidth(2, int(width * (1-self.col_partition))-self.rate_slider_space - self.row_height)
         self.setColumnWidth(3, self.row_height)
+        self.setEditTriggers(QTableWidget.NoEditTriggers)
 
         # this cell is split in 2 for the rate_slider
 
@@ -230,6 +272,14 @@ class InputTable(QTableWidget):    # table for all inputs
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(info_box, 0, 0, Qt.AlignmentFlag.AlignCenter)
         return container
+
+    def _get_textbox(self, name: str):
+        textbox = QTableWidgetItem()
+        if _is_latex(name):
+            textbox.setData(self._latex_role, name)
+        else:
+            textbox.setText(name.replace(r"\$", "$"))
+        return textbox
 
     def rename(self, name: str):
         """Renames the table. The name is only visible when multiple tabs are present."""
@@ -515,8 +565,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -763,8 +813,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -898,8 +948,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -1067,8 +1117,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 self.col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -1252,8 +1302,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -1419,8 +1469,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 rate_slider_col = 1
                 colspan = 1
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -1692,8 +1742,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 rate_slider_col = 1
                 colspan = 1
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
@@ -1897,8 +1947,8 @@ class InputTable(QTableWidget):    # table for all inputs
                 col = 1
                 colspan = 2
 
-                self.textbox = QLabel(name)
-                parent.setCellWidget(row, 0, self.textbox)
+                self.textbox = parent._get_textbox(name)
+                parent.setItem(row, 0, self.textbox)
 
                 if var_name is None:
                     var_name = name
